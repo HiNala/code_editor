@@ -1,7 +1,14 @@
-# Full Stack FastAPI Template
+# Cre8able
 
-<a href="https://github.com/fastapi/full-stack-fastapi-template/actions?query=workflow%3ATest" target="_blank"><img src="https://github.com/fastapi/full-stack-fastapi-template/workflows/Test/badge.svg" alt="Test"></a>
-<a href="https://coverage-badge.samuelcolvin.workers.dev/redirect/fastapi/full-stack-fastapi-template" target="_blank"><img src="https://coverage-badge.samuelcolvin.workers.dev/fastapi/full-stack-fastapi-template.svg" alt="Coverage"></a>
+## Overview
+
+Cre8able is an AI-powered operating system for modern storytelling.  From the instant a concept pops into a creator’s mind, Cre8able shepherds it through every stage—ideation, production and distribution—inside one seamless workspace:
+
+1. **Ideate** – An embedded language-model shapes hooks, titles and full scripts in the creator’s own voice.
+2. **Produce** – Automated editing silently trims footage, adds captions and polishes assets while you focus on story.
+3. **Publish** – A built-in scheduler pushes the final, platform-ready content to every major network with a single click.
+
+By eliminating app-hopping, version confusion and repetitive busywork, Cre8able frees creators to stay laser-focused on craft and audience.
 
 ## Technology Stack and Features
 
@@ -200,8 +207,8 @@ But don't worry, you can just update any of that in the `.env` files afterwards.
 
 The input variables, with their default values (some auto generated) are:
 
-- `project_name`: (default: `"FastAPI Project"`) The name of the project, shown to API users (in .env).
-- `stack_name`: (default: `"fastapi-project"`) The name of the stack used for Docker Compose labels and project name (no spaces, no periods) (in .env).
+- `project_name`: (default: `"Cre8able"`) The name of the project, shown to API users (in .env).
+- `stack_name`: (default: `"cre8able"`) The name of the stack used for Docker Compose labels and project name (no spaces, no periods) (in .env).
 - `secret_key`: (default: `"changethis"`) The secret key for the project, used for security, stored in .env, you can generate one with the method above.
 - `first_superuser`: (default: `"admin@example.com"`) The email of the first superuser (in .env).
 - `first_superuser_password`: (default: `"changethis"`) The password of the first superuser (in .env).
@@ -236,4 +243,4 @@ Check the file [release-notes.md](./release-notes.md).
 
 ## License
 
-The Full Stack FastAPI Template is licensed under the terms of the MIT license.
+Cre8able is licensed under the terms of the MIT license.

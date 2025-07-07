@@ -13,8 +13,11 @@ import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import Logo from "/assets/images/fastapi-logo.svg"
+import { useColorModeValue } from "@/components/ui/color-mode"
 import { emailPattern, passwordRules } from "../utils"
+
+const logoLight = "/assets/images/cre8able-logo-light.svg"
+const logoDark = "/assets/images/cre8able-logo-dark.svg"
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -67,8 +70,8 @@ function Login() {
         centerContent
       >
         <Image
-          src={Logo}
-          alt="FastAPI logo"
+          src={useColorModeValue(logoLight, logoDark)}
+          alt="Cre8able logo"
           height="auto"
           maxW="2xs"
           alignSelf="center"
