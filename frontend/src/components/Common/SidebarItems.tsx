@@ -23,6 +23,7 @@ const items = [
 
 interface SidebarItemsProps {
   onClose?: () => void
+  isCollapsed?: boolean
 }
 
 interface Item {
@@ -31,7 +32,7 @@ interface Item {
   path: string
 }
 
-const SidebarItems = ({ onClose }: SidebarItemsProps) => {
+const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
   const queryClient = useQueryClient()
   const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
 
@@ -42,7 +43,7 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
   const listItems = finalItems.map(({ icon, title, path }) => (
     <RouterLink key={title} to={path} onClick={onClose}>
       <Flex
-        gap={4}
+        gap={isCollapsed ? 0 : 4}
         px={4}
         py={2}
         _hover={{
@@ -50,18 +51,23 @@ const SidebarItems = ({ onClose }: SidebarItemsProps) => {
         }}
         alignItems="center"
         fontSize="sm"
+        justify={isCollapsed ? "center" : "flex-start"}
+        borderRadius="md"
+        title={isCollapsed ? title : undefined} // Show tooltip when collapsed
       >
         <Icon as={icon} alignSelf="center" />
-        <Text ml={2}>{title}</Text>
+        {!isCollapsed && <Text ml={2}>{title}</Text>}
       </Flex>
     </RouterLink>
   ))
 
   return (
     <>
-      <Text fontSize="xs" px={4} py={2} fontWeight="bold">
-        Menu
-      </Text>
+      {!isCollapsed && (
+        <Text fontSize="xs" px={4} py={2} fontWeight="bold">
+          Menu
+        </Text>
+      )}
       <Box>{listItems}</Box>
     </>
   )
