@@ -9,7 +9,7 @@ export interface CardProps {
   item: ItemPublic
 }
 
-function Card({ item }: CardProps) {
+function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => void }) {
   const { id, title, description } = item
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData(
@@ -29,6 +29,7 @@ function Card({ item }: CardProps) {
       boxShadow="sm"
       _dark={{ bg: "gray.700" }}
       cursor="grab"
+      onClick={() => onSelect?.(item)}
     >
       <Flex align="start" justify="space-between" gap={2}>
         <Text

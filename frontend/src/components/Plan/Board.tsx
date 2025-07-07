@@ -7,6 +7,18 @@ import { ItemsService, type ItemPublic } from "@/client"
 import Card from "./Card"
 import Column from "./Column"
 
+import {
+  DrawerRoot,
+  DrawerBackdrop,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerBody,
+  DrawerCloseTrigger,
+} from "@/components/ui/drawer"
+
+import ChatPanel from "@/components/Chat/ChatPanel"
+
 export interface ColumnType {
   id: string
   title: string
@@ -41,6 +53,8 @@ function buildColumns(items: ItemPublic[]): ColumnType[] {
 
 export default function Board() {
   const [columns, setColumns] = useState<ColumnType[]>(EMPTY_COLUMNS)
+  const [selected, setSelected] = useState<ItemPublic | null>(null)
+  const [open, setOpen] = useState(false)
 
   const { data } = useQuery({
     queryKey: ["items"],
@@ -89,7 +103,8 @@ export default function Board() {
   )
 
   return (
-    <Flex direction={{ base: "column", md: "row" }} gap={4}>
+    <>
+      <Flex direction={{ base: "column", md: "row" }} gap={4}>
       {columns.map((col) => (
         <Column
           key={col.id}
@@ -99,10 +114,31 @@ export default function Board() {
           bg={col.bg}
         >
           {col.cards.map((item) => (
-            <Card key={item.id} item={item} />
+            <Card
+              key={item.id}
+              item={item}
+              onSelect={(it) => {
+                setSelected(it)
+                setOpen(true)
+              }}
+            />
           ))}
         </Column>
       ))}
-    </Flex>
+      </Flex>
+
+      <DrawerRoot open={open} onOpenChange={({ open }) => setOpen(open)} placement="end">
+        <DrawerBackdrop />
+        <DrawerContent w="60vw" maxW="60vw">
+          <DrawerHeader borderBottomWidth="1px">
+            <DrawerTitle>{selected?.title}</DrawerTitle>
+            <DrawerCloseTrigger />
+          </DrawerHeader>
+          <DrawerBody p={0}>
+            {selected && <ChatPanel threadId={selected.id} />}
+          </DrawerBody>
+        </DrawerContent>
+      </DrawerRoot>
+    </>
   )
 }
