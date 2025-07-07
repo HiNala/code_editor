@@ -2,6 +2,7 @@ import { Box, Container, Text } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 
 import useAuth from "@/hooks/useAuth"
+import Gallery from "@/components/Videos/Gallery"
 
 export const Route = createFileRoute("/_layout/")({
   component: Dashboard,
@@ -20,6 +21,8 @@ function Dashboard() {
           <Text>Welcome back, nice to see you again!</Text>
         </Box>
       </Container>
+
+      <Gallery />
     </>
   )
 }

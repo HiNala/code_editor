@@ -6,6 +6,7 @@ export interface ColumnProps {
   title: string
   children: ReactNode
   onCardDrop: (cardId: string, toColumnId: string) => void
+  bg?: string
 }
 
 export default function Column({
@@ -13,6 +14,7 @@ export default function Column({
   title,
   onCardDrop,
   children,
+  bg,
 }: ColumnProps) {
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -39,8 +41,12 @@ export default function Column({
     <Box
       w={{ base: "100%", md: "33.33%" }}
       px={2}
+      py={2}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
+      bg={bg}
+      _dark={{ bg: bg?.replace(".50", ".700") }}
+      borderRadius="md"
     >
       <Heading size="md" mb={4} textAlign="center">
         {title}
