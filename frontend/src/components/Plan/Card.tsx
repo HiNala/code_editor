@@ -1,13 +1,16 @@
-import { Box, Text } from "@chakra-ui/react"
+import { Box, Flex, Text } from "@chakra-ui/react"
 import { memo } from "react"
 
+import type { ItemPublic } from "@/client"
+
+import CardActionsMenu from "./CardActionsMenu"
+
 export interface CardProps {
-  id: string
-  title: string
-  description?: string
+  item: ItemPublic
 }
 
-function Card({ id, title, description }: CardProps) {
+function Card({ item }: CardProps) {
+  const { id, title, description } = item
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData(
       "application/json",
@@ -27,13 +30,21 @@ function Card({ id, title, description }: CardProps) {
       _dark={{ bg: "gray.700" }}
       cursor="grab"
     >
-      <Text
-        fontWeight="bold"
-        mb={1}
-        style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-      >
-        {title}
-      </Text>
+      <Flex align="start" justify="space-between" gap={2}>
+        <Text
+          fontWeight="bold"
+          mb={1}
+          flex="1"
+          style={{
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {title} 
+        </Text>
+        <CardActionsMenu item={item} />
+      </Flex>
       {description && (
         <Text
           fontSize="sm"

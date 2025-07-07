@@ -1,54 +1,65 @@
 import { Flex } from "@chakra-ui/react"
-import { nanoid } from "nanoid"
-import { useCallback, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import { useCallback, useEffect, useState } from "react"
+
+import { ItemsService, type ItemPublic } from "@/client"
 
 import Card from "./Card"
 import Column from "./Column"
 
-export interface CardType {
-  id: string
-  title: string
-  description?: string
-}
-
 export interface ColumnType {
   id: string
   title: string
-  cards: CardType[]
+  cards: ItemPublic[]
+  bg: string
 }
 
-const initialColumns: ColumnType[] = [
-  {
-    id: "idea",
-    title: "Ideas",
-    cards: [
-      { id: nanoid(), title: "Video about React", description: "Hook overview" },
-      { id: nanoid(), title: "Tweet thread: AI Tools" },
-    ],
-  },
-  {
-    id: "production",
-    title: "In Production",
-    cards: [
-      { id: nanoid(), title: "Shorts on FastAPI", description: "fastapi basics" },
-    ],
-  },
-  {
-    id: "scheduled",
-    title: "Scheduled",
-    cards: [],
-  },
+const EMPTY_COLUMNS: ColumnType[] = [
+  { id: "idea", title: "Ideas", cards: [], bg: "gray.50" },
+  { id: "progress", title: "In Progress", cards: [], bg: "pink.50" },
+  { id: "done", title: "Done", cards: [], bg: "orange.50" },
 ]
 
+function buildColumns(items: ItemPublic[]): ColumnType[] {
+  const mappingRaw = localStorage.getItem("plan-board-mapping")
+  const mapping: Record<string, string> = mappingRaw ? JSON.parse(mappingRaw) : {}
+
+  const cols: ColumnType[] = [
+    { id: "idea", title: "Ideas", cards: [], bg: "gray.50" },
+    { id: "progress", title: "In Progress", cards: [], bg: "pink.50" },
+    { id: "done", title: "Done", cards: [], bg: "orange.50" },
+  ]
+
+  items.forEach((item) => {
+    const colId = mapping[item.id] ?? "idea"
+    const column = cols.find((c) => c.id === colId) ?? cols[0]
+    column.cards.push(item)
+  })
+
+  return cols
+}
+
 export default function Board() {
-  const [columns, setColumns] = useState<ColumnType[]>(initialColumns)
+  const [columns, setColumns] = useState<ColumnType[]>(EMPTY_COLUMNS)
+
+  const { data } = useQuery({
+    queryKey: ["items"],
+    queryFn: () => ItemsService.readItems({ skip: 0, limit: 100 }),
+  })
+
+  // When items change, populate idea column
+  useEffect(() => {
+    if (data) {
+      setColumns(buildColumns(data.data))
+    }
+  }, [data])
 
   const handleCardDrop = useCallback(
     (cardId: string, toColumnId: string) => {
       setColumns((prev) => {
         const newCols = prev.map((col) => ({ ...col, cards: [...col.cards] }))
 
-        let movedCard: CardType | null = null
+        let movedCard: ItemPublic | null = null
         // remove card from original column
         newCols.forEach((col) => {
           const idx = col.cards.findIndex((c) => c.id === cardId)
@@ -65,6 +76,12 @@ export default function Board() {
           targetCol.cards.push(movedCard)
         }
 
+        // persist mapping
+        const mappingRaw = localStorage.getItem("plan-board-mapping")
+        const mapping: Record<string, string> = mappingRaw ? JSON.parse(mappingRaw) : {}
+        mapping[cardId] = toColumnId
+        localStorage.setItem("plan-board-mapping", JSON.stringify(mapping))
+
         return newCols
       })
     },
@@ -79,9 +96,10 @@ export default function Board() {
           id={col.id}
           title={col.title}
           onCardDrop={handleCardDrop}
+          bg={col.bg}
         >
-          {col.cards.map((c) => (
-            <Card key={c.id} id={c.id} title={c.title} description={c.description} />
+          {col.cards.map((item) => (
+            <Card key={item.id} item={item} />
           ))}
         </Column>
       ))}
