@@ -44,8 +44,10 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
     <RouterLink key={title} to={path} onClick={onClose}>
       <Flex
         gap={isCollapsed ? 0 : 4}
-        px={4}
-        py={2}
+        px={isCollapsed ? 2 : 4}
+        py={3}
+        mx={isCollapsed ? 2 : 0}
+        mb={isCollapsed ? 3 : 1}
         _hover={{
           background: "gray.subtle",
         }}
@@ -54,8 +56,13 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
         justify={isCollapsed ? "center" : "flex-start"}
         borderRadius="md"
         title={isCollapsed ? title : undefined} // Show tooltip when collapsed
+        w={isCollapsed ? "auto" : "full"}
       >
-        <Icon as={icon} alignSelf="center" />
+        <Icon 
+          as={icon} 
+          alignSelf="center" 
+          fontSize={isCollapsed ? "lg" : "md"}
+        />
         {!isCollapsed && <Text ml={2}>{title}</Text>}
       </Flex>
     </RouterLink>
@@ -68,7 +75,9 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
           Menu
         </Text>
       )}
-      <Box>{listItems}</Box>
+      <Box display="flex" flexDirection="column" alignItems={isCollapsed ? "center" : "stretch"}>
+        {listItems}
+      </Box>
     </>
   )
 }
