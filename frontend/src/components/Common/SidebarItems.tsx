@@ -60,11 +60,11 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
     return (
       <RouterLink key={title} to={path} onClick={onClose}>
         <Flex
-          gap={isCollapsed ? 0 : 4}
+          gap={2}
           px={isCollapsed ? 2 : 4}
           py={3}
           mx={isCollapsed ? 2 : 0}
-          mb={isCollapsed ? 3 : 1}
+          mb={2}
           _hover={{
             background: isActive ? itemActiveHoverBg : itemHoverBg,
             transform: "translateX(2px)",
@@ -139,9 +139,8 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
         textTransform="uppercase"
         letterSpacing="wider"
         opacity={isCollapsed ? 0 : 1}
-        transform={isCollapsed ? "translateY(-10px)" : "translateY(0)"}
-        transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-        transitionDelay={isCollapsed ? "0s" : "0.2s"}
+        transition="opacity 0.3s ease"
+        transitionDelay={isCollapsed ? "0s" : "0.15s"}
         maxH={isCollapsed ? "0" : "auto"}
         overflow="hidden"
       >
