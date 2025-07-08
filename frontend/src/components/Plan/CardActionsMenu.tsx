@@ -22,6 +22,7 @@ export default function CardActionsMenu({ item }: CardActionsMenuProps) {
           color="inherit"
           _hover={{ bg: "gray.100" }}
           _dark={{ _hover: { bg: "gray.600" } }}
+          onClick={(e) => e.stopPropagation()}
         >
           <BsThreeDotsVertical />
         </IconButton>
