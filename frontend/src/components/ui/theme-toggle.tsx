@@ -9,15 +9,16 @@ export function ThemeToggle() {
   const { colorMode, toggleColorMode } = useColorMode()
   const isDark = colorMode === "dark"
 
-  // Dynamic colors based on theme
+  // Better contrast colors for visibility
   const bgGradient = useColorModeValue(
-    "linear(135deg, blue.200 0%, blue.300 50%, blue.100 100%)",
-    "linear(135deg, purple.900 0%, purple.800 50%, gray.900 100%)"
+    "linear(135deg, blue.500 0%, purple.600 50%, indigo.600 100%)",
+    "linear(135deg, purple.600 0%, indigo.700 50%, gray.800 100%)"
   )
   
   const sliderBg = useColorModeValue("white", "gray.100")
-  const iconColor = useColorModeValue("orange.500", "purple.400")
-  const shadowColor = useColorModeValue("gray.300", "purple.700")
+  const iconColor = useColorModeValue("orange.500", "yellow.400")
+  const shadowColor = useColorModeValue("gray.400", "purple.500")
+  const borderColor = useColorModeValue("gray.300", "gray.600")
 
   return (
     <MotionBox
@@ -41,7 +42,9 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
       role="switch"
       aria-checked={isDark}
-      boxShadow={`0 2px 8px ${shadowColor}`}
+      boxShadow={`0 2px 12px ${shadowColor}`}
+      border="1px solid"
+      borderColor={borderColor}
     >
       {/* Animated stars background for dark mode */}
       <MotionBox
@@ -51,8 +54,20 @@ export function ThemeToggle() {
           opacity: isDark ? 1 : 0,
         }}
         transition={{ duration: 0.5, ease: "easeInOut" }}
-        background="radial-gradient(circle at 20% 30%, rgba(255,255,255,0.2) 1px, transparent 1px), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.15) 1px, transparent 1px), radial-gradient(circle at 60% 20%, rgba(255,255,255,0.1) 1px, transparent 1px)"
-        backgroundSize="20px 20px, 25px 25px, 15px 15px"
+        background="radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3) 1px, transparent 1px), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.2) 1px, transparent 1px), radial-gradient(circle at 60% 20%, rgba(255,255,255,0.15) 1px, transparent 1px)"
+        backgroundSize="15px 15px, 20px 20px, 12px 12px"
+      />
+
+      {/* Light mode cloud effect */}
+      <MotionBox
+        position="absolute"
+        inset="0"
+        animate={{
+          opacity: isDark ? 0 : 1,
+        }}
+        transition={{ duration: 0.5, ease: "easeInOut" }}
+        background="radial-gradient(circle at 30% 60%, rgba(255,255,255,0.3) 8px, transparent 8px), radial-gradient(circle at 70% 40%, rgba(255,255,255,0.2) 12px, transparent 12px)"
+        backgroundSize="25px 25px, 30px 30px"
       />
 
       {/* Sliding indicator */}
@@ -63,7 +78,7 @@ export function ThemeToggle() {
         h="6"
         borderRadius="full"
         bg={sliderBg}
-        boxShadow="lg"
+        boxShadow="0 2px 8px rgba(0,0,0,0.2)"
         display="flex"
         alignItems="center"
         justifyContent="center"
@@ -76,6 +91,8 @@ export function ThemeToggle() {
           damping: 25,
           duration: 0.4,
         }}
+        border="1px solid"
+        borderColor="gray.200"
       >
         <MotionBox
           animate={{
