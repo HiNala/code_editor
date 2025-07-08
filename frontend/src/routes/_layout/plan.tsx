@@ -1,4 +1,4 @@
-import { Container, Heading } from "@chakra-ui/react"
+import { Container } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 
 import Board from "@/components/Plan/Board"
@@ -10,10 +10,7 @@ export const Route = createFileRoute("/_layout/plan")({
 
 function PlanPage() {
   return (
-    <Container maxW="full" py={12}>
-      <Heading size="lg" mb={8} textAlign={{ base: "center", md: "left" }}>
-        Planning Board
-      </Heading>
+    <Container maxW="full" py={4}>
       <AddItem />
       <Board />
     </Container>

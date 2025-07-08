@@ -82,8 +82,8 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
       onDragEnd={handleDragEnd}
       bg={cardBg}
       borderRadius="12px"
-      p="20px"
-      mb="20px"
+      p="16px"
+      mb="16px"
       position="relative"
       overflow="hidden"
       cursor="grab"
@@ -135,7 +135,7 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
       onClick={() => onSelect?.(item)}
     >
       {/* Card Header */}
-      <Flex align="flex-start" justify="space-between" mb="12px">
+      <Flex align="flex-start" justify="space-between" mb="8px">
         <Text
           fontSize="18px"
           lineHeight="28px"
@@ -162,7 +162,7 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
           fontSize="14px"
           lineHeight="20px"
           color={textSecondary}
-          mb="16px"
+          mb="12px"
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 3,
@@ -175,7 +175,7 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
       )}
       
       {/* Priority Label */}
-      <Box>
+      <Box mt="8px">
         <Text
           fontSize="12px"
           lineHeight="20px"
