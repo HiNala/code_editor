@@ -1,6 +1,7 @@
 import { Flex, Image, useBreakpointValue } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
 
+import { ThemeToggle } from "../ui/theme-toggle"
 import UserMenu from "./UserMenu"
 
 const logo = "/assets/images/CRE8ABLE_logo.png"
@@ -25,7 +26,8 @@ function Navbar() {
       <Link to="/">
         <Image src={logo} alt="Cre8able logo" h="10" />
       </Link>
-      <Flex gap={2} alignItems="center">
+      <Flex gap={3} alignItems="center">
+        <ThemeToggle />
         <UserMenu />
       </Flex>
     </Flex>
