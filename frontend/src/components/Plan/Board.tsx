@@ -23,13 +23,12 @@ export interface ColumnType {
   id: string
   title: string
   cards: ItemPublic[]
-  bg: string
 }
 
 const EMPTY_COLUMNS: ColumnType[] = [
-  { id: "idea", title: "Ideas", cards: [], bg: "gray.50" },
-  { id: "progress", title: "In Progress", cards: [], bg: "pink.50" },
-  { id: "done", title: "Done", cards: [], bg: "orange.50" },
+  { id: "idea", title: "Ideas", cards: [] },
+  { id: "progress", title: "In Progress", cards: [] },
+  { id: "done", title: "Done", cards: [] },
 ]
 
 function buildColumns(items: ItemPublic[]): ColumnType[] {
@@ -37,9 +36,9 @@ function buildColumns(items: ItemPublic[]): ColumnType[] {
   const mapping: Record<string, string> = mappingRaw ? JSON.parse(mappingRaw) : {}
 
   const cols: ColumnType[] = [
-    { id: "idea", title: "Ideas", cards: [], bg: "gray.50" },
-    { id: "progress", title: "In Progress", cards: [], bg: "pink.50" },
-    { id: "done", title: "Done", cards: [], bg: "orange.50" },
+    { id: "idea", title: "Ideas", cards: [] },
+    { id: "progress", title: "In Progress", cards: [] },
+    { id: "done", title: "Done", cards: [] },
   ]
 
   items.forEach((item) => {
@@ -104,34 +103,44 @@ export default function Board() {
 
   return (
     <>
-      <Flex direction={{ base: "column", md: "row" }} gap={4}>
-      {columns.map((col) => (
-        <Column
-          key={col.id}
-          id={col.id}
-          title={col.title}
-          onCardDrop={handleCardDrop}
-          bg={col.bg}
-        >
-          {col.cards.map((item) => (
-            <Card
-              key={item.id}
-              item={item}
-              onSelect={(it) => {
-                setSelected(it)
-                setOpen(true)
-              }}
-            />
-          ))}
-        </Column>
-      ))}
+      {/* Board with Apple-CRE8ABLE spacing */}
+      <Flex 
+        direction={{ base: "column", lg: "row" }} 
+        gap={0} // No gap here, margin handled in Column component
+        px="40px" // Board container margin
+        py="20px"
+        align="stretch"
+        minH="600px"
+      >
+        {columns.map((col) => (
+          <Column
+            key={col.id}
+            id={col.id}
+            title={col.title}
+            onCardDrop={handleCardDrop}
+          >
+            {col.cards.map((item) => (
+              <Card
+                key={item.id}
+                item={item}
+                onSelect={(it) => {
+                  setSelected(it)
+                  setOpen(true)
+                }}
+              />
+            ))}
+          </Column>
+        ))}
       </Flex>
 
+      {/* Enhanced Chat Drawer */}
       <DrawerRoot open={open} onOpenChange={({ open }) => setOpen(open)} placement="end">
         <DrawerBackdrop />
         <DrawerContent w="60vw" maxW="60vw">
           <DrawerHeader borderBottomWidth="1px">
-            <DrawerTitle>{selected?.title}</DrawerTitle>
+            <DrawerTitle fontSize="24px" fontWeight="600">
+              {selected?.title}
+            </DrawerTitle>
             <DrawerCloseTrigger />
           </DrawerHeader>
           <DrawerBody p={0}>

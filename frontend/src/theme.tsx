@@ -57,6 +57,17 @@ export const system = createSystem(defaultConfig, {
       whiteSpace: "nowrap",
     },
     
+    // Keyframe animations
+    "@keyframes pulse": {
+      "0%": { opacity: "0.7" },
+      "100%": { opacity: "1.0" },
+    },
+    
+    "@keyframes float": {
+      "0%, 100%": { transform: "translateY(0px)" },
+      "50%": { transform: "translateY(-4px)" },
+    },
+    
     // Utility classes for gradients
     ".gradient-sunset": {
       background: gradients.sunset,
@@ -107,6 +118,14 @@ export const system = createSystem(defaultConfig, {
     "::selection": {
       background: tokens.colors.gradientSunsetStart,
       color: tokens.colors.surfaceWhite,
+    },
+    
+    // Disable animations for users who prefer reduced motion
+    "@media (prefers-reduced-motion: reduce)": {
+      "*": {
+        animation: "none !important",
+        transition: "none !important",
+      },
     },
     
     ".main-link": {

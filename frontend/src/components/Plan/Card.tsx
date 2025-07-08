@@ -11,17 +11,39 @@ export interface CardProps {
   item: ItemPublic
 }
 
-// Priority colors for left stripe
-const getPriorityColor = (priority?: string) => {
+// Priority colors with gradient support
+const getPriorityConfig = (priority?: string) => {
   switch (priority?.toLowerCase()) {
+    case "urgent":
+      return {
+        color: `linear-gradient(135deg, ${tokens.colors.gradientSunsetStart}, ${tokens.colors.gradientSunsetEnd})`,
+        label: "URGENT",
+        isPulsing: true,
+      }
     case "high":
-      return tokens.colors.danger
+      return {
+        color: `linear-gradient(135deg, ${tokens.colors.gradientSunsetStart}, ${tokens.colors.gradientSunsetEnd})`,
+        label: "HIGH",
+        isPulsing: false,
+      }
     case "medium":
-      return tokens.colors.warning
+      return {
+        color: tokens.colors.accentPlan,
+        label: "MEDIUM",
+        isPulsing: false,
+      }
     case "low":
-      return tokens.colors.accentPlan
+      return {
+        color: tokens.colors.accentPublish,
+        label: "LOW",
+        isPulsing: false,
+      }
     default:
-      return tokens.colors.accentPlan
+      return {
+        color: tokens.colors.accentPlan,
+        label: "MEDIUM",
+        isPulsing: false,
+      }
   }
 }
 
@@ -29,15 +51,14 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
   const { id, title, description } = item
   const [isDragging, setIsDragging] = useState(false)
   
-  // Theme colors
-  const cardBg = useColorModeValue(tokens.colors.surfaceWhite, tokens.colors.dark.surfaceCard)
-  const textColor = useColorModeValue(tokens.colors.charcoal900, tokens.colors.dark.text)
-  const mutedTextColor = useColorModeValue(tokens.colors.charcoal500, tokens.colors.dark.textSecondary)
-  const borderColor = useColorModeValue(tokens.colors.charcoal300, tokens.colors.charcoal700)
+  // Theme colors following Apple-CRE8ABLE spec
+  const cardBg = useColorModeValue("#FFFFFF", "#1C1C1E")
+  const textPrimary = useColorModeValue("#1D1D1F", "#FFFFFF")
+  const textSecondary = useColorModeValue("#8E8E93", "#8E8E8E")
   
-  // Get priority from item (assuming it might be added later)
+  // Priority configuration
   const priority = "medium" // Default priority, can be made dynamic
-  const priorityColor = getPriorityColor(priority)
+  const priorityConfig = getPriorityConfig(priority)
   
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     setIsDragging(true)
@@ -46,18 +67,8 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
       JSON.stringify({ cardId: id })
     )
     
-    // Create ghost image
-    const dragImage = e.currentTarget.cloneNode(true) as HTMLElement
-    dragImage.style.transform = "scale(0.9)"
-    dragImage.style.opacity = "0.4"
-    dragImage.style.filter = "blur(2px)"
-    document.body.appendChild(dragImage)
-    e.dataTransfer.setDragImage(dragImage, 0, 0)
-    
-    // Clean up ghost image after drag
-    setTimeout(() => {
-      document.body.removeChild(dragImage)
-    }, 0)
+    // Set drag effect
+    e.dataTransfer.effectAllowed = "move"
   }
   
   const handleDragEnd = () => {
@@ -70,47 +81,69 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       bg={cardBg}
-      borderRadius={tokens.radius.md}
-      p={4}
-      mb={4}
-      boxShadow={tokens.shadows.sm}
-      border="1px solid"
-      borderColor={borderColor}
-      cursor="grab"
+      borderRadius="12px"
+      p="20px"
+      mb="20px"
       position="relative"
       overflow="hidden"
-      transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
-      transform={isDragging ? "scale(0.95)" : "scale(1)"}
-      opacity={isDragging ? 0.8 : 1}
-      _hover={{
-        boxShadow: tokens.shadows.gradient,
-        transform: "translateY(-2px)",
-        borderColor: tokens.colors.gradientSunsetStart,
-      }}
-      _active={{
-        cursor: "grabbing",
-        transform: "translateY(0)",
-      }}
-      onClick={() => onSelect?.(item)}
-      // Left priority stripe
+      cursor="grab"
+      // Apple-inspired shadow with CRE8ABLE touch
+      boxShadow={isDragging 
+        ? "0 12px 24px rgba(0,0,0,0.12)" 
+        : "0 2px 4px rgba(0,0,0,0.04)"
+      }
+      // Inner highlight for depth
       _before={{
+        content: '""',
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "1px",
+        background: "linear-gradient(90deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
+        opacity: isDragging ? 0.8 : 0.65,
+      }}
+      // Priority stripe (left edge)
+      _after={{
         content: '""',
         position: "absolute",
         top: 0,
         left: 0,
         bottom: 0,
         width: "4px",
-        background: priorityColor,
+        background: priorityConfig.color,
+        animation: priorityConfig.isPulsing ? "pulse 800ms ease-in-out infinite alternate" : "none",
       }}
+      // Elegant transitions
+      transition="all 300ms cubic-bezier(0.4, 0, 0.2, 1)"
+      transform={isDragging ? "scale(0.95)" : "scale(1)"}
+      opacity={isDragging ? 0.9 : 1}
+      // Hover state
+      _hover={{
+        transform: isDragging ? "scale(0.95)" : "translateY(-2px)",
+        boxShadow: "0 8px 16px rgba(0,0,0,0.08)",
+        _before: {
+          opacity: 0.85,
+        }
+      }}
+      // Active state
+      _active={{
+        cursor: "grabbing",
+        transform: "scale(0.98)",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+      }}
+      onClick={() => onSelect?.(item)}
     >
-      {/* Header */}
-      <Flex align="start" justify="space-between" gap={2} mb={2}>
+      {/* Card Header */}
+      <Flex align="flex-start" justify="space-between" mb="12px">
         <Text
-          fontWeight={tokens.typography.fontWeights.semibold}
-          fontSize={tokens.typography.fontSizes.bodySm}
-          color={textColor}
+          fontSize="18px"
+          lineHeight="28px"
+          fontWeight="600"
+          color={textPrimary}
+          letterSpacing="0.5px"
           flex="1"
-          lineHeight="1.4"
+          pr="8px"
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -126,9 +159,10 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
       {/* Description */}
       {description && (
         <Text
-          fontSize={tokens.typography.fontSizes.caption}
-          color={mutedTextColor}
-          lineHeight="1.5"
+          fontSize="14px"
+          lineHeight="20px"
+          color={textSecondary}
+          mb="16px"
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 3,
@@ -140,34 +174,21 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
         </Text>
       )}
       
-      {/* Priority indicator */}
-      <Flex align="center" justify="space-between" mt={3}>
-        <Box
-          fontSize="xs"
-          fontWeight={tokens.typography.fontWeights.medium}
-          color={priorityColor}
+      {/* Priority Label */}
+      <Box>
+        <Text
+          fontSize="12px"
+          lineHeight="20px"
+          fontWeight="500"
+          color={typeof priorityConfig.color === 'string' && priorityConfig.color.startsWith('linear-gradient') 
+            ? tokens.colors.gradientSunsetStart 
+            : priorityConfig.color}
           textTransform="uppercase"
           letterSpacing="0.5px"
         >
-          {priority} priority
-        </Box>
-        
-        {/* Subtle gradient overlay on hover */}
-        <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          background={`linear-gradient(135deg, ${tokens.colors.gradientSunsetStart}02, ${tokens.colors.gradientSunsetEnd}02)`}
-          opacity={0}
-          transition={`opacity ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
-          _groupHover={{
-            opacity: 1,
-          }}
-          pointerEvents="none"
-        />
-      </Flex>
+          {priorityConfig.label} PRIORITY
+        </Text>
+      </Box>
     </Box>
   )
 }

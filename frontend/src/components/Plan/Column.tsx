@@ -1,14 +1,14 @@
-import { Box, Heading, Badge, Flex, Text } from "@chakra-ui/react"
+import { Box, Heading, Flex, Text, Icon } from "@chakra-ui/react"
 import { ReactNode, useCallback, useState } from "react"
 import { tokens, gradients } from "../../theme/tokens"
 import { useColorModeValue } from "../ui/color-mode"
+import { FiPlus } from "react-icons/fi"
 
 export interface ColumnProps {
   id: string
   title: string
   children: ReactNode
   onCardDrop: (cardId: string, toColumnId: string) => void
-  bg?: string
 }
 
 export default function Column({
@@ -19,38 +19,65 @@ export default function Column({
 }: ColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false)
   
-  // Theme colors
-  const columnBg = useColorModeValue(tokens.colors.surfaceWhite, tokens.colors.dark.surfaceCard)
-  const headerBg = useColorModeValue(tokens.colors.surface, tokens.colors.dark.surface)
-  const textColor = useColorModeValue(tokens.colors.charcoal900, tokens.colors.dark.text)
-  const mutedTextColor = useColorModeValue(tokens.colors.charcoal500, tokens.colors.dark.textSecondary)
-  const borderColor = useColorModeValue(tokens.colors.charcoal300, tokens.colors.charcoal700)
+  // Theme colors following Apple-CRE8ABLE spec
+  const surfaceCard = useColorModeValue("#FFFFFF", "#1C1C1E")
+  const textPrimary = useColorModeValue("#1D1D1F", "#FFFFFF")
+  const textSecondary = useColorModeValue("#8E8E93", "#8E8E8E")
   
   // Count cards
   const cardCount = Array.isArray(children) ? children.length : children ? 1 : 0
   
-  // Get column gradient based on ID
-  const getColumnGradient = () => {
+  // Get column gradient and config based on ID
+  const getColumnConfig = () => {
     switch (id) {
       case "idea":
-        return gradients.plan
+        return {
+          gradient: gradients.plan,
+          color: tokens.colors.accentPlan,
+          title: "Ideas",
+          description: "Capture your creative sparks"
+        }
       case "progress":
-        return gradients.sunset
+        return {
+          gradient: gradients.sunset,
+          color: tokens.colors.gradientSunsetStart,
+          title: "In Progress", 
+          description: "Bringing ideas to life"
+        }
       case "done":
-        return gradients.publish
+        return {
+          gradient: gradients.publish,
+          color: tokens.colors.accentPublish,
+          title: "Done",
+          description: "Ready to share with the world"
+        }
       default:
-        return gradients.sunset
+        return {
+          gradient: gradients.sunset,
+          color: tokens.colors.gradientSunsetStart,
+          title: title,
+          description: "Your creative workspace"
+        }
     }
   }
 
+  const columnConfig = getColumnConfig()
+
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
+    e.dataTransfer.dropEffect = "move"
     setIsDragOver(true)
   }
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault()
-    setIsDragOver(false)
+    // Only set drag over to false if we're actually leaving the column
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX
+    const y = e.clientY
+    
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+      setIsDragOver(false)
+    }
   }
 
   const handleDrop = useCallback(
@@ -74,105 +101,171 @@ export default function Column({
 
   return (
     <Box
-      w={{ base: "100%", md: "33.33%" }}
-      px={2}
-      py={2}
+      flex="1"
+      minW="320px"
+      mx="16px" // 32px total gap (16px each side)
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
+      transition="all 300ms cubic-bezier(0.4, 0, 0.2, 1)"
       transform={isDragOver ? "scale(1.02)" : "scale(1)"}
-      boxShadow={isDragOver ? tokens.shadows.lg : "none"}
     >
       <Box
-        bg={columnBg}
-        borderRadius={tokens.radius.lg}
-        boxShadow={tokens.shadows.md}
+        bg={surfaceCard}
+        borderRadius="12px"
         overflow="hidden"
-        border="1px solid"
-        borderColor={borderColor}
-        h="full"
-        minH="500px"
+        minH="600px"
         position="relative"
-        _before={{
+        // Apple-inspired shadow
+        boxShadow={isDragOver 
+          ? "0 8px 24px rgba(0,0,0,0.12)" 
+          : "0 2px 8px rgba(0,0,0,0.04)"
+        }
+        // Gradient bottom border instead of top
+        _after={{
           content: '""',
           position: "absolute",
-          top: 0,
+          bottom: 0,
           left: 0,
           right: 0,
-          height: "4px",
-          background: getColumnGradient(),
+          height: "2px",
+          background: columnConfig.gradient,
         }}
       >
-        {/* Header */}
-        <Flex
-          align="center"
-          justify="space-between"
-          px={6}
-          py={4}
-          bg={headerBg}
+        {/* Column Header */}
+        <Box
+          px="24px"
+          py="20px"
           borderBottom="1px solid"
-          borderBottomColor={borderColor}
+          borderBottomColor={useColorModeValue("rgba(0,0,0,0.06)", "rgba(255,255,255,0.06)")}
         >
-          <Heading 
-            size="md" 
-            color={textColor}
-            fontWeight={tokens.typography.fontWeights.bold}
-            fontSize={tokens.typography.fontSizes.h3}
-          >
-            {title}
-          </Heading>
+          <Flex align="center" justify="space-between" mb="8px">
+            <Heading 
+              fontSize="36px"
+              lineHeight="44px"
+              fontWeight="600"
+              color={textPrimary}
+            >
+              {columnConfig.title}
+            </Heading>
+            
+            {/* Task counter badge with gradient border */}
+            <Box
+              position="relative"
+              p="1px"
+              borderRadius="50%"
+              background={columnConfig.gradient}
+            >
+              <Flex
+                align="center"
+                justify="center"
+                w="32px"
+                h="32px"
+                bg={surfaceCard}
+                borderRadius="50%"
+                fontSize="14px"
+                fontWeight="600"
+                color={columnConfig.color}
+              >
+                {cardCount}
+              </Flex>
+            </Box>
+          </Flex>
           
-          {/* Task counter badge */}
-          <Badge
-            variant="subtle"
-            colorScheme="gray"
-            borderRadius={tokens.radius.pill}
-            px={3}
-            py={1}
-            fontSize="sm"
-            fontWeight={tokens.typography.fontWeights.semibold}
-            background={getColumnGradient()}
-            color="white"
-            border="1px solid"
-            borderColor="rgba(255,255,255,0.2)"
+          <Text
+            fontSize="14px"
+            lineHeight="20px"
+            color={textSecondary}
           >
-            {cardCount}
-          </Badge>
-        </Flex>
+            {columnConfig.description}
+          </Text>
+        </Box>
 
         {/* Content Area */}
         <Box 
-          p={4}
-          minH="400px"
+          p="24px"
+          minH="500px"
           position="relative"
-          _after={isDragOver ? {
-            content: '""',
-            position: "absolute",
-            inset: 0,
-            background: `linear-gradient(135deg, ${getColumnGradient()}10, ${getColumnGradient()}05)`,
-            borderRadius: tokens.radius.md,
-            border: `2px dashed ${getColumnGradient()}`,
-            pointerEvents: "none",
-          } : {}}
         >
+          {/* Drag-over visual feedback */}
+          {isDragOver && (
+            <Box
+              position="absolute"
+              inset="24px"
+              borderRadius="8px"
+              border="2px dashed"
+              borderColor={columnConfig.color}
+              background={`linear-gradient(135deg, ${columnConfig.color}05, ${columnConfig.color}02)`}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              zIndex={1}
+              pointerEvents="none"
+            >
+              <Text
+                fontSize="16px"
+                fontWeight="500"
+                color={columnConfig.color}
+              >
+                Drop card here
+              </Text>
+            </Box>
+          )}
+          
           {children}
           
-          {/* Empty state */}
-          {cardCount === 0 && (
+          {/* Elegant empty state */}
+          {cardCount === 0 && !isDragOver && (
             <Flex
               direction="column"
               align="center"
               justify="center"
-              minH="200px"
+              minH="300px"
               textAlign="center"
-              color={mutedTextColor}
+              opacity={0.6}
             >
-              <Text fontSize="lg" mb={2}>
-                No items yet
+              {/* Gradient outline icon */}
+              <Box
+                position="relative"
+                mb="20px"
+                p="2px"
+                borderRadius="50%"
+                background={columnConfig.gradient}
+              >
+                <Flex
+                  align="center"
+                  justify="center"
+                  w="48px"
+                  h="48px"
+                  bg={surfaceCard}
+                  borderRadius="50%"
+                >
+                  <Icon
+                    as={FiPlus}
+                    w="24px"
+                    h="24px"
+                    color={columnConfig.color}
+                  />
+                </Flex>
+              </Box>
+              
+              <Text 
+                fontSize="18px"
+                lineHeight="28px"
+                fontWeight="600"
+                color={textPrimary}
+                mb="8px"
+              >
+                Ready to spark your next idea?
               </Text>
-              <Text fontSize="sm" opacity={0.7}>
-                Drag cards here or create new ones
+              
+              <Text 
+                fontSize="14px"
+                lineHeight="20px"
+                color={textSecondary}
+                maxW="200px"
+              >
+                Drag cards here or create new ones to get started
               </Text>
             </Flex>
           )}
