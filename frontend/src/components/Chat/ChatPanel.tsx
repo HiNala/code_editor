@@ -65,11 +65,33 @@ export default function ChatPanel({ threadId }: ChatPanelProps) {
     const newMsgs: Message[] = [...messages, userMsg]
     save(newMsgs)
     setInput("")
-    // dummy assistant reply
-    setTimeout(() => {
-      const assistantMsg: Message = { role: "assistant", content: "I understand you'd like to discuss this card. I'm here to help you brainstorm ideas, refine your content, or answer any questions about your project!" }
-      save([...newMsgs, assistantMsg])
-    }, 600)
+    // call backend
+    const base = import.meta.env.VITE_API_URL ?? ""
+    const url =
+      base.endsWith("/api/v1") || base.includes("/api/v1")
+        ? `${base}/items/${threadId}/chat`
+        : `${base}/api/v1/items/${threadId}/chat`
+
+    fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access_token") ?? ""}`,
+      },
+      body: JSON.stringify({ message: input.trim() }),
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => {
+        const assistantMsg: Message = { role: "assistant", content: data.assistant }
+        save([...newMsgs, assistantMsg])
+      })
+      .catch(() => {
+        const assistantMsg: Message = {
+          role: "assistant",
+          content: "Sorry, something went wrong.",
+        }
+        save([...newMsgs, assistantMsg])
+      })
   }
 
   return (

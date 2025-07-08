@@ -2,6 +2,9 @@ import uuid
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB as JSON
+from sqlalchemy.ext.mutable import MutableList
 
 
 # Shared properties
@@ -80,11 +83,23 @@ class Item(ItemBase, table=True):
     )
     owner: User | None = Relationship(back_populates="items")
 
+    # store chat history as list of {role, content}
+    chat_history: list[dict] = Field(
+        default_factory=list,
+        sa_column=Column(MutableList.as_mutable(JSON), nullable=False, server_default="[]"),
+    )
+
 
 # Properties to return via API, id is always required
 class ItemPublic(ItemBase):
     id: uuid.UUID
     owner_id: uuid.UUID
+
+    # store chat history as list of {role, content}
+    chat_history: list[dict] = Field(
+        default_factory=list,
+        sa_column=Column(MutableList.as_mutable(JSON), nullable=False, server_default="[]"),
+    )
 
 
 class ItemsPublic(SQLModel):
