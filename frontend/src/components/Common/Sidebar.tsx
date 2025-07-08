@@ -2,7 +2,7 @@ import { Box, Flex, IconButton, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
 import { FaBars } from "react-icons/fa"
-import { FiLogOut, FiChevronLeft, FiChevronRight } from "react-icons/fi"
+import { FiLogOut, FiMenu } from "react-icons/fi"
 
 import type { UserPublic } from "@/client"
 import useAuth from "@/hooks/useAuth"
@@ -104,67 +104,36 @@ const Sidebar = () => {
         bg="black"
         top={0}
         w={isCollapsed ? "60px" : "240px"}
+        minW={isCollapsed ? "60px" : "240px"}
+        maxW={isCollapsed ? "60px" : "240px"}
         h="100vh"
+        minH="100vh"
         p={4}
-        transition="width 0.3s ease"
+        transition="all 0.3s ease"
         flexDirection="column"
         borderRight="1px solid"
         borderRightColor="whiteAlpha.200"
       >
-        {/* Logo/Brand Area */}
-        <Flex 
-          justify={isCollapsed ? "center" : "flex-start"} 
-          align="center"
-          mb={6}
-          h="40px"
-        >
-          {!isCollapsed && (
-            <Text 
-              fontSize="lg" 
-              fontWeight="bold" 
-              color="white"
-              letterSpacing="wide"
-            >
-              CRE8ABLE
-            </Text>
-          )}
-          {isCollapsed && (
-            <Box 
-              w="8" 
-              h="8" 
-              bg="white" 
-              borderRadius="md" 
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text fontSize="sm" fontWeight="bold" color="black">
-                C8
-              </Text>
-            </Box>
-          )}
-        </Flex>
-
-        {/* Toggle Button */}
-        <Flex justify={isCollapsed ? "center" : "flex-end"} mb={4}>
+        {/* Subtle Toggle Button */}
+        <Flex justify="flex-end" mb={4}>
           <IconButton
             variant="ghost"
-            size="sm"
+            size="xs"
             onClick={() => setIsCollapsed(!isCollapsed)}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-expanded={!isCollapsed}
-            color="whiteAlpha.700"
+            color="whiteAlpha.500"
             _hover={{
-              bg: "whiteAlpha.200",
-              color: "white"
+              bg: "whiteAlpha.100",
+              color: "whiteAlpha.700"
             }}
           >
-            {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
+            <FiMenu />
           </IconButton>
         </Flex>
 
         {/* Sidebar Content */}
-        <Box flex="1">
+        <Box flex="1" overflow="hidden">
           <SidebarItems isCollapsed={isCollapsed} />
         </Box>
 
@@ -186,6 +155,7 @@ const Sidebar = () => {
           justify={isCollapsed ? "center" : "flex-start"}
           color="whiteAlpha.900"
           transition="all 0.2s"
+          title={isCollapsed ? "Log Out" : undefined}
         >
           <FiLogOut />
           {!isCollapsed && <Text>Log Out</Text>}
@@ -194,14 +164,14 @@ const Sidebar = () => {
         {/* User Email */}
         {currentUser?.email && !isCollapsed && (
           <Text 
-            fontSize="sm" 
+            fontSize="xs" 
             p={2} 
             truncate 
-            maxW="sm"
+            maxW="full"
             color="whiteAlpha.600"
             mt={2}
           >
-            Logged in as: {currentUser.email}
+            {currentUser.email}
           </Text>
         )}
       </Box>
