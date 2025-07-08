@@ -41,7 +41,7 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
     ? [...items, { icon: FiUsers, title: "Admin", path: "/admin" }]
     : items
 
-  const listItems = finalItems.map(({ icon, title, path }) => {
+  const listItems = finalItems.map(({ icon, title, path }, index) => {
     // Simple active detection based on current path
     const isActive = typeof window !== "undefined" && window.location.pathname === path
     
@@ -55,6 +55,7 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
           mb={isCollapsed ? 3 : 1}
           _hover={{
             background: isActive ? "whiteAlpha.300" : "whiteAlpha.200",
+            transform: "translateX(2px)",
           }}
           alignItems="center"
           fontSize="sm"
@@ -63,8 +64,14 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
           w={isCollapsed ? "auto" : "full"}
           position="relative"
           background={isActive ? "whiteAlpha.200" : "transparent"}
-          transition="all 0.2s"
+          transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+          transitionDelay={`${index * 0.05}s`}
           title={isCollapsed ? title : undefined}
+          css={{
+            "&:hover .sidebar-icon": {
+              transform: isCollapsed ? "scale(1.1)" : "scale(1.05)",
+            }
+          }}
         >
           {/* Active indicator */}
           {isActive && (
@@ -76,24 +83,34 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
               width="3px"
               bg="white"
               borderRadius="0 2px 2px 0"
+              transition="all 0.3s ease-out"
             />
           )}
           
           <Icon 
             as={icon} 
+            className="sidebar-icon"
             alignSelf="center" 
             fontSize={isCollapsed ? "lg" : "md"}
             color={isActive ? "white" : "whiteAlpha.800"}
+            transition="all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
+            transform={isCollapsed ? "scale(1)" : "scale(1)"}
           />
-          {!isCollapsed && (
-            <Text 
-              ml={2} 
-              color={isActive ? "white" : "whiteAlpha.900"}
-              fontWeight={isActive ? "semibold" : "normal"}
-            >
-              {title}
-            </Text>
-          )}
+          
+          <Text 
+            ml={2} 
+            color={isActive ? "white" : "whiteAlpha.900"}
+            fontWeight={isActive ? "semibold" : "normal"}
+            opacity={isCollapsed ? 0 : 1}
+            transform={isCollapsed ? "translateX(-10px)" : "translateX(0)"}
+            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+            transitionDelay={isCollapsed ? "0s" : "0.15s"}
+            whiteSpace="nowrap"
+            overflow="hidden"
+            maxW={isCollapsed ? "0" : "200px"}
+          >
+            {title}
+          </Text>
         </Flex>
       </RouterLink>
     )
@@ -101,20 +118,29 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
 
   return (
     <>
-      {!isCollapsed && (
-        <Text 
-          fontSize="xs" 
-          px={4} 
-          py={2} 
-          fontWeight="bold"
-          color="whiteAlpha.700"
-          textTransform="uppercase"
-          letterSpacing="wider"
-        >
-          Menu
-        </Text>
-      )}
-      <Box display="flex" flexDirection="column" alignItems={isCollapsed ? "center" : "stretch"}>
+      <Text 
+        fontSize="xs" 
+        px={4} 
+        py={2} 
+        fontWeight="bold"
+        color="whiteAlpha.700"
+        textTransform="uppercase"
+        letterSpacing="wider"
+        opacity={isCollapsed ? 0 : 1}
+        transform={isCollapsed ? "translateY(-10px)" : "translateY(0)"}
+        transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+        transitionDelay={isCollapsed ? "0s" : "0.2s"}
+        maxH={isCollapsed ? "0" : "auto"}
+        overflow="hidden"
+      >
+        Menu
+      </Text>
+      <Box 
+        display="flex" 
+        flexDirection="column" 
+        alignItems={isCollapsed ? "center" : "stretch"}
+        transition="all 0.3s ease-out"
+      >
         {listItems}
       </Box>
     </>
