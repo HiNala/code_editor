@@ -1,8 +1,7 @@
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
-import { FaBars } from "react-icons/fa"
-import { FiLogOut, FiMenu } from "react-icons/fi"
+import { FiLogOut, FiChevronRight, FiChevronLeft } from "react-icons/fi"
 
 import type { UserPublic } from "@/client"
 import useAuth from "@/hooks/useAuth"
@@ -57,7 +56,7 @@ const Sidebar = () => {
             zIndex="100"
             m={4}
           >
-            <FaBars />
+            <FiChevronRight />
           </IconButton>
         </DrawerTrigger>
         <DrawerContent maxW="xs" bg="black" color="white">
@@ -106,15 +105,14 @@ const Sidebar = () => {
         w={isCollapsed ? "60px" : "240px"}
         minW={isCollapsed ? "60px" : "240px"}
         maxW={isCollapsed ? "60px" : "240px"}
-        h="100vh"
-        minH="100vh"
+        h="100%"
         p={4}
         transition="all 0.3s ease"
         flexDirection="column"
         borderRight="1px solid"
         borderRightColor="whiteAlpha.200"
       >
-        {/* Subtle Toggle Button */}
+        {/* Toggle Button with Arrow Icons */}
         <Flex justify="flex-end" mb={4}>
           <IconButton
             variant="ghost"
@@ -128,12 +126,16 @@ const Sidebar = () => {
               color: "whiteAlpha.700"
             }}
           >
-            <FiMenu />
+            {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
           </IconButton>
         </Flex>
 
         {/* Sidebar Content */}
-        <Box flex="1" overflow="hidden">
+        <Box 
+          flex="1" 
+          overflowY={isCollapsed ? "visible" : "auto"}
+          overflowX="hidden"
+        >
           <SidebarItems isCollapsed={isCollapsed} />
         </Box>
 
@@ -144,20 +146,22 @@ const Sidebar = () => {
             logout()
           }}
           alignItems="center"
-          gap={4}
-          px={4}
-          py={2}
+          gap={isCollapsed ? 0 : 4}
+          px={isCollapsed ? 2 : 4}
+          py={3}
           mt={4}
           _hover={{
             background: "whiteAlpha.200",
           }}
           borderRadius="md"
-          justify={isCollapsed ? "center" : "flex-start"}
+          justify="center"
           color="whiteAlpha.900"
           transition="all 0.2s"
           title={isCollapsed ? "Log Out" : undefined}
+          w={isCollapsed ? "auto" : "full"}
+          minH="44px"
         >
-          <FiLogOut />
+          <FiLogOut size={isCollapsed ? "18px" : "16px"} />
           {!isCollapsed && <Text>Log Out</Text>}
         </Flex>
 

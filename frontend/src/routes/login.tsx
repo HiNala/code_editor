@@ -13,11 +13,9 @@ import { Field } from "@/components/ui/field"
 import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
-import { useColorModeValue } from "@/components/ui/color-mode"
 import { emailPattern, passwordRules } from "../utils"
 
-const logoLight = "/assets/images/cre8able-logo-light.svg"
-const logoDark = "/assets/images/cre8able-logo-dark.svg"
+const logo = "/assets/images/CRE8ABLE_logo.png"
 
 export const Route = createFileRoute("/login")({
   component: Login,
@@ -70,7 +68,7 @@ function Login() {
         centerContent
       >
         <Image
-          src={useColorModeValue(logoLight, logoDark)}
+          src={logo}
           alt="Cre8able logo"
           height="auto"
           maxW="2xs"
