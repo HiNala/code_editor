@@ -26,7 +26,7 @@ function ProjectCard({ title }: { title: string }) {
 
   return (
     <Box
-      flex="0 0 180px"
+      flex={{ base: "0 0 140px", md: "0 0 180px" }}
       bg={cardBg}
       borderRadius={tokens.radius.lg}
       overflow="hidden"
@@ -40,7 +40,7 @@ function ProjectCard({ title }: { title: string }) {
       cursor="pointer"
     >
       <Box
-        height="100px"
+        height={{ base: "80px", md: "100px" }}
         bg="gray.200"
         display="flex"
         alignItems="center"
@@ -52,7 +52,7 @@ function ProjectCard({ title }: { title: string }) {
       </Box>
       <Box p={2}>
         <Text
-          fontSize={tokens.typography.fontSizes.caption}
+          fontSize={{ base: tokens.typography.fontSizes.caption, md: tokens.typography.fontSizes.bodySm }}
           fontWeight={tokens.typography.fontWeights.medium}
           color={textColor}
         >
@@ -76,7 +76,16 @@ function ProjectSection({ title, projects }: { title: string; projects: typeof p
       >
         {title}
       </Text>
-      <HStack gap={3} width="100%" justify="space-between">
+      <HStack
+        gap={{ base: 2, md: 3 }}
+        width="100%"
+        justify={{ base: "flex-start", md: "space-between" }}
+        overflowX={{ base: "auto", md: "visible" }}
+        css={{
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
+        }}
+      >
         {projects.map((project) => (
           <ProjectCard key={project.id} title={project.title} />
         ))}
@@ -110,7 +119,7 @@ function Dashboard() {
         justifyContent="center"
         mb={8}
       >
-        <Box transform="scale(0.7)" transformOrigin="center">
+        <Box transform={["scale(0.65)", "scale(0.7)"]} transformOrigin="center">
           <WorkflowWheel onStateChange={handleStateChange} />
         </Box>
       </Box>
