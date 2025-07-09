@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { Box, VStack, Text, HStack } from "@chakra-ui/react"
-import { useRef, useState, useEffect } from "react"
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
 import { useColorModeValue } from "@/components/ui/color-mode"
 import { tokens } from "@/theme/tokens"
 
@@ -28,7 +26,7 @@ function ProjectCard({ title }: { title: string }) {
 
   return (
     <Box
-      flex="0 0 260px"
+      flex="0 0 180px"
       bg={cardBg}
       borderRadius={tokens.radius.lg}
       overflow="hidden"
@@ -42,19 +40,19 @@ function ProjectCard({ title }: { title: string }) {
       cursor="pointer"
     >
       <Box
-        height="150px"
+        height="100px"
         bg="gray.200"
         display="flex"
         alignItems="center"
         justifyContent="center"
         color="gray.500"
-        fontSize="sm"
+        fontSize="xs"
       >
         {title} Thumbnail
       </Box>
-      <Box p={4}>
+      <Box p={2}>
         <Text
-          fontSize={tokens.typography.fontSizes.bodySm}
+          fontSize={tokens.typography.fontSizes.caption}
           fontWeight={tokens.typography.fontWeights.medium}
           color={textColor}
         >
@@ -67,109 +65,22 @@ function ProjectCard({ title }: { title: string }) {
 
 function ProjectSection({ title, projects }: { title: string; projects: typeof placeholderProjects }) {
   const textColor = useColorModeValue("gray.900", "white")
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const updateScrollState = () => {
-      if (scrollContainerRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
-        setCanScrollLeft(scrollLeft > 0)
-        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1)
-      }
-    }
-
-    const container = scrollContainerRef.current
-    if (container) {
-      container.addEventListener("scroll", updateScrollState)
-      updateScrollState() // initial
-    }
-
-    return () => {
-      if (container) {
-        container.removeEventListener("scroll", updateScrollState)
-      }
-    }
-  }, [])
-
-  const handleScrollLeft = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: "smooth" })
-    }
-  }
-
-  const handleScrollRight = () => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: "smooth" })
-    }
-  }
 
   return (
-    <VStack align="stretch" gap={4} width="100%">
+    <VStack align="stretch" gap={3} width="100%">
       <Text
-        fontSize={tokens.typography.fontSizes.h3}
+        fontSize={tokens.typography.fontSizes.bodyLg}
         fontWeight={tokens.typography.fontWeights.bold}
         color={textColor}
         fontFamily={tokens.typography.fontFamily.primary}
       >
         {title}
       </Text>
-      <Box position="relative">
-        {/* Scroll Container */}
-        <HStack
-          gap={4}
-          overflowX="auto"
-          ref={scrollContainerRef}
-          px={2}
-          css={{
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": { display: "none" },
-          }}
-        >
-          {projects.map((project) => (
-            <ProjectCard key={project.id} title={project.title} />
-          ))}
-        </HStack>
-
-        {/* Left Chevron */}
-        {canScrollLeft && (
-          <Box
-            position="absolute"
-            top="50%"
-            left={0}
-            transform="translateY(-50%)"
-            bgGradient="linear(to-r, rgba(255,255,255,0.9), rgba(255,255,255,0))"
-            _dark={{ bgGradient: "linear(to-r, rgba(0,0,0,0.7), rgba(0,0,0,0))" }}
-            px={2}
-            cursor="pointer"
-            onClick={handleScrollLeft}
-            transition="opacity 200ms"
-            _hover={{ opacity: 0.8, transform: "translateY(-50%) scale(1.05)" }}
-          >
-            <FiChevronLeft size={24} />
-          </Box>
-        )}
-
-        {/* Right Chevron */}
-        {canScrollRight && (
-          <Box
-            position="absolute"
-            top="50%"
-            right={0}
-            transform="translateY(-50%)"
-            bgGradient="linear(to-l, rgba(255,255,255,0.9), rgba(255,255,255,0))"
-            _dark={{ bgGradient: "linear(to-l, rgba(0,0,0,0.7), rgba(0,0,0,0))" }}
-            px={2}
-            cursor="pointer"
-            onClick={handleScrollRight}
-            transition="opacity 200ms"
-            _hover={{ opacity: 0.8, transform: "translateY(-50%) scale(1.05)" }}
-          >
-            <FiChevronRight size={24} />
-          </Box>
-        )}
-      </Box>
+      <HStack gap={3} width="100%" justify="space-between">
+        {projects.map((project) => (
+          <ProjectCard key={project.id} title={project.title} />
+        ))}
+      </HStack>
     </VStack>
   )
 }
@@ -187,22 +98,37 @@ function Dashboard() {
       minH="100vh"
       bg={bgColor}
       position="relative"
+      p={8}
+      display="flex"
+      flexDirection="column"
     >
-      {/* Workflow Wheel Section */}
-      <Box height="100vh">
-        <WorkflowWheel onStateChange={handleStateChange} />
+      {/* Upper section with WorkflowWheel */}
+      <Box
+        height="40vh"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        mb={8}
+      >
+        <Box transform="scale(0.7)" transformOrigin="center">
+          <WorkflowWheel onStateChange={handleStateChange} />
+        </Box>
       </Box>
 
-      {/* Project Sections */}
+      {/* Project Sections - taking remaining space */}
       <Box
-        px={8}
-        py={12}
+        flex="1"
         maxWidth="1400px"
         mx="auto"
+        width="100%"
       >
-        <VStack gap={16} align="stretch">
-          <ProjectSection title="Your Feed" projects={placeholderProjects} />
-          <ProjectSection title="Inspiration" projects={placeholderProjects} />
+        <VStack gap={8} align="stretch" height="100%">
+          <Box flex="1">
+            <ProjectSection title="Your Feed" projects={placeholderProjects} />
+          </Box>
+          <Box flex="1">
+            <ProjectSection title="Inspiration" projects={placeholderProjects} />
+          </Box>
         </VStack>
       </Box>
     </Box>

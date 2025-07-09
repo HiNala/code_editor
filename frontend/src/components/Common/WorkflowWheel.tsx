@@ -14,7 +14,6 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
   const [currentStateIndex, setCurrentStateIndex] = useState(1) // Start with CREATE
   const [isAnimating, setIsAnimating] = useState(false)
 
-  const bgColor = useColorModeValue("gray.50", "gray.900")
   const textColor = useColorModeValue("black", "white")
   const mutedTextColor = useColorModeValue("gray.600", "gray.400")
   const ghostTextColor = useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")
@@ -62,13 +61,11 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
 
   return (
     <Box
-      minH="100vh"
-      bg={bgColor}
       display="flex"
       alignItems="center"
       justifyContent="center"
       position="relative"
-      overflow="hidden"
+      py={8}
     >
       {/* Background CRE8ABLE text */}
       <Box
@@ -76,7 +73,7 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
         top="50%"
         left="50%"
         transform="translate(-50%, -50%)"
-        fontSize="12rem"
+        fontSize="8rem"
         fontWeight={tokens.typography.fontWeights.bold}
         color={ghostTextColor}
         pointerEvents="none"
@@ -87,9 +84,9 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
         CRE8ABLE
       </Box>
 
-      <HStack gap={12} position="relative" zIndex={10}>
+      <HStack gap={8} position="relative" zIndex={10}>
         {/* Left side - Workflow wheel with chevrons outside */}
-        <VStack gap={6}>
+        <VStack gap={4}>
           {/* Up Chevron */}
           <Box
             color={arrowColor}
@@ -98,12 +95,12 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
             onClick={() => cycleState("up")}
             transition={`color ${tokens.motion.duration.fast} ${tokens.motion.easing.standard}`}
           >
-            <FiChevronUp size={32} />
+            <FiChevronUp size={24} />
           </Box>
 
           {/* PLAN text */}
           <Text
-            fontSize={tokens.typography.fontSizes.bodyLg}
+            fontSize={tokens.typography.fontSizes.bodySm}
             fontWeight={tokens.typography.fontWeights.medium}
             color={mutedTextColor}
             cursor="pointer"
@@ -125,8 +122,8 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
           {/* Main Button */}
           <Box
             position="relative"
-            width="176px"
-            height="64px"
+            width="140px"
+            height="48px"
             bg={gradients.sunset}
             borderRadius={tokens.radius.xl}
             overflow="hidden"
@@ -156,7 +153,7 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
               <Text
                 color="white"
                 fontWeight={tokens.typography.fontWeights.bold}
-                fontSize="24px"
+                fontSize="18px"
                 textShadow="0 2px 4px rgba(0,0,0,0.3)"
               >
                 {currentState}
@@ -166,7 +163,7 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
 
           {/* PUBLISH text */}
           <Text
-            fontSize={tokens.typography.fontSizes.bodyLg}
+            fontSize={tokens.typography.fontSizes.bodySm}
             fontWeight={tokens.typography.fontWeights.medium}
             color={mutedTextColor}
             cursor="pointer"
@@ -193,13 +190,13 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
             onClick={() => cycleState("down")}
             transition={`color ${tokens.motion.duration.fast} ${tokens.motion.easing.standard}`}
           >
-            <FiChevronDown size={32} />
+            <FiChevronDown size={24} />
           </Box>
         </VStack>
 
         {/* Right side - PROJECT */}
         <Text
-          fontSize="5xl"
+          fontSize="3xl"
           fontWeight={tokens.typography.fontWeights.bold}
           color={textColor}
           userSelect="none"
