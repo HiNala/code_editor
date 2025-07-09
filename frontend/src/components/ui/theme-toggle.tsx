@@ -12,9 +12,9 @@ export function ThemeToggle() {
   // Better contrast colors for visibility
   const bgGradient = useColorModeValue(
     "linear(135deg, blue.500 0%, purple.600 50%, indigo.600 100%)",
-    "linear(135deg, purple.600 0%, indigo.700 50%, gray.800 100%)"
+    "linear(135deg, purple.600 0%, indigo.700 50%, gray.800 100%)",
   )
-  
+
   const sliderBg = useColorModeValue("white", "gray.100")
   const iconColor = useColorModeValue("orange.500", "yellow.400")
   const shadowColor = useColorModeValue("gray.400", "purple.500")
@@ -113,4 +113,4 @@ export function ThemeToggle() {
       </MotionBox>
     </MotionBox>
   )
-} 
+}

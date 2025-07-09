@@ -1,19 +1,20 @@
-import React, { useState, useMemo } from "react"
-import { 
-  Box, 
-  Text, 
+import {
+  Badge,
+  Box,
   Button,
   HStack,
+  Input,
+  Text,
   VStack,
-  Badge,
-  Input
 } from "@chakra-ui/react"
-import { FiSearch, FiGrid, FiHeart, FiUsers, FiClock } from "react-icons/fi"
+import type React from "react"
+import { useMemo, useState } from "react"
+import { FiClock, FiGrid, FiHeart, FiSearch, FiUsers } from "react-icons/fi"
 import { useColorModeValue } from "../ui/color-mode"
 import { InputGroup } from "../ui/input-group"
 
+import { gradients, tokens } from "../../theme/tokens"
 import ProjectCard from "./ProjectCard"
-import { tokens, gradients } from "../../theme/tokens"
 
 interface Project {
   id: string
@@ -52,10 +53,19 @@ export default function ProjectGallery({
   const [activeType, setActiveType] = useState<FilterType>("ALL")
   const [activeStatus, setActiveStatus] = useState<FilterStatus>("ALL")
 
-  const surfaceColor = useColorModeValue(tokens.colors.surfaceDashboard, tokens.colors.dark.surfaceDashboard)
-  const textColor = useColorModeValue(tokens.colors.textHero, tokens.colors.dark.textHero)
+  const surfaceColor = useColorModeValue(
+    tokens.colors.surfaceDashboard,
+    tokens.colors.dark.surfaceDashboard,
+  )
+  const textColor = useColorModeValue(
+    tokens.colors.textHero,
+    tokens.colors.dark.textHero,
+  )
   const secondaryText = useColorModeValue("gray.600", "gray.400")
-  const borderColor = useColorModeValue(tokens.colors.borderSubtle, tokens.colors.dark.borderSubtle)
+  const borderColor = useColorModeValue(
+    tokens.colors.borderSubtle,
+    tokens.colors.dark.borderSubtle,
+  )
 
   // Filter projects based on current selections
   const filteredProjects = useMemo(() => {
@@ -63,21 +73,23 @@ export default function ProjectGallery({
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter(project =>
-        project.title.toLowerCase().includes(searchQuery.toLowerCase())
+      filtered = filtered.filter((project) =>
+        project.title.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     }
 
     // Category filter
     switch (activeCategory) {
       case "Recent":
-        filtered = filtered.sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime()).slice(0, 10)
+        filtered = filtered
+          .sort((a, b) => b.lastModified.getTime() - a.lastModified.getTime())
+          .slice(0, 10)
         break
       case "Favorites":
-        filtered = filtered.filter(project => project.isFavorite)
+        filtered = filtered.filter((project) => project.isFavorite)
         break
       case "Shared":
-        filtered = filtered.filter(project => project.isShared)
+        filtered = filtered.filter((project) => project.isShared)
         break
       default:
         break
@@ -85,12 +97,12 @@ export default function ProjectGallery({
 
     // Type filter
     if (activeType !== "ALL") {
-      filtered = filtered.filter(project => project.type === activeType)
+      filtered = filtered.filter((project) => project.type === activeType)
     }
 
     // Status filter
     if (activeStatus !== "ALL") {
-      filtered = filtered.filter(project => project.status === activeStatus)
+      filtered = filtered.filter((project) => project.status === activeStatus)
     }
 
     return filtered
@@ -100,7 +112,11 @@ export default function ProjectGallery({
   const featuredProject = filteredProjects[0]
   const regularProjects = filteredProjects.slice(1)
 
-  const categories: { key: FilterCategory; label: string; icon?: React.ComponentType<{ size?: number }> }[] = [
+  const categories: {
+    key: FilterCategory
+    label: string
+    icon?: React.ComponentType<{ size?: number }>
+  }[] = [
     { key: "All", label: "All", icon: FiGrid },
     { key: "Recent", label: "Recent", icon: FiClock },
     { key: "Favorites", label: "Favorites", icon: FiHeart },
@@ -124,18 +140,22 @@ export default function ProjectGallery({
   const getTabStyles = (isActive: boolean) => ({
     position: "relative" as const,
     color: isActive ? textColor : secondaryText,
-    fontWeight: isActive ? tokens.typography.fontWeights.medium : tokens.typography.fontWeights.normal,
+    fontWeight: isActive
+      ? tokens.typography.fontWeights.medium
+      : tokens.typography.fontWeights.normal,
     transition: `all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`,
-    _after: isActive ? {
-      content: '""',
-      position: "absolute",
-      bottom: "-2px",
-      left: 0,
-      right: 0,
-      height: "2px",
-      bg: gradients.sunset,
-      borderRadius: tokens.radius.sm,
-    } : {},
+    _after: isActive
+      ? {
+          content: '""',
+          position: "absolute",
+          bottom: "-2px",
+          left: 0,
+          right: 0,
+          height: "2px",
+          bg: gradients.sunset,
+          borderRadius: tokens.radius.sm,
+        }
+      : {},
   })
 
   const getChipStyles = (isActive: boolean) => ({
@@ -143,7 +163,9 @@ export default function ProjectGallery({
     color: isActive ? "white" : secondaryText,
     borderColor: isActive ? "transparent" : borderColor,
     _hover: {
-      bg: isActive ? gradients.sunset : useColorModeValue("gray.50", "gray.800"),
+      bg: isActive
+        ? gradients.sunset
+        : useColorModeValue("gray.50", "gray.800"),
       transform: "translateY(-1px)",
     },
     transition: `all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`,
@@ -154,8 +176,8 @@ export default function ProjectGallery({
       {/* Search and Filters */}
       <VStack align="stretch" gap={4}>
         {/* Search Bar */}
-        <InputGroup 
-          maxW="480px" 
+        <InputGroup
+          maxW="480px"
           mx="auto"
           startElement={<FiSearch size={16} color={secondaryText} />}
         >
@@ -207,7 +229,7 @@ export default function ProjectGallery({
               {label}
             </Badge>
           ))}
-          
+
           {statusFilters.map(({ key, label }) => (
             <Badge
               key={key}
@@ -229,17 +251,16 @@ export default function ProjectGallery({
 
       {/* Project Grid */}
       {filteredProjects.length === 0 ? (
-        <Box
-          textAlign="center"
-          py={12}
-          px={6}
-        >
+        <Box textAlign="center" py={12} px={6}>
           <Text
             fontSize={tokens.typography.fontSizes.bodyLg}
             color={secondaryText}
             mb={4}
           >
-            {searchQuery || activeCategory !== "All" || activeType !== "ALL" || activeStatus !== "ALL"
+            {searchQuery ||
+            activeCategory !== "All" ||
+            activeType !== "ALL" ||
+            activeStatus !== "ALL"
               ? "No projects found matching your filters"
               : "No projects yet"}
           </Text>
@@ -248,7 +269,10 @@ export default function ProjectGallery({
             color={secondaryText}
             mb={6}
           >
-            {searchQuery || activeCategory !== "All" || activeType !== "ALL" || activeStatus !== "ALL"
+            {searchQuery ||
+            activeCategory !== "All" ||
+            activeType !== "ALL" ||
+            activeStatus !== "ALL"
               ? "Try adjusting your search or filter criteria"
               : "Create your first project to get started"}
           </Text>
@@ -318,4 +342,4 @@ export default function ProjectGallery({
       )}
     </VStack>
   )
-} 
+}

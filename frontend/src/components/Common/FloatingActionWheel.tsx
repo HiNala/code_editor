@@ -1,17 +1,18 @@
-import React, { useState } from "react"
 import { Box, IconButton, Text } from "@chakra-ui/react"
-import { useColorModeValue } from "../ui/color-mode"
-import { 
-  FiPlus, 
-  FiFile, 
-  FiFileText, 
-  FiUpload, 
-  FiLink, 
-  FiUsers, 
-  FiSettings 
+import type React from "react"
+import { useState } from "react"
+import {
+  FiFile,
+  FiFileText,
+  FiLink,
+  FiPlus,
+  FiSettings,
+  FiUpload,
+  FiUsers,
 } from "react-icons/fi"
+import { useColorModeValue } from "../ui/color-mode"
 
-import { tokens, gradients } from "../../theme/tokens"
+import { gradients, tokens } from "../../theme/tokens"
 
 interface ActionItem {
   icon: React.ComponentType<{ size?: number }>
@@ -37,9 +38,12 @@ export default function FloatingActionWheel({
   onQuickSettings = () => {},
 }: FloatingActionWheelProps) {
   const [isOpen, setIsOpen] = useState(false)
-  
+
   const bgGradient = useColorModeValue(gradients.sunset, gradients.sunsetDark)
-  const surfaceColor = useColorModeValue(tokens.colors.surfaceCard, tokens.colors.dark.surfaceCard)
+  const surfaceColor = useColorModeValue(
+    tokens.colors.surfaceCard,
+    tokens.colors.dark.surfaceCard,
+  )
   const overlayBg = useColorModeValue("rgba(0,0,0,0.1)", "rgba(0,0,0,0.3)")
 
   const actions: ActionItem[] = [
@@ -63,11 +67,11 @@ export default function FloatingActionWheel({
     const totalItems = actions.length
     const startAngle = -60 // Start angle in degrees (top-left of arc)
     const angleStep = 120 / (totalItems - 1) // Distribute across 120°
-    const angle = startAngle + (index * angleStep)
+    const angle = startAngle + index * angleStep
     const radian = (angle * Math.PI) / 180
-    
+
     const radius = { base: 90, md: 110 } // Mobile: 90px, Desktop: 110px
-    
+
     return {
       x: Math.cos(radian) * radius.base,
       y: Math.sin(radian) * radius.base,
@@ -104,8 +108,8 @@ export default function FloatingActionWheel({
         {/* Child action buttons */}
         {actions.map((action, index) => {
           const pos = getChildPosition(index)
-          const delay = `${index * parseInt(tokens.motion.stagger.wheelChild)}ms`
-          
+          const delay = `${index * Number.parseInt(tokens.motion.stagger.wheelChild)}ms`
+
           return (
             <Box
               key={action.label}
@@ -131,7 +135,10 @@ export default function FloatingActionWheel({
                 bg={surfaceColor}
                 color="gray.600"
                 border="1px solid"
-                borderColor={useColorModeValue(tokens.colors.borderSubtle, tokens.colors.dark.borderSubtle)}
+                borderColor={useColorModeValue(
+                  tokens.colors.borderSubtle,
+                  tokens.colors.dark.borderSubtle,
+                )}
                 _hover={{
                   bg: bgGradient,
                   color: "white",
@@ -144,7 +151,7 @@ export default function FloatingActionWheel({
               >
                 <action.icon size={20} />
               </IconButton>
-              
+
               {/* Tooltip label */}
               <Text
                 position="absolute"
@@ -211,4 +218,4 @@ export default function FloatingActionWheel({
       </style>
     </>
   )
-} 
+}

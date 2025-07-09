@@ -8,4 +8,4 @@ export const Route = createFileRoute("/_layout/videos")({
 
 function Videos() {
   return <Gallery />
-} 
+}

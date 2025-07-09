@@ -1,6 +1,6 @@
 import { Box, Button, Flex, Text } from "@chakra-ui/react"
 import { useNavigate, useRouter } from "@tanstack/react-router"
-import { tokens, gradients } from "../../theme/tokens"
+import { gradients, tokens } from "../../theme/tokens"
 import { useColorModeValue } from "../ui/color-mode"
 
 interface Step {
@@ -17,11 +17,11 @@ export function StepRail() {
   const navigate = useNavigate()
   const router = useRouter()
   const currentPath = router.state.location.pathname
-  
+
   // Theme colors
   const textColor = useColorModeValue("gray.900", "white")
   const mutedTextColor = useColorModeValue("gray.600", "gray.400")
-  
+
   // Define the workflow steps
   const steps: Step[] = [
     {
@@ -71,7 +71,7 @@ export function StepRail() {
         >
           PROJECT
         </Text>
-        
+
         {/* Step Navigation */}
         <Flex
           direction={{ base: "column", md: "row" }}
@@ -89,7 +89,11 @@ export function StepRail() {
                 cursor={step.isComplete ? "pointer" : "not-allowed"}
                 background={step.isActive ? step.gradient : "transparent"}
                 color={step.isActive ? "white" : textColor}
-                border={step.isActive ? "none" : `2px solid ${tokens.colors.charcoal300}`}
+                border={
+                  step.isActive
+                    ? "none"
+                    : `2px solid ${tokens.colors.charcoal300}`
+                }
                 borderRadius={tokens.radius.pill}
                 px={8}
                 py={6}
@@ -99,17 +103,31 @@ export function StepRail() {
                 letterSpacing="0.1em"
                 transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
                 boxShadow={step.isActive ? tokens.shadows.gradient : "none"}
-                _hover={step.isComplete ? {
-                  transform: "translateY(-2px)",
-                  boxShadow: step.isActive ? tokens.shadows.xl : tokens.shadows.md,
-                  ...(step.isActive ? {} : {
-                    background: `linear-gradient(135deg, ${step.gradient}20, ${step.gradient}10)`,
-                    borderColor: step.gradient.split(",")[0].split("(")[1],
-                  })
-                } : {}}
-                _active={step.isComplete ? {
-                  transform: "translateY(0)",
-                } : {}}
+                _hover={
+                  step.isComplete
+                    ? {
+                        transform: "translateY(-2px)",
+                        boxShadow: step.isActive
+                          ? tokens.shadows.xl
+                          : tokens.shadows.md,
+                        ...(step.isActive
+                          ? {}
+                          : {
+                              background: `linear-gradient(135deg, ${step.gradient}20, ${step.gradient}10)`,
+                              borderColor: step.gradient
+                                .split(",")[0]
+                                .split("(")[1],
+                            }),
+                      }
+                    : {}
+                }
+                _active={
+                  step.isComplete
+                    ? {
+                        transform: "translateY(0)",
+                      }
+                    : {}
+                }
                 _disabled={{
                   opacity: 0.5,
                   cursor: "not-allowed",
@@ -118,7 +136,7 @@ export function StepRail() {
               >
                 {step.label}
               </Button>
-              
+
               {/* Arrow connector (except for last item) */}
               {index < steps.length - 1 && (
                 <Box
@@ -144,16 +162,16 @@ export function StepRail() {
             </Flex>
           ))}
         </Flex>
-        
+
         {/* Active Step Description */}
-        {steps.find(step => step.isActive) && (
+        {steps.find((step) => step.isActive) && (
           <Text
             mt={6}
             fontSize={tokens.typography.fontSizes.bodyLg}
             color={mutedTextColor}
             fontWeight={tokens.typography.fontWeights.medium}
           >
-            {steps.find(step => step.isActive)?.description}
+            {steps.find((step) => step.isActive)?.description}
           </Text>
         )}
       </Box>
@@ -161,4 +179,4 @@ export function StepRail() {
   )
 }
 
-export default StepRail 
+export default StepRail

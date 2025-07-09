@@ -121,11 +121,7 @@ export default function Gallery() {
             position="relative"
             _hover={{ shadow: "md" }}
           >
-            <a
-              href={video.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={video.url} target="_blank" rel="noopener noreferrer">
               <Image
                 src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
                 alt={video.title}

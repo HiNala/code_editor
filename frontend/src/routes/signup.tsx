@@ -122,7 +122,12 @@ function SignUp() {
             errors={errors}
           />
 
-          <Button variant="solid" type="submit" loading={isSubmitting} size="md">
+          <Button
+            variant="solid"
+            type="submit"
+            loading={isSubmitting}
+            size="md"
+          >
             Sign Up
           </Button>
           <Text>

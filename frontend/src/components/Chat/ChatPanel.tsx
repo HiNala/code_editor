@@ -16,7 +16,16 @@ function ChatBubble({ msg }: { msg: Message }) {
   const bg = msg.role === "user" ? "purple.500" : "gray.200"
   const color = msg.role === "user" ? "white" : "black"
   return (
-    <Box maxW="70%" alignSelf={align} bg={bg} color={color} px={4} py={3} borderRadius="lg" mb={3}>
+    <Box
+      maxW="70%"
+      alignSelf={align}
+      bg={bg}
+      color={color}
+      px={4}
+      py={3}
+      borderRadius="lg"
+      mb={3}
+    >
       <Text whiteSpace="pre-wrap">{msg.content}</Text>
     </Box>
   )
@@ -82,7 +91,10 @@ export default function ChatPanel({ threadId }: ChatPanelProps) {
     })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
-        const assistantMsg: Message = { role: "assistant", content: data.assistant }
+        const assistantMsg: Message = {
+          role: "assistant",
+          content: data.assistant,
+        }
         save([...newMsgs, assistantMsg])
       })
       .catch(() => {

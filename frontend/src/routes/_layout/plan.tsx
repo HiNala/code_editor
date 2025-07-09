@@ -1,8 +1,8 @@
 import { Container } from "@chakra-ui/react"
 import { createFileRoute } from "@tanstack/react-router"
 
-import Board from "@/components/Plan/Board"
 import AddItem from "@/components/Items/AddItem"
+import Board from "@/components/Plan/Board"
 
 export const Route = createFileRoute("/_layout/plan")({
   component: PlanPage,

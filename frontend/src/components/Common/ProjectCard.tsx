@@ -1,23 +1,25 @@
-import { useState } from "react"
-import { 
-  Box, 
-  Image, 
-  Text, 
-  IconButton, 
+import {
   Badge,
+  Box,
   HStack,
-  VStack
+  IconButton,
+  Image,
+  Text,
+  VStack,
 } from "@chakra-ui/react"
+import { useState } from "react"
+import {
+  FiCopy,
+  FiEdit3,
+  FiFileText,
+  FiMoreHorizontal,
+  FiPlay,
+  FiShare2,
+} from "react-icons/fi"
 import { useColorModeValue } from "../ui/color-mode"
-import { 
-  MenuRoot,
-  MenuTrigger,
-  MenuContent,
-  MenuItem,
-} from "../ui/menu"
-import { FiEdit3, FiCopy, FiShare2, FiMoreHorizontal, FiPlay, FiFileText } from "react-icons/fi"
+import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from "../ui/menu"
 
-import { tokens, gradients } from "../../theme/tokens"
+import { gradients, tokens } from "../../theme/tokens"
 
 interface ProjectCardProps {
   id: string
@@ -44,15 +46,24 @@ export default function ProjectCard({
   onOpen = () => {},
 }: ProjectCardProps) {
   const [isHovered, setIsHovered] = useState(false)
-  
-  const surfaceColor = useColorModeValue(tokens.colors.surfaceCard, tokens.colors.dark.surfaceCard)
-  const borderColor = useColorModeValue(tokens.colors.borderSubtle, tokens.colors.dark.borderSubtle)
-  const textColor = useColorModeValue(tokens.colors.textHero, tokens.colors.dark.textHero)
+
+  const surfaceColor = useColorModeValue(
+    tokens.colors.surfaceCard,
+    tokens.colors.dark.surfaceCard,
+  )
+  const borderColor = useColorModeValue(
+    tokens.colors.borderSubtle,
+    tokens.colors.dark.borderSubtle,
+  )
+  const textColor = useColorModeValue(
+    tokens.colors.textHero,
+    tokens.colors.dark.textHero,
+  )
   const secondaryText = useColorModeValue("gray.600", "gray.400")
-  
+
   const gradientOverlay = useColorModeValue(
     "linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 40%)",
-    "linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 40%)"
+    "linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 40%)",
   )
 
   const getBadgeColor = () => {
@@ -104,7 +115,7 @@ export default function ProjectCard({
       role="button"
       tabIndex={0}
       onKeyPress={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
+        if (e.key === "Enter" || e.key === " ") {
           onOpen()
         }
       }}
@@ -212,7 +223,11 @@ export default function ProjectCard({
           <HStack justify="space-between" align="start">
             <VStack align="start" gap={1} flex={1}>
               <Text
-                fontSize={isFeature ? tokens.typography.fontSizes.bodyLg : tokens.typography.fontSizes.bodySm}
+                fontSize={
+                  isFeature
+                    ? tokens.typography.fontSizes.bodyLg
+                    : tokens.typography.fontSizes.bodySm
+                }
                 fontWeight={tokens.typography.fontWeights.medium}
                 color={textColor}
                 lineHeight="1.4"
@@ -226,7 +241,7 @@ export default function ProjectCard({
               >
                 {title}
               </Text>
-              
+
               {lastModified && (
                 <Text
                   fontSize={tokens.typography.fontSizes.caption}
@@ -251,27 +266,33 @@ export default function ProjectCard({
                 </IconButton>
               </MenuTrigger>
               <MenuContent>
-                <MenuItem 
+                <MenuItem
                   value="edit"
-                  onClick={() => { onEdit() }}
+                  onClick={() => {
+                    onEdit()
+                  }}
                   gap={2}
                   style={{ cursor: "pointer" }}
                 >
                   <FiEdit3 size={14} />
                   Edit
                 </MenuItem>
-                <MenuItem 
+                <MenuItem
                   value="duplicate"
-                  onClick={() => { onDuplicate() }}
+                  onClick={() => {
+                    onDuplicate()
+                  }}
                   gap={2}
                   style={{ cursor: "pointer" }}
                 >
                   <FiCopy size={14} />
                   Duplicate
                 </MenuItem>
-                <MenuItem 
+                <MenuItem
                   value="share"
-                  onClick={() => { onShare() }}
+                  onClick={() => {
+                    onShare()
+                  }}
                   gap={2}
                   style={{ cursor: "pointer" }}
                 >
@@ -304,4 +325,4 @@ export default function ProjectCard({
       </Box>
     </Box>
   )
-} 
+}

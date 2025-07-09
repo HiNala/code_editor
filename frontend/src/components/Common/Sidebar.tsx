@@ -1,7 +1,7 @@
 import { Box, Flex, IconButton, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { useState, useEffect } from "react"
-import { FiLogOut, FiChevronRight, FiChevronLeft } from "react-icons/fi"
+import { useEffect, useState } from "react"
+import { FiChevronLeft, FiChevronRight, FiLogOut } from "react-icons/fi"
 
 import type { UserPublic } from "@/client"
 import useAuth from "@/hooks/useAuth"
@@ -21,7 +21,7 @@ const Sidebar = () => {
   const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
   const { logout } = useAuth()
   const [open, setOpen] = useState(false)
-  
+
   // Theme-responsive colors
   const sidebarBg = useColorModeValue("white", "gray.900")
   const sidebarTextColor = useColorModeValue("gray.900", "white")
@@ -30,7 +30,7 @@ const Sidebar = () => {
   const mutedTextColor = useColorModeValue("gray.600", "whiteAlpha.700")
   const iconColor = useColorModeValue("gray.500", "whiteAlpha.500")
   const iconHoverColor = useColorModeValue("gray.700", "whiteAlpha.700")
-  
+
   // Persist collapsed state in localStorage
   const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window !== "undefined") {
@@ -96,7 +96,13 @@ const Sidebar = () => {
                 </Flex>
               </Box>
               {currentUser?.email && (
-                <Text fontSize="sm" p={2} truncate maxW="sm" color={mutedTextColor}>
+                <Text
+                  fontSize="sm"
+                  p={2}
+                  truncate
+                  maxW="sm"
+                  color={mutedTextColor}
+                >
                   Logged in as: {currentUser.email}
                 </Text>
               )}
@@ -133,7 +139,7 @@ const Sidebar = () => {
             color={iconColor}
             _hover={{
               bg: hoverBg,
-              color: iconHoverColor
+              color: iconHoverColor,
             }}
           >
             {isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
@@ -141,8 +147,8 @@ const Sidebar = () => {
         </Flex>
 
         {/* Sidebar Content */}
-        <Box 
-          flex="1" 
+        <Box
+          flex="1"
           overflowY={isCollapsed ? "visible" : "auto"}
           overflowX="hidden"
         >
@@ -177,10 +183,10 @@ const Sidebar = () => {
 
         {/* User Email */}
         {currentUser?.email && !isCollapsed && (
-          <Text 
-            fontSize="xs" 
-            p={2} 
-            truncate 
+          <Text
+            fontSize="xs"
+            p={2}
+            truncate
             maxW="full"
             color={mutedTextColor}
             mt={2}

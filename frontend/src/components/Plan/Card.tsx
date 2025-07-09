@@ -47,30 +47,30 @@ const getPriorityConfig = (priority?: string) => {
   }
 }
 
-function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => void }) {
+function Card({
+  item,
+  onSelect,
+}: CardProps & { onSelect?: (i: ItemPublic) => void }) {
   const { id, title, description } = item
   const [isDragging, setIsDragging] = useState(false)
-  
+
   // Theme colors following Apple-CRE8ABLE spec
   const cardBg = useColorModeValue("#FFFFFF", "#1C1C1E")
   const textPrimary = useColorModeValue("#1D1D1F", "#FFFFFF")
   const textSecondary = useColorModeValue("#8E8E93", "#8E8E8E")
-  
+
   // Priority configuration
   const priority = "medium" // Default priority, can be made dynamic
   const priorityConfig = getPriorityConfig(priority)
-  
+
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     setIsDragging(true)
-    e.dataTransfer.setData(
-      "application/json",
-      JSON.stringify({ cardId: id })
-    )
-    
+    e.dataTransfer.setData("application/json", JSON.stringify({ cardId: id }))
+
     // Set drag effect
     e.dataTransfer.effectAllowed = "move"
   }
-  
+
   const handleDragEnd = () => {
     setIsDragging(false)
   }
@@ -88,9 +88,10 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
       overflow="hidden"
       cursor="grab"
       // Apple-inspired shadow with CRE8ABLE touch
-      boxShadow={isDragging 
-        ? "0 12px 24px rgba(0,0,0,0.12)" 
-        : "0 2px 4px rgba(0,0,0,0.04)"
+      boxShadow={
+        isDragging
+          ? "0 12px 24px rgba(0,0,0,0.12)"
+          : "0 2px 4px rgba(0,0,0,0.04)"
       }
       // Inner highlight for depth
       _before={{
@@ -100,7 +101,8 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
         left: 0,
         right: 0,
         height: "1px",
-        background: "linear-gradient(90deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
+        background:
+          "linear-gradient(90deg, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0) 100%)",
         opacity: isDragging ? 0.8 : 0.65,
       }}
       // Priority stripe (left edge)
@@ -112,7 +114,9 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
         bottom: 0,
         width: "4px",
         background: priorityConfig.color,
-        animation: priorityConfig.isPulsing ? "pulse 800ms ease-in-out infinite alternate" : "none",
+        animation: priorityConfig.isPulsing
+          ? "pulse 800ms ease-in-out infinite alternate"
+          : "none",
       }}
       // Elegant transitions
       transition="all 300ms cubic-bezier(0.4, 0, 0.2, 1)"
@@ -124,7 +128,7 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
         boxShadow: "0 8px 16px rgba(0,0,0,0.08)",
         _before: {
           opacity: 0.85,
-        }
+        },
       }}
       // Active state
       _active={{
@@ -155,7 +159,7 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
         </Text>
         <CardActionsMenu item={item} />
       </Flex>
-      
+
       {/* Description */}
       {description && (
         <Text
@@ -173,16 +177,19 @@ function Card({ item, onSelect }: CardProps & { onSelect?: (i: ItemPublic) => vo
           {description}
         </Text>
       )}
-      
+
       {/* Priority Label */}
       <Box mt="8px">
         <Text
           fontSize="12px"
           lineHeight="20px"
           fontWeight="500"
-          color={typeof priorityConfig.color === 'string' && priorityConfig.color.startsWith('linear-gradient') 
-            ? tokens.colors.gradientSunsetStart 
-            : priorityConfig.color}
+          color={
+            typeof priorityConfig.color === "string" &&
+            priorityConfig.color.startsWith("linear-gradient")
+              ? tokens.colors.gradientSunsetStart
+              : priorityConfig.color
+          }
           textTransform="uppercase"
           letterSpacing="0.5px"
         >

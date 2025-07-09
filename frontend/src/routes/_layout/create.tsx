@@ -12,8 +12,8 @@ function CreatePage() {
         Creation Studio
       </Heading>
       <Text mt={4} color="gray">
-        Generate, edit and finalise your content assets with AI-assisted tools. (Coming
-        soon)
+        Generate, edit and finalise your content assets with AI-assisted tools.
+        (Coming soon)
       </Text>
     </Container>
   )

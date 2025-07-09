@@ -2,19 +2,19 @@ import { Flex } from "@chakra-ui/react"
 import { useQuery } from "@tanstack/react-query"
 import { useCallback, useEffect, useState } from "react"
 
-import { ItemsService, type ItemPublic } from "@/client"
+import { type ItemPublic, ItemsService } from "@/client"
 
 import Card from "./Card"
 import Column from "./Column"
 
 import {
-  DrawerRoot,
   DrawerBackdrop,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
   DrawerBody,
   DrawerCloseTrigger,
+  DrawerContent,
+  DrawerHeader,
+  DrawerRoot,
+  DrawerTitle,
 } from "@/components/ui/drawer"
 
 import ChatPanel from "@/components/Chat/ChatPanel"
@@ -33,7 +33,9 @@ const EMPTY_COLUMNS: ColumnType[] = [
 
 function buildColumns(items: ItemPublic[]): ColumnType[] {
   const mappingRaw = localStorage.getItem("plan-board-mapping")
-  const mapping: Record<string, string> = mappingRaw ? JSON.parse(mappingRaw) : {}
+  const mapping: Record<string, string> = mappingRaw
+    ? JSON.parse(mappingRaw)
+    : {}
 
   const cols: ColumnType[] = [
     { id: "idea", title: "Ideas", cards: [] },
@@ -67,45 +69,44 @@ export default function Board() {
     }
   }, [data])
 
-  const handleCardDrop = useCallback(
-    (cardId: string, toColumnId: string) => {
-      setColumns((prev) => {
-        const newCols = prev.map((col) => ({ ...col, cards: [...col.cards] }))
+  const handleCardDrop = useCallback((cardId: string, toColumnId: string) => {
+    setColumns((prev) => {
+      const newCols = prev.map((col) => ({ ...col, cards: [...col.cards] }))
 
-        let movedCard: ItemPublic | null = null
-        // remove card from original column
-        newCols.forEach((col) => {
-          const idx = col.cards.findIndex((c) => c.id === cardId)
-          if (idx !== -1) {
-            movedCard = col.cards.splice(idx, 1)[0]
-          }
-        })
-
-        if (!movedCard) return prev
-
-        // add to target column end
-        const targetCol = newCols.find((c) => c.id === toColumnId)
-        if (targetCol) {
-          targetCol.cards.push(movedCard)
+      let movedCard: ItemPublic | null = null
+      // remove card from original column
+      newCols.forEach((col) => {
+        const idx = col.cards.findIndex((c) => c.id === cardId)
+        if (idx !== -1) {
+          movedCard = col.cards.splice(idx, 1)[0]
         }
-
-        // persist mapping
-        const mappingRaw = localStorage.getItem("plan-board-mapping")
-        const mapping: Record<string, string> = mappingRaw ? JSON.parse(mappingRaw) : {}
-        mapping[cardId] = toColumnId
-        localStorage.setItem("plan-board-mapping", JSON.stringify(mapping))
-
-        return newCols
       })
-    },
-    [],
-  )
+
+      if (!movedCard) return prev
+
+      // add to target column end
+      const targetCol = newCols.find((c) => c.id === toColumnId)
+      if (targetCol) {
+        targetCol.cards.push(movedCard)
+      }
+
+      // persist mapping
+      const mappingRaw = localStorage.getItem("plan-board-mapping")
+      const mapping: Record<string, string> = mappingRaw
+        ? JSON.parse(mappingRaw)
+        : {}
+      mapping[cardId] = toColumnId
+      localStorage.setItem("plan-board-mapping", JSON.stringify(mapping))
+
+      return newCols
+    })
+  }, [])
 
   return (
     <>
       {/* Board with Apple-CRE8ABLE spacing */}
-      <Flex 
-        direction={{ base: "column", lg: "row" }} 
+      <Flex
+        direction={{ base: "column", lg: "row" }}
         gap={0} // No gap here, margin handled in Column component
         px="40px" // Board container margin
         py="20px"
@@ -134,7 +135,11 @@ export default function Board() {
       </Flex>
 
       {/* Enhanced Chat Drawer */}
-      <DrawerRoot open={open} onOpenChange={({ open }) => setOpen(open)} placement="end">
+      <DrawerRoot
+        open={open}
+        onOpenChange={({ open }) => setOpen(open)}
+        placement="end"
+      >
         <DrawerBackdrop />
         <DrawerContent w="60vw" maxW="60vw">
           <DrawerHeader borderBottomWidth="1px">

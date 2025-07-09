@@ -1,8 +1,8 @@
-import { Box, Heading, Flex, Text, Icon } from "@chakra-ui/react"
-import { ReactNode, useCallback, useState } from "react"
-import { tokens, gradients } from "../../theme/tokens"
-import { useColorModeValue } from "../ui/color-mode"
+import { Box, Flex, Heading, Icon, Text } from "@chakra-ui/react"
+import { type ReactNode, useCallback, useState } from "react"
 import { FiPlus } from "react-icons/fi"
+import { gradients, tokens } from "../../theme/tokens"
+import { useColorModeValue } from "../ui/color-mode"
 
 export interface ColumnProps {
   id: string
@@ -18,15 +18,15 @@ export default function Column({
   children,
 }: ColumnProps) {
   const [isDragOver, setIsDragOver] = useState(false)
-  
+
   // Theme colors following Apple-CRE8ABLE spec
   const surfaceCard = useColorModeValue("#FFFFFF", "#1C1C1E")
   const textPrimary = useColorModeValue("#1D1D1F", "#FFFFFF")
   const textSecondary = useColorModeValue("#8E8E93", "#8E8E8E")
-  
+
   // Count cards
   const cardCount = Array.isArray(children) ? children.length : children ? 1 : 0
-  
+
   // Get column gradient and config based on ID
   const getColumnConfig = () => {
     switch (id) {
@@ -35,28 +35,28 @@ export default function Column({
           gradient: gradients.plan,
           color: tokens.colors.accentPlan,
           title: "Ideas",
-          description: "Capture your creative sparks"
+          description: "Capture your creative sparks",
         }
       case "progress":
         return {
           gradient: gradients.sunset,
           color: tokens.colors.gradientSunsetStart,
-          title: "In Progress", 
-          description: "Bringing ideas to life"
+          title: "In Progress",
+          description: "Bringing ideas to life",
         }
       case "done":
         return {
           gradient: gradients.publish,
           color: tokens.colors.accentPublish,
           title: "Done",
-          description: "Ready to share with the world"
+          description: "Ready to share with the world",
         }
       default:
         return {
           gradient: gradients.sunset,
           color: tokens.colors.gradientSunsetStart,
           title: title,
-          description: "Your creative workspace"
+          description: "Your creative workspace",
         }
     }
   }
@@ -74,7 +74,7 @@ export default function Column({
     const rect = e.currentTarget.getBoundingClientRect()
     const x = e.clientX
     const y = e.clientY
-    
+
     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
       setIsDragOver(false)
     }
@@ -84,7 +84,7 @@ export default function Column({
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault()
       setIsDragOver(false)
-      
+
       const data = e.dataTransfer.getData("application/json")
       if (!data) return
       try {
@@ -117,9 +117,10 @@ export default function Column({
         minH="600px"
         position="relative"
         // Apple-inspired shadow
-        boxShadow={isDragOver 
-          ? "0 8px 24px rgba(0,0,0,0.12)" 
-          : "0 2px 8px rgba(0,0,0,0.04)"
+        boxShadow={
+          isDragOver
+            ? "0 8px 24px rgba(0,0,0,0.12)"
+            : "0 2px 8px rgba(0,0,0,0.04)"
         }
         // Gradient bottom border instead of top
         _after={{
@@ -137,10 +138,13 @@ export default function Column({
           px="24px"
           py="20px"
           borderBottom="1px solid"
-          borderBottomColor={useColorModeValue("rgba(0,0,0,0.06)", "rgba(255,255,255,0.06)")}
+          borderBottomColor={useColorModeValue(
+            "rgba(0,0,0,0.06)",
+            "rgba(255,255,255,0.06)",
+          )}
         >
           <Flex align="center" justify="space-between" mb="8px">
-            <Heading 
+            <Heading
               fontSize="36px"
               lineHeight="44px"
               fontWeight="600"
@@ -148,7 +152,7 @@ export default function Column({
             >
               {columnConfig.title}
             </Heading>
-            
+
             {/* Task counter badge with gradient border */}
             <Box
               position="relative"
@@ -171,22 +175,14 @@ export default function Column({
               </Flex>
             </Box>
           </Flex>
-          
-          <Text
-            fontSize="14px"
-            lineHeight="20px"
-            color={textSecondary}
-          >
+
+          <Text fontSize="14px" lineHeight="20px" color={textSecondary}>
             {columnConfig.description}
           </Text>
         </Box>
 
         {/* Content Area */}
-        <Box 
-          p="24px"
-          minH="500px"
-          position="relative"
-        >
+        <Box p="24px" minH="500px" position="relative">
           {/* Drag-over visual feedback */}
           {isDragOver && (
             <Box
@@ -202,18 +198,14 @@ export default function Column({
               zIndex={1}
               pointerEvents="none"
             >
-              <Text
-                fontSize="16px"
-                fontWeight="500"
-                color={columnConfig.color}
-              >
+              <Text fontSize="16px" fontWeight="500" color={columnConfig.color}>
                 Drop card here
               </Text>
             </Box>
           )}
-          
+
           {children}
-          
+
           {/* Elegant empty state */}
           {cardCount === 0 && !isDragOver && (
             <Flex
@@ -248,8 +240,8 @@ export default function Column({
                   />
                 </Flex>
               </Box>
-              
-              <Text 
+
+              <Text
                 fontSize="18px"
                 lineHeight="28px"
                 fontWeight="600"
@@ -258,8 +250,8 @@ export default function Column({
               >
                 Ready to spark your next idea?
               </Text>
-              
-              <Text 
+
+              <Text
                 fontSize="14px"
                 lineHeight="20px"
                 color={textSecondary}

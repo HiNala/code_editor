@@ -8,31 +8,31 @@ export const tokens = {
     // Sunset Gradient (Brand Signature)
     gradientSunsetStart: "#FF66C4",
     gradientSunsetEnd: "#FFC54D",
-    
+
     // Charcoal Scale
     charcoal900: "#111111",
     charcoal700: "#374151",
     charcoal500: "#6B7280",
     charcoal300: "#D1D5DB",
     charcoal100: "#F3F4F6",
-    
+
     // Enhanced Surface Colors (Dashboard Spec)
     surfaceDashboard: "#FFFFFF",
     surfaceCard: "#FCFCFD",
     borderSubtle: "rgba(0, 0, 0, 0.06)",
     textHero: "#1D1D1F",
-    
+
     // Legacy Surface Colors
     surface: "#F9FAFB",
     surfaceWhite: "#FFFFFF",
-    
+
     // Accent Colors
     accentPlan: "#3B82F6",
     accentPublish: "#10B981",
     danger: "#EF4444",
     warning: "#F59E0B",
     success: "#10B981",
-    
+
     // Dark Mode Equivalents
     dark: {
       surfaceDashboard: "#000000",
@@ -45,13 +45,14 @@ export const tokens = {
       surface: "#1F2937",
       text: "#F9FAFB",
       textSecondary: "#D1D5DB",
-    }
+    },
   },
-  
+
   // 2. TYPOGRAPHY SCALE
   typography: {
     fontFamily: {
-      primary: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      primary:
+        "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     },
     fontSizes: {
       display: "4.5rem", // 72px
@@ -81,9 +82,9 @@ export const tokens = {
       medium: "500",
       semibold: "600",
       bold: "700",
-    }
+    },
   },
-  
+
   // 3. SPACING SYSTEM (8pt grid)
   spacing: {
     xs: "0.25rem", // 4px
@@ -96,7 +97,7 @@ export const tokens = {
     "4xl": "6rem", // 96px
     "5xl": "8rem", // 128px
   },
-  
+
   // 4. BORDER RADIUS
   radius: {
     sm: "0.25rem", // 4px
@@ -106,7 +107,7 @@ export const tokens = {
     pill: "62.5rem", // 999px
     full: "50%", // Circle buttons
   },
-  
+
   // 5. SHADOWS & DEPTH
   shadows: {
     sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
@@ -116,7 +117,7 @@ export const tokens = {
     cardHover: "rgba(0,0,0,.15) 0 12px 24px", // Card hover elevation
     gradient: "0 10px 25px rgba(255, 102, 196, 0.15)",
   },
-  
+
   // 6. ENHANCED MOTION TOKENS
   motion: {
     duration: {
@@ -133,9 +134,9 @@ export const tokens = {
     },
     stagger: {
       wheelChild: "30ms", // Action wheel children
-    }
+    },
   },
-  
+
   // 7. BREAKPOINTS
   breakpoints: {
     mobile: "640px",
@@ -143,7 +144,7 @@ export const tokens = {
     desktop: "1280px",
     wide: "1440px", // 5-column grid
   },
-  
+
   // 8. Z-INDEX SCALE
   zIndex: {
     base: 0,
@@ -154,7 +155,7 @@ export const tokens = {
     popover: 1200,
     tooltip: 1300,
   },
-  
+
   // 9. GRID SPECIFICATIONS
   grid: {
     columns: {
@@ -168,9 +169,9 @@ export const tokens = {
       tablet: "20px",
       desktop: "24px",
       wide: "24px",
-    }
+    },
   },
-  
+
   // 10. ACTION WHEEL SPECIFICATIONS
   actionWheel: {
     main: {
@@ -184,8 +185,8 @@ export const tokens = {
         mobile: "90px",
       },
       fanAngle: "120deg",
-    }
-  }
+    },
+  },
 }
 
 // Helper functions for consistent usage
@@ -194,8 +195,10 @@ export const gradients = {
   sunsetDark: `linear-gradient(135deg, ${tokens.colors.dark.gradientSunsetStart} 0%, ${tokens.colors.dark.gradientSunsetEnd} 100%)`,
   plan: `linear-gradient(135deg, ${tokens.colors.accentPlan} 0%, #60A5FA 100%)`,
   publish: `linear-gradient(135deg, ${tokens.colors.accentPublish} 0%, #34D399 100%)`,
-  heroBackground: `linear-gradient(135deg, rgba(255, 102, 196, 0.02) 0%, rgba(255, 197, 77, 0.02) 100%)`,
-  cardHover: `linear-gradient(45deg, transparent 0%, rgba(255, 102, 196, 0.15) 100%)`,
+  heroBackground:
+    "linear-gradient(135deg, rgba(255, 102, 196, 0.02) 0%, rgba(255, 197, 77, 0.02) 100%)",
+  cardHover:
+    "linear-gradient(45deg, transparent 0%, rgba(255, 102, 196, 0.15) 100%)",
 }
 
 export const textGradients = {
@@ -210,4 +213,4 @@ export const ghostWatermark = {
   fontWeight: tokens.typography.fontWeights.light,
   position: "fixed",
   zIndex: tokens.zIndex.ghostWatermark,
-} 
+}

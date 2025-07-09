@@ -1,12 +1,13 @@
 import { createSystem, defaultConfig } from "@chakra-ui/react"
 import { buttonRecipe } from "./theme/button.recipe"
-import { tokens, gradients } from "./theme/tokens"
+import { gradients, tokens } from "./theme/tokens"
 
 export const system = createSystem(defaultConfig, {
   globalCss: {
     // Import Inter font
-    "@import": "url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap')",
-    
+    "@import":
+      "url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap')",
+
     html: {
       fontSize: "16px",
       height: "100%",
@@ -40,7 +41,7 @@ export const system = createSystem(defaultConfig, {
         minHeight: "100dvh",
       },
     },
-    
+
     // Ghost word-mark background (oversized CRE8ABLE)
     "body::before": {
       content: "'CRE8ABLE'",
@@ -56,18 +57,18 @@ export const system = createSystem(defaultConfig, {
       pointerEvents: "none",
       whiteSpace: "nowrap",
     },
-    
+
     // Keyframe animations
     "@keyframes pulse": {
       "0%": { opacity: "0.7" },
       "100%": { opacity: "1.0" },
     },
-    
+
     "@keyframes float": {
       "0%, 100%": { transform: "translateY(0px)" },
       "50%": { transform: "translateY(-4px)" },
     },
-    
+
     // Utility classes for gradients
     ".gradient-sunset": {
       background: gradients.sunset,
@@ -75,24 +76,24 @@ export const system = createSystem(defaultConfig, {
       WebkitTextFillColor: "transparent",
       backgroundClip: "text",
     },
-    
+
     ".gradient-sunset-bg": {
       background: gradients.sunset,
     },
-    
+
     ".gradient-plan": {
       background: gradients.plan,
     },
-    
+
     ".gradient-publish": {
       background: gradients.publish,
     },
-    
+
     // Smooth transitions for all interactive elements
     "button, a, [role='button']": {
       transition: `all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`,
     },
-    
+
     // Custom scrollbar styling
     "::-webkit-scrollbar": {
       width: "8px",
@@ -107,19 +108,19 @@ export const system = createSystem(defaultConfig, {
     "::-webkit-scrollbar-thumb:hover": {
       background: tokens.colors.charcoal500,
     },
-    
+
     // Focus styles
     "*:focus-visible": {
       outline: `2px solid ${tokens.colors.gradientSunsetStart}`,
       outlineOffset: "2px",
     },
-    
+
     // Selection styles
     "::selection": {
       background: tokens.colors.gradientSunsetStart,
       color: tokens.colors.surfaceWhite,
     },
-    
+
     // Disable animations for users who prefer reduced motion
     "@media (prefers-reduced-motion: reduce)": {
       "*": {
@@ -127,13 +128,13 @@ export const system = createSystem(defaultConfig, {
         transition: "none !important",
       },
     },
-    
+
     ".main-link": {
       color: tokens.colors.gradientSunsetStart,
       fontWeight: tokens.typography.fontWeights.semibold,
     },
   },
-  
+
   theme: {
     tokens: {
       colors: {
@@ -150,7 +151,7 @@ export const system = createSystem(defaultConfig, {
           800: { value: "#9A3412" },
           900: { value: "#7C2D12" },
         },
-        
+
         // Semantic colors
         ui: {
           main: { value: tokens.colors.gradientSunsetStart },
@@ -160,26 +161,26 @@ export const system = createSystem(defaultConfig, {
           warning: { value: tokens.colors.warning },
           success: { value: tokens.colors.success },
         },
-        
+
         // Surface colors
         surface: {
           primary: { value: tokens.colors.surface },
           card: { value: tokens.colors.surfaceWhite },
         },
-        
+
         // Text colors
         text: {
           primary: { value: tokens.colors.charcoal900 },
           secondary: { value: tokens.colors.charcoal700 },
           muted: { value: tokens.colors.charcoal500 },
-        }
+        },
       },
-      
+
       fonts: {
         heading: { value: tokens.typography.fontFamily.primary },
         body: { value: tokens.typography.fontFamily.primary },
       },
-      
+
       fontSizes: {
         display: { value: tokens.typography.fontSizes.display },
         "4xl": { value: tokens.typography.fontSizes.h1 },
@@ -189,7 +190,7 @@ export const system = createSystem(defaultConfig, {
         md: { value: tokens.typography.fontSizes.bodySm },
         sm: { value: tokens.typography.fontSizes.caption },
       },
-      
+
       lineHeights: {
         display: { value: tokens.typography.lineHeights.display },
         "4xl": { value: tokens.typography.lineHeights.h1 },
@@ -199,7 +200,7 @@ export const system = createSystem(defaultConfig, {
         md: { value: tokens.typography.lineHeights.bodySm },
         sm: { value: tokens.typography.lineHeights.caption },
       },
-      
+
       shadows: {
         sm: { value: tokens.shadows.sm },
         md: { value: tokens.shadows.md },
@@ -207,7 +208,7 @@ export const system = createSystem(defaultConfig, {
         xl: { value: tokens.shadows.xl },
         gradient: { value: tokens.shadows.gradient },
       },
-      
+
       radii: {
         sm: { value: tokens.radius.sm },
         md: { value: tokens.radius.md },
@@ -216,7 +217,7 @@ export const system = createSystem(defaultConfig, {
         pill: { value: tokens.radius.pill },
       },
     },
-    
+
     recipes: {
       button: buttonRecipe,
     },

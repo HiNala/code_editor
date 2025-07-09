@@ -9,7 +9,7 @@ const logo = "/assets/images/CRE8ABLE_logo.png"
 
 function Navbar() {
   const display = useBreakpointValue({ base: "none", md: "flex" })
-  
+
   // Theme-responsive colors
   const bgColor = useColorModeValue("white", "gray.900")
   const textColor = useColorModeValue("gray.900", "white")

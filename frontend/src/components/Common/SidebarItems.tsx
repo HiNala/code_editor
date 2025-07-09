@@ -1,13 +1,13 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Link as RouterLink } from "@tanstack/react-router"
-import { 
-  FiHome, 
-  FiSettings, 
-  FiUsers, 
-  FiLayout, 
+import {
+  FiHome,
+  FiLayout,
   FiPlusSquare,
-  FiVideo
+  FiSettings,
+  FiUsers,
+  FiVideo,
 } from "react-icons/fi"
 import type { IconType } from "react-icons/lib"
 
@@ -55,8 +55,9 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
 
   const listItems = finalItems.map(({ icon, title, path }, index) => {
     // Simple active detection based on current path
-    const isActive = typeof window !== "undefined" && window.location.pathname === path
-    
+    const isActive =
+      typeof window !== "undefined" && window.location.pathname === path
+
     return (
       <RouterLink key={title} to={path} onClick={onClose}>
         <Flex
@@ -82,7 +83,7 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
           css={{
             "&:hover .sidebar-icon": {
               transform: isCollapsed ? "scale(1.1)" : "scale(1.05)",
-            }
+            },
           }}
         >
           {/* Active indicator */}
@@ -98,19 +99,19 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
               transition="all 0.3s ease-out"
             />
           )}
-          
-          <Icon 
-            as={icon} 
+
+          <Icon
+            as={icon}
             className="sidebar-icon"
-            alignSelf="center" 
+            alignSelf="center"
             fontSize={isCollapsed ? "lg" : "md"}
             color={isActive ? itemActiveIconColor : itemIconColor}
             transition="all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
             transform={isCollapsed ? "scale(1)" : "scale(1)"}
           />
-          
-          <Text 
-            ml={2} 
+
+          <Text
+            ml={2}
             color={isActive ? itemActiveTextColor : itemTextColor}
             fontWeight={isActive ? "semibold" : "normal"}
             opacity={isCollapsed ? 0 : 1}
@@ -130,10 +131,10 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
 
   return (
     <>
-      <Text 
-        fontSize="xs" 
-        px={4} 
-        py={2} 
+      <Text
+        fontSize="xs"
+        px={4}
+        py={2}
         fontWeight="bold"
         color={menuTextColor}
         textTransform="uppercase"
@@ -146,9 +147,9 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
       >
         Menu
       </Text>
-      <Box 
-        display="flex" 
-        flexDirection="column" 
+      <Box
+        display="flex"
+        flexDirection="column"
         alignItems={isCollapsed ? "center" : "stretch"}
         transition="all 0.3s ease-out"
       >
