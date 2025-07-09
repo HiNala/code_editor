@@ -1,4 +1,4 @@
-import { Flex, Image, useBreakpointValue } from "@chakra-ui/react"
+import { Flex, Image } from "@chakra-ui/react"
 import { Link } from "@tanstack/react-router"
 
 import { useColorModeValue } from "../ui/color-mode"
@@ -8,8 +8,6 @@ import UserMenu from "./UserMenu"
 const logo = "/assets/images/CRE8ABLE_logo.png"
 
 function Navbar() {
-  const display = useBreakpointValue({ base: "none", md: "flex" })
-
   // Theme-responsive colors
   const bgColor = useColorModeValue("white", "gray.900")
   const textColor = useColorModeValue("gray.900", "white")
@@ -17,7 +15,7 @@ function Navbar() {
 
   return (
     <Flex
-      display={display}
+      display="flex"
       justify="space-between"
       position="sticky"
       color={textColor}
@@ -27,15 +25,15 @@ function Navbar() {
       borderBottomColor={borderColor}
       w="100%"
       top={0}
-      h="16" // 64px - slightly taller
-      px={4}
-      py={2}
+      h={{ base: "14", md: "16" }} // 56px mobile, 64px desktop
+      px={{ base: 2, md: 4 }}
+      py={{ base: 1, md: 2 }}
       zIndex={10}
     >
       <Link to="/">
-        <Image src={logo} alt="Cre8able logo" h="10" />
+        <Image src={logo} alt="Cre8able logo" h={{ base: "8", md: "10" }} />
       </Link>
-      <Flex gap={3} alignItems="center">
+      <Flex gap={{ base: 2, md: 3 }} alignItems="center">
         <ThemeToggle />
         <UserMenu />
       </Flex>

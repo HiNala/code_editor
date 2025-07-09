@@ -61,7 +61,8 @@ function Login() {
         as="form"
         onSubmit={handleSubmit(onSubmit)}
         h="100vh"
-        maxW="sm"
+        maxW={{ base: "xs", md: "sm" }}
+        px={{ base: 4, md: 6 }}
         alignItems="stretch"
         justifyContent="center"
         gap={4}
@@ -71,9 +72,9 @@ function Login() {
           src={logo}
           alt="Cre8able logo"
           height="auto"
-          maxW="2xs"
+          maxW={{ base: "32", md: "2xs" }}
           alignSelf="center"
-          mb={4}
+          mb={{ base: 2, md: 4 }}
         />
         <Field
           invalid={!!errors.username}

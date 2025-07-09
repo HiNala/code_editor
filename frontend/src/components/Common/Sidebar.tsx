@@ -63,8 +63,10 @@ const Sidebar = () => {
             display={{ base: "flex", md: "none" }}
             aria-label="Open Menu"
             position="absolute"
-            zIndex="100"
-            m={4}
+            zIndex="20"
+            top="16" // Below the navbar
+            left="2"
+            size="sm"
           >
             <FiChevronRight />
           </IconButton>

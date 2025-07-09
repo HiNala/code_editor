@@ -107,17 +107,17 @@ function Dashboard() {
       minH="100vh"
       bg={bgColor}
       position="relative"
-      p={8}
+      p={{ base: 4, md: 8 }}
       display="flex"
       flexDirection="column"
     >
       {/* Upper section with WorkflowWheel */}
       <Box
-        height="40vh"
+        height={{ base: "35vh", md: "40vh" }}
         display="flex"
         alignItems="center"
         justifyContent="center"
-        mb={8}
+        mb={{ base: 4, md: 8 }}
       >
         <Box transform={["scale(0.65)", "scale(0.7)"]} transformOrigin="center">
           <WorkflowWheel onStateChange={handleStateChange} />
@@ -131,7 +131,7 @@ function Dashboard() {
         mx="auto"
         width="100%"
       >
-        <VStack gap={8} align="stretch" height="100%">
+        <VStack gap={{ base: 4, md: 8 }} align="stretch" height="100%">
           <Box flex="1">
             <ProjectSection title="Your Feed" projects={placeholderProjects} />
           </Box>
