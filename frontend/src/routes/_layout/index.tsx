@@ -1,4 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router"
+import { Box, VStack, Text, HStack } from "@chakra-ui/react"
+import { useRef, useState, useEffect } from "react"
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
+import { useColorModeValue } from "@/components/ui/color-mode"
+import { tokens } from "@/theme/tokens"
 
 import WorkflowWheel from "@/components/Common/WorkflowWheel"
 
@@ -6,13 +11,202 @@ export const Route = createFileRoute("/_layout/")({
   component: Dashboard,
 })
 
+// Placeholder project data
+const placeholderProjects = [
+  { id: 1, title: "Project Alpha", thumbnail: "/api/placeholder/300/200" },
+  { id: 2, title: "Project Beta", thumbnail: "/api/placeholder/300/200" },
+  { id: 3, title: "Project Gamma", thumbnail: "/api/placeholder/300/200" },
+  { id: 4, title: "Project Delta", thumbnail: "/api/placeholder/300/200" },
+  { id: 5, title: "Project Echo", thumbnail: "/api/placeholder/300/200" },
+  { id: 6, title: "Project Foxtrot", thumbnail: "/api/placeholder/300/200" },
+]
+
+function ProjectCard({ title }: { title: string }) {
+  const cardBg = useColorModeValue("white", "gray.800")
+  const textColor = useColorModeValue("gray.900", "white")
+  const borderColor = useColorModeValue("gray.200", "gray.700")
+
+  return (
+    <Box
+      flex="0 0 260px"
+      bg={cardBg}
+      borderRadius={tokens.radius.lg}
+      overflow="hidden"
+      border="1px solid"
+      borderColor={borderColor}
+      _hover={{
+        transform: "translateY(-4px)",
+        boxShadow: tokens.shadows.lg,
+      }}
+      transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
+      cursor="pointer"
+    >
+      <Box
+        height="150px"
+        bg="gray.200"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        color="gray.500"
+        fontSize="sm"
+      >
+        {title} Thumbnail
+      </Box>
+      <Box p={4}>
+        <Text
+          fontSize={tokens.typography.fontSizes.bodySm}
+          fontWeight={tokens.typography.fontWeights.medium}
+          color={textColor}
+        >
+          {title}
+        </Text>
+      </Box>
+    </Box>
+  )
+}
+
+function ProjectSection({ title, projects }: { title: string; projects: typeof placeholderProjects }) {
+  const textColor = useColorModeValue("gray.900", "white")
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const updateScrollState = () => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
+        setCanScrollLeft(scrollLeft > 0)
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1)
+      }
+    }
+
+    const container = scrollContainerRef.current
+    if (container) {
+      container.addEventListener("scroll", updateScrollState)
+      updateScrollState() // initial
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", updateScrollState)
+      }
+    }
+  }, [])
+
+  const handleScrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: "smooth" })
+    }
+  }
+
+  const handleScrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: "smooth" })
+    }
+  }
+
+  return (
+    <VStack align="stretch" gap={4} width="100%">
+      <Text
+        fontSize={tokens.typography.fontSizes.h3}
+        fontWeight={tokens.typography.fontWeights.bold}
+        color={textColor}
+        fontFamily={tokens.typography.fontFamily.primary}
+      >
+        {title}
+      </Text>
+      <Box position="relative">
+        {/* Scroll Container */}
+        <HStack
+          gap={4}
+          overflowX="auto"
+          ref={scrollContainerRef}
+          px={2}
+          css={{
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
+          }}
+        >
+          {projects.map((project) => (
+            <ProjectCard key={project.id} title={project.title} />
+          ))}
+        </HStack>
+
+        {/* Left Chevron */}
+        {canScrollLeft && (
+          <Box
+            position="absolute"
+            top="50%"
+            left={0}
+            transform="translateY(-50%)"
+            bgGradient="linear(to-r, rgba(255,255,255,0.9), rgba(255,255,255,0))"
+            _dark={{ bgGradient: "linear(to-r, rgba(0,0,0,0.7), rgba(0,0,0,0))" }}
+            px={2}
+            cursor="pointer"
+            onClick={handleScrollLeft}
+            transition="opacity 200ms"
+            _hover={{ opacity: 0.8, transform: "translateY(-50%) scale(1.05)" }}
+          >
+            <FiChevronLeft size={24} />
+          </Box>
+        )}
+
+        {/* Right Chevron */}
+        {canScrollRight && (
+          <Box
+            position="absolute"
+            top="50%"
+            right={0}
+            transform="translateY(-50%)"
+            bgGradient="linear(to-l, rgba(255,255,255,0.9), rgba(255,255,255,0))"
+            _dark={{ bgGradient: "linear(to-l, rgba(0,0,0,0.7), rgba(0,0,0,0))" }}
+            px={2}
+            cursor="pointer"
+            onClick={handleScrollRight}
+            transition="opacity 200ms"
+            _hover={{ opacity: 0.8, transform: "translateY(-50%) scale(1.05)" }}
+          >
+            <FiChevronRight size={24} />
+          </Box>
+        )}
+      </Box>
+    </VStack>
+  )
+}
+
 function Dashboard() {
+  const bgColor = useColorModeValue("gray.50", "gray.900")
+
   const handleStateChange = (state: string) => {
     console.log("Workflow state changed to:", state)
     // Here you can add navigation logic or other actions based on the state
   }
 
-  return <WorkflowWheel onStateChange={handleStateChange} />
+  return (
+    <Box
+      minH="100vh"
+      bg={bgColor}
+      position="relative"
+    >
+      {/* Workflow Wheel Section */}
+      <Box height="100vh">
+        <WorkflowWheel onStateChange={handleStateChange} />
+      </Box>
+
+      {/* Project Sections */}
+      <Box
+        px={8}
+        py={12}
+        maxWidth="1400px"
+        mx="auto"
+      >
+        <VStack gap={16} align="stretch">
+          <ProjectSection title="Your Feed" projects={placeholderProjects} />
+          <ProjectSection title="Inspiration" projects={placeholderProjects} />
+        </VStack>
+      </Box>
+    </Box>
+  )
 }
 
 export default Dashboard
