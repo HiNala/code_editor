@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Box, Text, IconButton, VStack, HStack } from "@chakra-ui/react"
+import { Box, Text, VStack, HStack } from "@chakra-ui/react"
 import { FiChevronUp, FiChevronDown } from "react-icons/fi"
 import { useColorModeValue } from "../ui/color-mode"
 import { tokens, gradients } from "../../theme/tokens"
@@ -42,22 +42,22 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
   const currentState = WORKFLOW_STATES[currentStateIndex]
 
   const getStateOpacity = (index: number) => {
-    if (index === currentStateIndex) return 1
-    const distance = Math.abs(index - currentStateIndex)
-    return Math.max(0.15, 1 - (distance * 0.6))
+    // Hide/fade the duplicate label that matches the active button
+    if (index === currentStateIndex) return 0.3 // faint hint of the wheel depth
+    return 1
   }
 
   const getStateTransform = (index: number) => {
-    if (index === currentStateIndex) return "translateY(0px) rotateX(0deg) scale(1)"
+    // Slight lift for inactive labels to reinforce wheel feel
+    if (index === currentStateIndex) return "translateY(0px) rotateX(0deg) scale(0.88)"
     const distance = index - currentStateIndex
-    const fadeOut = Math.abs(distance) > 1 ? 0.5 : 0.8
-    return `translateY(${distance * 12}px) rotateX(${distance * 25}deg) scale(${fadeOut})`
+    const depthScale = 1 // keep full size for visible labels
+    return `translateY(${distance * 12}px) rotateX(${distance * 20}deg) scale(${depthScale})`
   }
 
   const getStateBlur = (index: number) => {
-    if (index === currentStateIndex) return "blur(0px)"
-    const distance = Math.abs(index - currentStateIndex)
-    return `blur(${distance * 1.5}px)`
+    // Blur only the duplicate label inside the wheel (matching active button)
+    return index === currentStateIndex ? "blur(2px)" : "blur(0px)"
   }
 
   return (
@@ -88,8 +88,20 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
       </Box>
 
       <HStack gap={12} position="relative" zIndex={10}>
-        {/* Left side - PLAN, CREATE, PUBLISH with wheel rotation effect */}
-        <VStack gap={12}>
+        {/* Left side - Workflow wheel with chevrons outside */}
+        <VStack gap={6}>
+          {/* Up Chevron */}
+          <Box
+            color={arrowColor}
+            _hover={{ color: arrowHoverColor }}
+            cursor="pointer"
+            onClick={() => cycleState("up")}
+            transition={`color ${tokens.motion.duration.fast} ${tokens.motion.easing.standard}`}
+          >
+            <FiChevronUp size={32} />
+          </Box>
+
+          {/* PLAN text */}
           <Text
             fontSize={tokens.typography.fontSizes.bodyLg}
             fontWeight={tokens.typography.fontWeights.medium}
@@ -110,87 +122,49 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
             PLAN
           </Text>
 
-          {/* Slot Machine Button */}
-          <Box position="relative">
-            {/* Up Arrow */}
-            <IconButton
-              position="absolute"
-              top="-40px"
-              left="50%"
-              transform="translateX(-50%)"
-              color={arrowColor}
-              _hover={{ color: arrowHoverColor }}
-              bg="transparent"
-              size="sm"
-              onClick={() => cycleState("up")}
-              disabled={isAnimating}
-              aria-label="Cycle up"
-              zIndex={20}
-            >
-              <FiChevronUp size={24} />
-            </IconButton>
-
-            {/* Main Button with enhanced styling */}
+          {/* Main Button */}
+          <Box
+            position="relative"
+            width="176px"
+            height="64px"
+            bg={gradients.sunset}
+            borderRadius={tokens.radius.xl}
+            overflow="hidden"
+            boxShadow={tokens.shadows.lg}
+            transform={isAnimating ? "scale(1.02)" : "scale(1)"}
+            transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
+            _hover={{
+              transform: "scale(1.02)",
+              boxShadow: tokens.shadows.xl,
+            }}
+            cursor="pointer"
+            onClick={() => cycleState("down")}
+          >
             <Box
-              position="relative"
-              width="176px"
-              height="64px"
-              bg={gradients.sunset}
-              borderRadius={tokens.radius.xl}
-              overflow="hidden"
-              boxShadow={tokens.shadows.lg}
-              transform={isAnimating ? "scale(1.02)" : "scale(1)"}
-              transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
-              _hover={{
-                transform: "scale(1.02)",
-                boxShadow: tokens.shadows.xl,
-              }}
-              cursor="pointer"
-              onClick={() => cycleState("down")}
-            >
-              <Box
-                position="absolute"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                opacity={isAnimating ? 0 : 1}
-                transform={isAnimating ? "translateY(30px) rotateX(45deg)" : "translateY(0px) rotateX(0deg)"}
-                transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
-              >
-                <Text
-                  color="white"
-                  fontWeight={tokens.typography.fontWeights.bold}
-                  fontSize="24px"
-                  textShadow="0 2px 4px rgba(0,0,0,0.3)"
-                >
-                  {currentState}
-                </Text>
-              </Box>
-            </Box>
-
-            {/* Down Arrow */}
-            <IconButton
               position="absolute"
-              bottom="-40px"
-              left="50%"
-              transform="translateX(-50%)"
-              color={arrowColor}
-              _hover={{ color: arrowHoverColor }}
-              bg="transparent"
-              size="sm"
-              onClick={() => cycleState("down")}
-              disabled={isAnimating}
-              aria-label="Cycle down"
-              zIndex={20}
+              top={0}
+              left={0}
+              right={0}
+              bottom={0}
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              opacity={isAnimating ? 0 : 1}
+              transform={isAnimating ? "translateY(30px) rotateX(45deg)" : "translateY(0px) rotateX(0deg)"}
+              transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
             >
-              <FiChevronDown size={24} />
-            </IconButton>
+              <Text
+                color="white"
+                fontWeight={tokens.typography.fontWeights.bold}
+                fontSize="24px"
+                textShadow="0 2px 4px rgba(0,0,0,0.3)"
+              >
+                {currentState}
+              </Text>
+            </Box>
           </Box>
 
+          {/* PUBLISH text */}
           <Text
             fontSize={tokens.typography.fontSizes.bodyLg}
             fontWeight={tokens.typography.fontWeights.medium}
@@ -210,6 +184,17 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
           >
             PUBLISH
           </Text>
+
+          {/* Down Chevron */}
+          <Box
+            color={arrowColor}
+            _hover={{ color: arrowHoverColor }}
+            cursor="pointer"
+            onClick={() => cycleState("down")}
+            transition={`color ${tokens.motion.duration.fast} ${tokens.motion.easing.standard}`}
+          >
+            <FiChevronDown size={32} />
+          </Box>
         </VStack>
 
         {/* Right side - PROJECT */}
