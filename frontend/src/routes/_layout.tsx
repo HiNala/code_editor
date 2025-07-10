@@ -18,11 +18,20 @@ export const Route = createFileRoute("/_layout")({
 
 function Layout() {
   return (
-    <Flex direction="column" h="100vh">
+    <Flex
+      direction="column"
+      h="100vh"
+      css={{
+        height: "100dvh", // Dynamic viewport height - accounts for browser UI/taskbar
+        "@supports not (height: 100dvh)": {
+          height: "100vh", // Fallback for older browsers
+        },
+      }}
+    >
       <Navbar />
       <Flex flex="1" overflow="hidden">
         <Sidebar />
-        <Flex flex="1" direction="column" p={4} overflowY="auto">
+        <Flex flex="1" direction="column" p={{ base: 2, md: 4 }} overflowY="auto">
           <Outlet />
         </Flex>
       </Flex>

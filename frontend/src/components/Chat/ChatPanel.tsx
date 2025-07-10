@@ -1,5 +1,6 @@
 import { Box, Button, HStack, Input, Stack, Text } from "@chakra-ui/react"
 import { useEffect, useRef, useState } from "react"
+import { FiSend } from "react-icons/fi"
 
 interface Message {
   role: "user" | "assistant"
@@ -15,7 +16,16 @@ function ChatBubble({ msg }: { msg: Message }) {
   const bg = msg.role === "user" ? "purple.500" : "gray.200"
   const color = msg.role === "user" ? "white" : "black"
   return (
-    <Box maxW="70%" alignSelf={align} bg={bg} color={color} px={3} py={2} borderRadius="md">
+    <Box
+      maxW="70%"
+      alignSelf={align}
+      bg={bg}
+      color={color}
+      px={4}
+      py={3}
+      borderRadius="lg"
+      mb={3}
+    >
       <Text whiteSpace="pre-wrap">{msg.content}</Text>
     </Box>
   )
@@ -81,7 +91,10 @@ export default function ChatPanel({ threadId }: ChatPanelProps) {
     })
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((data) => {
-        const assistantMsg: Message = { role: "assistant", content: data.assistant }
+        const assistantMsg: Message = {
+          role: "assistant",
+          content: data.assistant,
+        }
         save([...newMsgs, assistantMsg])
       })
       .catch(() => {
@@ -95,13 +108,13 @@ export default function ChatPanel({ threadId }: ChatPanelProps) {
 
   return (
     <Stack h="100%" justify="space-between">
-      <Stack overflowY="auto" flex="1" p={2} gap={3}>
+      <Stack overflowY="auto" flex="1" p={4} gap={3}>
         {messages.map((m, i) => (
           <ChatBubble key={i} msg={m} />
         ))}
         <div ref={bottomRef} />
       </Stack>
-      <HStack p={2} borderTopWidth="1px">
+      <HStack p={4} borderTopWidth="1px">
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -113,8 +126,8 @@ export default function ChatPanel({ threadId }: ChatPanelProps) {
             }
           }}
         />
-        <Button onClick={send} disabled={!input.trim()}>
-          Send
+        <Button onClick={send} disabled={!input.trim()} colorScheme="purple">
+          <FiSend />
         </Button>
       </HStack>
     </Stack>

@@ -14,10 +14,8 @@ import { InputGroup } from "@/components/ui/input-group"
 import { PasswordInput } from "@/components/ui/password-input"
 import useAuth, { isLoggedIn } from "@/hooks/useAuth"
 import { confirmPasswordRules, emailPattern, passwordRules } from "@/utils"
-import { useColorModeValue } from "@/components/ui/color-mode"
 
-const logoLight = "/assets/images/cre8able-logo-light.svg"
-const logoDark = "/assets/images/cre8able-logo-dark.svg"
+const logo = "/assets/images/CRE8ABLE_logo.png"
 
 export const Route = createFileRoute("/signup")({
   component: SignUp,
@@ -63,19 +61,20 @@ function SignUp() {
           as="form"
           onSubmit={handleSubmit(onSubmit)}
           h="100vh"
-          maxW="sm"
+          maxW={{ base: "xs", md: "sm" }}
+          px={{ base: 4, md: 6 }}
           alignItems="stretch"
           justifyContent="center"
           gap={4}
           centerContent
         >
           <Image
-            src={useColorModeValue(logoLight, logoDark)}
+            src={logo}
             alt="Cre8able logo"
             height="auto"
-            maxW="2xs"
+            maxW={{ base: "32", md: "2xs" }}
             alignSelf="center"
-            mb={4}
+            mb={{ base: 2, md: 4 }}
           />
           <Field
             invalid={!!errors.full_name}
@@ -107,6 +106,7 @@ function SignUp() {
               />
             </InputGroup>
           </Field>
+
           <PasswordInput
             type="password"
             startElement={<FiLock />}
@@ -114,14 +114,21 @@ function SignUp() {
             placeholder="Password"
             errors={errors}
           />
+
           <PasswordInput
-            type="confirm_password"
+            type="password"
             startElement={<FiLock />}
             {...register("confirm_password", confirmPasswordRules(getValues))}
             placeholder="Confirm Password"
             errors={errors}
           />
-          <Button variant="solid" type="submit" loading={isSubmitting}>
+
+          <Button
+            variant="solid"
+            type="submit"
+            loading={isSubmitting}
+            size="md"
+          >
             Sign Up
           </Button>
           <Text>
