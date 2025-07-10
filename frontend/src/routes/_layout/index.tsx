@@ -156,13 +156,13 @@ function ProjectSection({ title, projects, videos = [] }: { title: string; proje
 
   const handleScrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -300, behavior: "smooth" })
+      scrollContainerRef.current.scrollBy({ left: -232, behavior: "smooth" }) // 220px card + 12px gap
     }
   }
 
   const handleScrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 300, behavior: "smooth" })
+      scrollContainerRef.current.scrollBy({ left: 232, behavior: "smooth" }) // 220px card + 12px gap
     }
   }
 
@@ -194,6 +194,7 @@ function ProjectSection({ title, projects, videos = [] }: { title: string; proje
           flex="1"
           overflow="hidden"
           position="relative"
+          maxWidth="920px" // 4 cards * 220px + 3 gaps * 12px = 916px
         >
           <HStack
             gap={3}
