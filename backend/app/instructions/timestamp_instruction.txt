@@ -1,0 +1,4 @@
+Give me a list of timestamps range with a description for each of what’s happening and a level of importance from 0 to 3. The output should be a JSON with the attributes: start, end, description, importance.
+
+
+RETURN ONLY A JSON

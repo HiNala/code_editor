@@ -1,10 +1,11 @@
 import uuid
+import datetime
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB as JSON
-from sqlalchemy.ext.mutable import MutableList
+from sqlalchemy.ext.mutable import MutableList, MutableDict
 
 
 # Shared properties
@@ -105,6 +106,17 @@ class ItemPublic(ItemBase):
 class ItemsPublic(SQLModel):
     data: list[ItemPublic]
     count: int
+
+
+# Stores each AI‑generated timestamp run.
+class Creation(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    youtube_url: str
+    timestamp_data: dict = Field(
+        sa_column=Column(MutableDict.as_mutable(JSON), nullable=False)
+    )
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
 
 
 # Generic message
