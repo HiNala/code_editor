@@ -1,6 +1,6 @@
 import { Box, Flex, Icon, Text } from "@chakra-ui/react"
 import { useQueryClient } from "@tanstack/react-query"
-import { Link as RouterLink } from "@tanstack/react-router"
+import { Link as RouterLink, useMatchRoute } from "@tanstack/react-router"
 import {
   FiHome,
   FiLayout,
@@ -37,6 +37,7 @@ interface Item {
 const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
   const queryClient = useQueryClient()
   const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
+  const matchRoute = useMatchRoute()
 
   // Theme-responsive colors
   const menuTextColor = useColorModeValue("gray.600", "whiteAlpha.700")
@@ -54,27 +55,27 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
     : items
 
   const listItems = finalItems.map(({ icon, title, path }, index) => {
-    // Simple active detection based on current path
-    const isActive =
-      typeof window !== "undefined" && window.location.pathname === path
+    // Use TanStack Router's matchRoute for reactive active detection
+    const isActive = !!matchRoute({ to: path, fuzzy: false })
 
     return (
       <RouterLink key={title} to={path} onClick={onClose}>
         <Flex
-          gap={2}
-          px={isCollapsed ? 2 : 4}
-          py={3}
-          mx={isCollapsed ? 2 : 0}
-          mb={2}
+          gap={isCollapsed ? 0 : 2}
+          px={isCollapsed ? 0 : 4}
+          py={isCollapsed ? 2 : 3}
+          mx={isCollapsed ? 1 : 0}
+          mb={isCollapsed ? 1 : 2}
           _hover={{
             background: isActive ? itemActiveHoverBg : itemHoverBg,
-            transform: "translateX(2px)",
+            transform: isCollapsed ? "scale(1.05)" : "translateX(2px)",
           }}
           alignItems="center"
           fontSize="sm"
           justify={isCollapsed ? "center" : "flex-start"}
           borderRadius="md"
-          w={isCollapsed ? "auto" : "full"}
+          w={isCollapsed ? "44px" : "full"}
+          h={isCollapsed ? "44px" : "auto"}
           position="relative"
           background={isActive ? itemActiveBg : "transparent"}
           transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
@@ -82,12 +83,12 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
           title={isCollapsed ? title : undefined}
           css={{
             "&:hover .sidebar-icon": {
-              transform: isCollapsed ? "scale(1.1)" : "scale(1.05)",
+              transform: isCollapsed ? "scale(1.15)" : "scale(1.05)",
             },
           }}
         >
           {/* Active indicator */}
-          {isActive && (
+          {isActive && !isCollapsed && (
             <Box
               position="absolute"
               left={0}
@@ -99,15 +100,29 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
               transition="all 0.3s ease-out"
             />
           )}
+          
+          {/* Active indicator for collapsed mode - small dot */}
+          {isActive && isCollapsed && (
+            <Box
+              position="absolute"
+              top={1}
+              right={1}
+              width="6px"
+              height="6px"
+              bg={activeIndicatorColor}
+              borderRadius="full"
+              transition="all 0.3s ease-out"
+            />
+          )}
 
           <Icon
             as={icon}
             className="sidebar-icon"
             alignSelf="center"
-            fontSize={isCollapsed ? "lg" : "md"}
+            fontSize={isCollapsed ? "xl" : "md"}
             color={isActive ? itemActiveIconColor : itemIconColor}
             transition="all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
-            transform={isCollapsed ? "scale(1)" : "scale(1)"}
+            flexShrink={0}
           />
 
           <Text
@@ -152,6 +167,7 @@ const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
         flexDirection="column"
         alignItems={isCollapsed ? "center" : "stretch"}
         transition="all 0.3s ease-out"
+        px={isCollapsed ? 1 : 0}
       >
         {listItems}
       </Box>

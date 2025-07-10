@@ -118,7 +118,7 @@ const Sidebar = () => {
       <Box
         display={{ base: "none", md: "flex" }}
         position="sticky"
-        bg={sidebarBg}
+        bg={isCollapsed ? "transparent" : sidebarBg}
         top={0}
         w={isCollapsed ? "60px" : "240px"}
         minW={isCollapsed ? "60px" : "240px"}
@@ -127,7 +127,7 @@ const Sidebar = () => {
         p={isCollapsed ? 2 : 4}
         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
         flexDirection="column"
-        borderRight="1px solid"
+        borderRight={isCollapsed ? "none" : "1px solid"}
         borderRightColor={borderColor}
       >
         {/* Toggle Button with Arrow Icons */}
