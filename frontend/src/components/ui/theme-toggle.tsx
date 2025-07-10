@@ -13,8 +13,8 @@ export function ThemeToggle() {
     <MotionBox
       as="button"
       position="relative"
-      w="24" // w-24 = 96px = 6rem
-      h="12" // h-12 = 48px = 3rem  
+      w="16" // w-16 = 64px = 4rem (much smaller)
+      h="8" // h-8 = 32px = 2rem  
       borderRadius="full"
       cursor="pointer"
       overflow="hidden"
@@ -38,7 +38,7 @@ export function ThemeToggle() {
         animate={{
           background: isDark
             ? "linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%)"
-            : "linear-gradient(135deg, #87ceeb 0%, #98d8e8 50%, #b6e5f0 100%)",
+            : "linear-gradient(135deg, #FF66C4 0%, #FFC54D 100%)", // CRE8ABLE sunset gradient
         }}
         transition={{ duration: 0.8, ease: "easeInOut" }}
       />
@@ -54,17 +54,17 @@ export function ThemeToggle() {
             position="absolute"
             inset="0"
           >
-            {[...Array(8)].map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <MotionBox
                 key={i}
                 position="absolute"
-                w="1"
-                h="1"
+                w="0.5"
+                h="0.5"
                 bg="white"
                 borderRadius="full"
                 style={{
-                  left: `${20 + i * 8}%`,
-                  top: `${15 + (i % 3) * 15}%`,
+                  left: `${15 + i * 12}%`,
+                  top: `${20 + (i % 2) * 25}%`,
                 }}
                 animate={{
                   opacity: [0.3, 1, 0.3],
@@ -73,7 +73,7 @@ export function ThemeToggle() {
                 transition={{
                   duration: 2,
                   repeat: Number.POSITIVE_INFINITY,
-                  delay: i * 0.2,
+                  delay: i * 0.3,
                 }}
               />
             ))}
@@ -85,23 +85,23 @@ export function ThemeToggle() {
       <AnimatePresence>
         {!isDark && (
           <MotionBox
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
+            exit={{ opacity: 0, x: 10 }}
             transition={{ duration: 0.6 }}
             position="absolute"
             inset="0"
           >
             <MotionBox
               position="absolute"
-              top="2"
-              left="16"
-              w="4"
-              h="2"
-              bg="rgba(255, 255, 255, 0.6)"
+              top="1"
+              left="10"
+              w="2.5"
+              h="1"
+              bg="rgba(255, 255, 255, 0.4)"
               borderRadius="full"
               animate={{
-                x: [0, 10, 0],
+                x: [0, 6, 0],
               }}
               transition={{
                 duration: 4,
@@ -111,14 +111,14 @@ export function ThemeToggle() {
             />
             <MotionBox
               position="absolute"
-              top="4"
-              right="4"
-              w="3"
-              h="1.5"
-              bg="rgba(255, 255, 255, 0.4)"
+              top="2.5"
+              right="2"
+              w="2"
+              h="0.5"
+              bg="rgba(255, 255, 255, 0.3)"
               borderRadius="full"
               animate={{
-                x: [0, -8, 0],
+                x: [0, -4, 0],
               }}
               transition={{
                 duration: 6,
@@ -133,16 +133,16 @@ export function ThemeToggle() {
       {/* Toggle Circle with Sun/Moon */}
       <MotionBox
         position="absolute"
-        top="1"
-        w="10"
-        h="10"
+        top="0.5"
+        w="7"
+        h="7"
         borderRadius="full"
         boxShadow="lg"
         display="flex"
         alignItems="center"
         justifyContent="center"
         animate={{
-          x: isDark ? 48 : 4, // 48px = 12 * 4 (moving from left to right in 96px container)
+          x: isDark ? 32 : 2, // 32px = 8 * 4 (moving from left to right in 64px container)
           backgroundColor: isDark ? "#1f2937" : "#ffffff",
         }}
         transition={{
@@ -161,7 +161,7 @@ export function ThemeToggle() {
               transition={{ duration: 0.4 }}
               color="yellow.200"
             >
-              <LuMoon size={18} fill="currentColor" />
+              <LuMoon size={14} fill="currentColor" />
             </MotionBox>
           ) : (
             <MotionBox
@@ -170,7 +170,7 @@ export function ThemeToggle() {
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: -180, opacity: 0 }}
               transition={{ duration: 0.4 }}
-              color="yellow.500"
+              color="yellow.600"
             >
               <MotionBox
                 animate={{ rotate: 360 }}
@@ -180,7 +180,7 @@ export function ThemeToggle() {
                   ease: "linear",
                 }}
               >
-                <LuSun size={18} />
+                <LuSun size={14} />
               </MotionBox>
             </MotionBox>
           )}
@@ -194,8 +194,8 @@ export function ThemeToggle() {
         borderRadius="full"
         animate={{
           boxShadow: isDark
-            ? "inset 0 0 20px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2)"
-            : "inset 0 0 20px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.2)",
+            ? "inset 0 0 15px rgba(59, 130, 246, 0.3), 0 0 15px rgba(59, 130, 246, 0.2)"
+            : "inset 0 0 15px rgba(255, 102, 196, 0.3), 0 0 15px rgba(255, 197, 77, 0.2)",
         }}
         transition={{ duration: 0.8 }}
       />
