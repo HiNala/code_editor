@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { Box, VStack, Text, HStack } from "@chakra-ui/react"
+import { useRef, useState, useEffect } from "react"
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
 import { useColorModeValue } from "@/components/ui/color-mode"
 import { tokens } from "@/theme/tokens"
 
@@ -26,7 +28,7 @@ function ProjectCard({ title }: { title: string }) {
 
   return (
     <Box
-      flex={{ base: "0 0 140px", md: "0 0 180px" }}
+      flex="0 0 240px"
       bg={cardBg}
       borderRadius={tokens.radius.lg}
       overflow="hidden"
@@ -40,7 +42,7 @@ function ProjectCard({ title }: { title: string }) {
       cursor="pointer"
     >
       <Box
-        height={{ base: "80px", md: "100px" }}
+        height="120px"
         bg="gray.200"
         display="flex"
         alignItems="center"
@@ -52,7 +54,7 @@ function ProjectCard({ title }: { title: string }) {
       </Box>
       <Box p={2}>
         <Text
-          fontSize={{ base: tokens.typography.fontSizes.caption, md: tokens.typography.fontSizes.bodySm }}
+          fontSize={tokens.typography.fontSizes.bodySm}
           fontWeight={tokens.typography.fontWeights.medium}
           color={textColor}
         >
@@ -65,6 +67,43 @@ function ProjectCard({ title }: { title: string }) {
 
 function ProjectSection({ title, projects }: { title: string; projects: typeof placeholderProjects }) {
   const textColor = useColorModeValue("gray.900", "white")
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(false)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const updateScrollState = () => {
+      if (scrollContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current
+        setCanScrollLeft(scrollLeft > 0)
+        setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 1)
+      }
+    }
+
+    const container = scrollContainerRef.current
+    if (container) {
+      container.addEventListener("scroll", updateScrollState)
+      updateScrollState() // initial check
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener("scroll", updateScrollState)
+      }
+    }
+  }, [])
+
+  const handleScrollLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: -300, behavior: "smooth" })
+    }
+  }
+
+  const handleScrollRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: 300, behavior: "smooth" })
+    }
+  }
 
   return (
     <VStack align="stretch" gap={3} width="100%">
@@ -76,27 +115,68 @@ function ProjectSection({ title, projects }: { title: string; projects: typeof p
       >
         {title}
       </Text>
-      <HStack
-        gap={{ base: 2, md: 3 }}
-        width="100%"
-        justify={{ base: "flex-start", md: "space-between" }}
-        overflowX={{ base: "auto", md: "visible" }}
-        css={{
-          scrollbarWidth: "none",
-          "&::-webkit-scrollbar": { display: "none" },
-        }}
-      >
-        {projects.map((project) => (
-          <ProjectCard key={project.id} title={project.title} />
-        ))}
-      </HStack>
+      <Box position="relative">
+        {/* Scroll Container */}
+        <HStack
+          gap={3}
+          overflowX="auto"
+          ref={scrollContainerRef}
+          px={2}
+          css={{
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
+          }}
+        >
+          {projects.map((project) => (
+            <ProjectCard key={project.id} title={project.title} />
+          ))}
+        </HStack>
+
+        {/* Left Chevron */}
+        {canScrollLeft && (
+          <Box
+            position="absolute"
+            top="50%"
+            left={0}
+            transform="translateY(-50%)"
+            bgGradient="linear(to-r, rgba(255,255,255,0.9), rgba(255,255,255,0))"
+            _dark={{ bgGradient: "linear(to-r, rgba(0,0,0,0.7), rgba(0,0,0,0))" }}
+            px={2}
+            cursor="pointer"
+            onClick={handleScrollLeft}
+            transition="opacity 200ms"
+            _hover={{ opacity: 0.8, transform: "translateY(-50%) scale(1.05)" }}
+            zIndex={10}
+          >
+            <FiChevronLeft size={24} />
+          </Box>
+        )}
+
+        {/* Right Chevron */}
+        {canScrollRight && (
+          <Box
+            position="absolute"
+            top="50%"
+            right={0}
+            transform="translateY(-50%)"
+            bgGradient="linear(to-l, rgba(255,255,255,0.9), rgba(255,255,255,0))"
+            _dark={{ bgGradient: "linear(to-l, rgba(0,0,0,0.7), rgba(0,0,0,0))" }}
+            px={2}
+            cursor="pointer"
+            onClick={handleScrollRight}
+            transition="opacity 200ms"
+            _hover={{ opacity: 0.8, transform: "translateY(-50%) scale(1.05)" }}
+            zIndex={10}
+          >
+            <FiChevronRight size={24} />
+          </Box>
+        )}
+      </Box>
     </VStack>
   )
 }
 
 function Dashboard() {
-  const bgColor = useColorModeValue("gray.50", "gray.900")
-
   const handleStateChange = (state: string) => {
     console.log("Workflow state changed to:", state)
     // Here you can add navigation logic or other actions based on the state
@@ -105,7 +185,6 @@ function Dashboard() {
   return (
     <Box
       minH="100vh"
-      bg={bgColor}
       position="relative"
       p={{ base: 4, md: 8 }}
       display="flex"
@@ -113,13 +192,13 @@ function Dashboard() {
     >
       {/* Upper section with WorkflowWheel */}
       <Box
-        height={{ base: "35vh", md: "40vh" }}
+        height={{ base: "50vh", md: "55vh" }}
         display="flex"
         alignItems="center"
         justifyContent="center"
         mb={{ base: 4, md: 8 }}
       >
-        <Box transform={["scale(0.65)", "scale(0.7)"]} transformOrigin="center">
+        <Box transform={["scale(0.8)", "scale(1.0)"]} transformOrigin="center">
           <WorkflowWheel onStateChange={handleStateChange} />
         </Box>
       </Box>
