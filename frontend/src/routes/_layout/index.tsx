@@ -28,7 +28,7 @@ function ProjectCard({ title }: { title: string }) {
 
   return (
     <Box
-      flex="0 0 240px"
+      flex="0 0 220px"
       bg={cardBg}
       borderRadius={tokens.radius.lg}
       overflow="hidden"
@@ -115,63 +115,52 @@ function ProjectSection({ title, projects }: { title: string; projects: typeof p
       >
         {title}
       </Text>
-      <Box position="relative">
-        {/* Scroll Container */}
-        <HStack
-          gap={3}
-          overflowX="auto"
-          ref={scrollContainerRef}
-          px={2}
-          css={{
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": { display: "none" },
-          }}
-        >
-          {projects.map((project) => (
-            <ProjectCard key={project.id} title={project.title} />
-          ))}
-        </HStack>
-
+      <HStack align="center" gap={4} width="100%">
         {/* Left Chevron */}
-        {canScrollLeft && (
-          <Box
-            position="absolute"
-            top="50%"
-            left={0}
-            transform="translateY(-50%)"
-            bgGradient="linear(to-r, rgba(255,255,255,0.9), rgba(255,255,255,0))"
-            _dark={{ bgGradient: "linear(to-r, rgba(0,0,0,0.7), rgba(0,0,0,0))" }}
-            px={2}
-            cursor="pointer"
-            onClick={handleScrollLeft}
-            transition="opacity 200ms"
-            _hover={{ opacity: 0.8, transform: "translateY(-50%) scale(1.05)" }}
-            zIndex={10}
+        <Box
+          opacity={canScrollLeft ? 1 : 0.3}
+          cursor={canScrollLeft ? "pointer" : "default"}
+          onClick={canScrollLeft ? handleScrollLeft : undefined}
+          transition="opacity 200ms"
+          _hover={canScrollLeft ? { opacity: 0.7 } : {}}
+          minW="24px"
+        >
+          <FiChevronLeft size={24} />
+        </Box>
+
+        {/* Cards Container - showing exactly 4 cards */}
+        <Box
+          flex="1"
+          overflow="hidden"
+          position="relative"
+        >
+          <HStack
+            gap={3}
+            overflowX="auto"
+            ref={scrollContainerRef}
+            css={{
+              scrollbarWidth: "none",
+              "&::-webkit-scrollbar": { display: "none" },
+            }}
           >
-            <FiChevronLeft size={24} />
-          </Box>
-        )}
+            {projects.map((project) => (
+              <ProjectCard key={project.id} title={project.title} />
+            ))}
+          </HStack>
+        </Box>
 
         {/* Right Chevron */}
-        {canScrollRight && (
-          <Box
-            position="absolute"
-            top="50%"
-            right={0}
-            transform="translateY(-50%)"
-            bgGradient="linear(to-l, rgba(255,255,255,0.9), rgba(255,255,255,0))"
-            _dark={{ bgGradient: "linear(to-l, rgba(0,0,0,0.7), rgba(0,0,0,0))" }}
-            px={2}
-            cursor="pointer"
-            onClick={handleScrollRight}
-            transition="opacity 200ms"
-            _hover={{ opacity: 0.8, transform: "translateY(-50%) scale(1.05)" }}
-            zIndex={10}
-          >
-            <FiChevronRight size={24} />
-          </Box>
-        )}
-      </Box>
+        <Box
+          opacity={canScrollRight ? 1 : 0.3}
+          cursor={canScrollRight ? "pointer" : "default"}
+          onClick={canScrollRight ? handleScrollRight : undefined}
+          transition="opacity 200ms"
+          _hover={canScrollRight ? { opacity: 0.7 } : {}}
+          minW="24px"
+        >
+          <FiChevronRight size={24} />
+        </Box>
+      </HStack>
     </VStack>
   )
 }
