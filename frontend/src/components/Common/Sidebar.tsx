@@ -124,7 +124,7 @@ const Sidebar = () => {
         minW={isCollapsed ? "60px" : "240px"}
         maxW={isCollapsed ? "60px" : "240px"}
         h="100%"
-        p={4}
+        p={isCollapsed ? 2 : 4}
         transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
         flexDirection="column"
         borderRight="1px solid"

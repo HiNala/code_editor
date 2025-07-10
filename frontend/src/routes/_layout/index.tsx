@@ -64,7 +64,8 @@ function ProjectCard({ title, video }: { title: string; video?: Video }) {
 
   return (
     <Box
-      flex="0 0 220px"
+      flex="0 0 calc(25% - 12px)" // 4 cards per row
+      minWidth="160px"
       bg={cardBg}
       borderRadius={tokens.radius.lg}
       overflow="hidden"
@@ -156,13 +157,17 @@ function ProjectSection({ title, projects, videos = [] }: { title: string; proje
 
   const handleScrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -232, behavior: "smooth" }) // 220px card + 12px gap
+      const firstCard = scrollContainerRef.current.querySelector('div') as HTMLElement
+      const cardWidth = firstCard ? firstCard.getBoundingClientRect().width + 12 : 232
+      scrollContainerRef.current.scrollBy({ left: -cardWidth, behavior: "smooth" })
     }
   }
 
   const handleScrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: 232, behavior: "smooth" }) // 220px card + 12px gap
+      const firstCard = scrollContainerRef.current.querySelector('div') as HTMLElement
+      const cardWidth = firstCard ? firstCard.getBoundingClientRect().width + 12 : 232
+      scrollContainerRef.current.scrollBy({ left: cardWidth, behavior: "smooth" })
     }
   }
 
@@ -194,7 +199,6 @@ function ProjectSection({ title, projects, videos = [] }: { title: string; proje
           flex="1"
           overflow="hidden"
           position="relative"
-          maxWidth="920px" // 4 cards * 220px + 3 gaps * 12px = 916px
         >
           <HStack
             gap={3}
