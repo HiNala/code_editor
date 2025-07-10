@@ -286,7 +286,7 @@ function Dashboard() {
         justifyContent="center"
         mb={{ base: 4, md: 8 }}
       >
-        <Box transform={["scale(0.8)", "scale(1.0)"]} transformOrigin="center">
+        <Box transform={["scale(0.9)", "scale(1.1)"]} transformOrigin="center">
           <WorkflowWheel onStateChange={handleStateChange} />
         </Box>
       </Box>
