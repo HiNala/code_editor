@@ -1,7 +1,7 @@
 import { Box } from "@chakra-ui/react"
-import { motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import { LuMoon, LuSun } from "react-icons/lu"
-import { useColorMode, useColorModeValue } from "./color-mode"
+import { useColorMode } from "./color-mode"
 
 const MotionBox = motion.create(Box)
 
@@ -9,30 +9,18 @@ export function ThemeToggle() {
   const { colorMode, toggleColorMode } = useColorMode()
   const isDark = colorMode === "dark"
 
-  // Better contrast colors for visibility
-  const bgGradient = useColorModeValue(
-    "linear(135deg, blue.500 0%, purple.600 50%, indigo.600 100%)",
-    "linear(135deg, purple.600 0%, indigo.700 50%, gray.800 100%)",
-  )
-
-  const sliderBg = useColorModeValue("white", "gray.100")
-  const iconColor = useColorModeValue("orange.500", "yellow.400")
-  const shadowColor = useColorModeValue("gray.400", "purple.500")
-  const borderColor = useColorModeValue("gray.300", "gray.600")
-
   return (
     <MotionBox
       as="button"
       position="relative"
-      w="16"
-      h="8"
+      w="24" // w-24 = 96px = 6rem
+      h="12" // h-12 = 48px = 3rem  
       borderRadius="full"
       cursor="pointer"
       overflow="hidden"
-      bgGradient={bgGradient}
       onClick={toggleColorMode}
       whileTap={{ scale: 0.95 }}
-      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      boxShadow="lg"
       _focus={{
         outline: "none",
         ring: 2,
@@ -42,75 +30,175 @@ export function ThemeToggle() {
       aria-label="Toggle theme"
       role="switch"
       aria-checked={isDark}
-      boxShadow={`0 2px 12px ${shadowColor}`}
-      border="1px solid"
-      borderColor={borderColor}
     >
-      {/* Animated stars background for dark mode */}
+      {/* Background Scene */}
       <MotionBox
         position="absolute"
         inset="0"
         animate={{
-          opacity: isDark ? 1 : 0,
+          background: isDark
+            ? "linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%)"
+            : "linear-gradient(135deg, #87ceeb 0%, #98d8e8 50%, #b6e5f0 100%)",
         }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-        background="radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3) 1px, transparent 1px), radial-gradient(circle at 80% 70%, rgba(255,255,255,0.2) 1px, transparent 1px), radial-gradient(circle at 60% 20%, rgba(255,255,255,0.15) 1px, transparent 1px)"
-        backgroundSize="15px 15px, 20px 20px, 12px 12px"
+        transition={{ duration: 0.8, ease: "easeInOut" }}
       />
 
-      {/* Light mode cloud effect */}
-      <MotionBox
-        position="absolute"
-        inset="0"
-        animate={{
-          opacity: isDark ? 0 : 1,
-        }}
-        transition={{ duration: 0.5, ease: "easeInOut" }}
-        background="radial-gradient(circle at 30% 60%, rgba(255,255,255,0.3) 8px, transparent 8px), radial-gradient(circle at 70% 40%, rgba(255,255,255,0.2) 12px, transparent 12px)"
-        backgroundSize="25px 25px, 30px 30px"
-      />
+      {/* Stars (Dark Mode) */}
+      <AnimatePresence>
+        {isDark && (
+          <MotionBox
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            position="absolute"
+            inset="0"
+          >
+            {[...Array(8)].map((_, i) => (
+              <MotionBox
+                key={i}
+                position="absolute"
+                w="1"
+                h="1"
+                bg="white"
+                borderRadius="full"
+                style={{
+                  left: `${20 + i * 8}%`,
+                  top: `${15 + (i % 3) * 15}%`,
+                }}
+                animate={{
+                  opacity: [0.3, 1, 0.3],
+                  scale: [0.8, 1.2, 0.8],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Number.POSITIVE_INFINITY,
+                  delay: i * 0.2,
+                }}
+              />
+            ))}
+          </MotionBox>
+        )}
+      </AnimatePresence>
 
-      {/* Sliding indicator */}
+      {/* Clouds (Light Mode) */}
+      <AnimatePresence>
+        {!isDark && (
+          <MotionBox
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.6 }}
+            position="absolute"
+            inset="0"
+          >
+            <MotionBox
+              position="absolute"
+              top="2"
+              left="16"
+              w="4"
+              h="2"
+              bg="rgba(255, 255, 255, 0.6)"
+              borderRadius="full"
+              animate={{
+                x: [0, 10, 0],
+              }}
+              transition={{
+                duration: 4,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+            />
+            <MotionBox
+              position="absolute"
+              top="4"
+              right="4"
+              w="3"
+              h="1.5"
+              bg="rgba(255, 255, 255, 0.4)"
+              borderRadius="full"
+              animate={{
+                x: [0, -8, 0],
+              }}
+              transition={{
+                duration: 6,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "easeInOut",
+              }}
+            />
+          </MotionBox>
+        )}
+      </AnimatePresence>
+
+      {/* Toggle Circle with Sun/Moon */}
       <MotionBox
         position="absolute"
         top="1"
-        w="6"
-        h="6"
+        w="10"
+        h="10"
         borderRadius="full"
-        bg={sliderBg}
-        boxShadow="0 2px 8px rgba(0,0,0,0.2)"
+        boxShadow="lg"
         display="flex"
         alignItems="center"
         justifyContent="center"
         animate={{
-          x: isDark ? 36 : 4,
+          x: isDark ? 48 : 4, // 48px = 12 * 4 (moving from left to right in 96px container)
+          backgroundColor: isDark ? "#1f2937" : "#ffffff",
         }}
         transition={{
           type: "spring",
-          stiffness: 400,
-          damping: 25,
-          duration: 0.4,
+          stiffness: 500,
+          damping: 30,
         }}
-        border="1px solid"
-        borderColor="gray.200"
       >
-        <MotionBox
-          animate={{
-            rotate: isDark ? 360 : 0,
-            scale: isDark ? 0.9 : 1,
-          }}
-          transition={{
-            duration: 0.5,
-            ease: "easeInOut",
-          }}
-        >
+        <AnimatePresence mode="wait">
           {isDark ? (
-            <LuMoon size={16} color={iconColor} />
+            <MotionBox
+              key="moon"
+              initial={{ rotate: -180, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 180, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              color="yellow.200"
+            >
+              <LuMoon size={18} fill="currentColor" />
+            </MotionBox>
           ) : (
-            <LuSun size={16} color={iconColor} />
+            <MotionBox
+              key="sun"
+              initial={{ rotate: 180, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: -180, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              color="yellow.500"
+            >
+              <MotionBox
+                animate={{ rotate: 360 }}
+                transition={{
+                  duration: 8,
+                  repeat: Number.POSITIVE_INFINITY,
+                  ease: "linear",
+                }}
+              >
+                <LuSun size={18} />
+              </MotionBox>
+            </MotionBox>
           )}
-        </MotionBox>
+        </AnimatePresence>
       </MotionBox>
+
+      {/* Glow Effect */}
+      <MotionBox
+        position="absolute"
+        inset="0"
+        borderRadius="full"
+        animate={{
+          boxShadow: isDark
+            ? "inset 0 0 20px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2)"
+            : "inset 0 0 20px rgba(251, 191, 36, 0.3), 0 0 20px rgba(251, 191, 36, 0.2)",
+        }}
+        transition={{ duration: 0.8 }}
+      />
     </MotionBox>
   )
 }
