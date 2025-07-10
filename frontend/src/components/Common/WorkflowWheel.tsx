@@ -16,7 +16,6 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
 
   const textColor = useColorModeValue("black", "white")
   const mutedTextColor = useColorModeValue("gray.600", "gray.400")
-  const ghostTextColor = useColorModeValue("rgba(0,0,0,0.02)", "rgba(255,255,255,0.02)")
   const arrowColor = useColorModeValue("gray.400", "gray.500")
   const arrowHoverColor = useColorModeValue("gray.600", "gray.300")
 
@@ -67,22 +66,6 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
       position="relative"
       py={8}
     >
-      {/* Background CRE8ABLE text */}
-      <Box
-        position="absolute"
-        top="50%"
-        left="50%"
-        transform="translate(-50%, -50%)"
-        fontSize="8rem"
-        fontWeight={tokens.typography.fontWeights.bold}
-        color={ghostTextColor}
-        pointerEvents="none"
-        userSelect="none"
-        fontFamily={tokens.typography.fontFamily.primary}
-        zIndex={1}
-      >
-        CRE8ABLE
-      </Box>
 
       <HStack gap={8} position="relative" zIndex={10}>
         {/* Left side - Workflow wheel with chevrons outside */}
