@@ -1,15 +1,51 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { Box, VStack, Text, HStack } from "@chakra-ui/react"
+import { Box, VStack, Text, HStack, Input, Image } from "@chakra-ui/react"
 import { useRef, useState, useEffect } from "react"
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi"
+import { useForm } from "react-hook-form"
 import { useColorModeValue } from "@/components/ui/color-mode"
 import { tokens } from "@/theme/tokens"
+import { Button } from "@/components/ui/button"
+import { Field } from "@/components/ui/field"
+import { InputGroup } from "@/components/ui/input-group"
 
 import WorkflowWheel from "@/components/Common/WorkflowWheel"
 
 export const Route = createFileRoute("/_layout/")({
   component: Dashboard,
 })
+
+interface Video {
+  id: string // youtube id
+  url: string
+  title: string
+}
+
+interface VideoFormData {
+  url: string
+}
+
+function parseYouTubeId(url: string): string | null {
+  const regex =
+    /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:v\/|watch\?.*v=|embed\/))([\w-]{11})/
+  const match = url.match(regex)
+  return match ? match[1] : null
+}
+
+async function fetchTitle(url: string): Promise<string> {
+  try {
+    const resp = await fetch(
+      `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`,
+    )
+    if (resp.ok) {
+      const json = (await resp.json()) as { title: string }
+      return json.title
+    }
+  } catch {
+    /* ignore */
+  }
+  return "Untitled Video"
+}
 
 // Placeholder project data
 const placeholderProjects = [
@@ -21,7 +57,7 @@ const placeholderProjects = [
   { id: 6, title: "Project Foxtrot", thumbnail: "/api/placeholder/300/200" },
 ]
 
-function ProjectCard({ title }: { title: string }) {
+function ProjectCard({ title, video }: { title: string; video?: Video }) {
   const cardBg = useColorModeValue("white", "gray.800")
   const textColor = useColorModeValue("gray.900", "white")
   const borderColor = useColorModeValue("gray.200", "gray.700")
@@ -41,35 +77,60 @@ function ProjectCard({ title }: { title: string }) {
       transition={`all ${tokens.motion.duration.normal} ${tokens.motion.easing.standard}`}
       cursor="pointer"
     >
-      <Box
-        height="120px"
-        bg="gray.200"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        color="gray.500"
-        fontSize="xs"
-      >
-        {title} Thumbnail
-      </Box>
+      {video ? (
+        <a href={video.url} target="_blank" rel="noopener noreferrer">
+          <Image
+            src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+            alt={video.title}
+            height="120px"
+            width="100%"
+            objectFit="cover"
+            cursor="pointer"
+          />
+        </a>
+      ) : (
+        <Box
+          height="120px"
+          bg="gray.200"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          color="gray.500"
+          fontSize="xs"
+        >
+          {title} Thumbnail
+        </Box>
+      )}
       <Box p={2}>
         <Text
           fontSize={tokens.typography.fontSizes.bodySm}
           fontWeight={tokens.typography.fontWeights.medium}
           color={textColor}
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
         >
-          {title}
+          {video ? video.title : title}
         </Text>
       </Box>
     </Box>
   )
 }
 
-function ProjectSection({ title, projects }: { title: string; projects: typeof placeholderProjects }) {
+function ProjectSection({ title, projects, videos = [] }: { title: string; projects: typeof placeholderProjects; videos?: Video[] }) {
   const textColor = useColorModeValue("gray.900", "white")
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  // Combine videos and placeholder projects
+  const allItems = [
+    ...videos.map(video => ({ type: 'video' as const, video, title: video.title })),
+    ...projects.slice(videos.length).map(project => ({ type: 'placeholder' as const, title: project.title }))
+  ]
 
   useEffect(() => {
     const updateScrollState = () => {
@@ -91,7 +152,7 @@ function ProjectSection({ title, projects }: { title: string; projects: typeof p
         container.removeEventListener("scroll", updateScrollState)
       }
     }
-  }, [])
+  }, [allItems.length])
 
   const handleScrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -143,8 +204,12 @@ function ProjectSection({ title, projects }: { title: string; projects: typeof p
               "&::-webkit-scrollbar": { display: "none" },
             }}
           >
-            {projects.map((project) => (
-              <ProjectCard key={project.id} title={project.title} />
+            {allItems.map((item, index) => (
+              <ProjectCard 
+                key={item.type === 'video' ? item.video.id : `placeholder-${index}`}
+                title={item.title}
+                video={item.type === 'video' ? item.video : undefined}
+              />
             ))}
           </HStack>
         </Box>
@@ -166,6 +231,40 @@ function ProjectSection({ title, projects }: { title: string; projects: typeof p
 }
 
 function Dashboard() {
+  const [videos, setVideos] = useState<Video[]>([])
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<VideoFormData>({ defaultValues: { url: "" } })
+
+  // Load videos from localStorage
+  useEffect(() => {
+    const raw = localStorage.getItem("cre8able-videos")
+    if (raw) {
+      try {
+        setVideos(JSON.parse(raw))
+      } catch {
+        /* ignore */
+      }
+    }
+  }, [])
+
+  const saveVideos = (newList: Video[]) => {
+    setVideos(newList)
+    localStorage.setItem("cre8able-videos", JSON.stringify(newList))
+  }
+
+  const onSubmit = async ({ url }: VideoFormData) => {
+    const id = parseYouTubeId(url)
+    if (!id) return
+    const title = await fetchTitle(url)
+    const newList = [...videos, { id, url, title }]
+    saveVideos(newList)
+    reset()
+  }
+
   const handleStateChange = (state: string) => {
     console.log("Workflow state changed to:", state)
     // Here you can add navigation logic or other actions based on the state
@@ -199,9 +298,38 @@ function Dashboard() {
         mx="auto"
         width="100%"
       >
+        {/* Video Input Form */}
+        <Box mb={6}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Field
+              invalid={!!errors.url}
+              errorText={errors.url?.message}
+              label="Add YouTube Video"
+            >
+              <InputGroup
+                w="100%"
+                endElement={
+                  <Button type="submit" loading={isSubmitting}>
+                    Add
+                  </Button>
+                }
+              >
+                <Input
+                  placeholder="Paste YouTube link"
+                  {...register("url", {
+                    required: "URL is required",
+                    validate: (v) =>
+                      parseYouTubeId(v) !== null || "Invalid YouTube URL",
+                  })}
+                />
+              </InputGroup>
+            </Field>
+          </form>
+        </Box>
+
         <VStack gap={{ base: 4, md: 8 }} align="stretch" height="100%">
           <Box flex="1">
-            <ProjectSection title="Your Feed" projects={placeholderProjects} />
+            <ProjectSection title="Your Feed" projects={placeholderProjects} videos={videos} />
           </Box>
           <Box flex="1">
             <ProjectSection title="Inspiration" projects={placeholderProjects} />
