@@ -95,6 +95,9 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
     OPENAI_API_KEY: str | None = None
+    GEMINI_API_KEY: str | None = None
+    # Timeout (in seconds) for Gemini API calls, increase for longer videos
+    GEMINI_TIMEOUT_SECONDS: float = 120.0
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":

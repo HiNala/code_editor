@@ -281,11 +281,11 @@ function Dashboard() {
     >
       {/* Upper section with WorkflowWheel */}
       <Box
-        height={{ base: "50vh", md: "55vh" }}
+        height={{ base: "40vh", md: "45vh" }}
         display="flex"
         alignItems="center"
         justifyContent="center"
-        mb={{ base: 4, md: 8 }}
+        mb={{ base: 2, md: 4 }}
       >
         <Box transform={["scale(0.9)", "scale(1.1)"]} transformOrigin="center">
           <WorkflowWheel onStateChange={handleStateChange} />
@@ -295,17 +295,18 @@ function Dashboard() {
       {/* Project Sections - taking remaining space */}
       <Box
         flex="1"
+        minHeight="55vh"
         maxWidth="1400px"
         mx="auto"
         width="100%"
       >
         {/* Video Input Form */}
-        <Box mb={6}>
+        <Box mb={4}>
           <form onSubmit={handleSubmit(onSubmit)}>
             <Field
               invalid={!!errors.url}
               errorText={errors.url?.message}
-              label="Add YouTube Video"
+              label="Add Video"
             >
               <InputGroup
                 w="100%"
@@ -328,7 +329,7 @@ function Dashboard() {
           </form>
         </Box>
 
-        <VStack gap={{ base: 4, md: 8 }} align="stretch" height="100%">
+        <VStack gap={{ base: 3, md: 6 }} align="stretch" height="100%">
           <Box flex="1">
             <ProjectSection title="Your Feed" projects={placeholderProjects} videos={videos} />
           </Box>
