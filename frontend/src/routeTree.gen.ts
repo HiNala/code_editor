@@ -86,6 +86,11 @@ const LayoutAdminRoute = LayoutAdminImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutSocialsRoute = LayoutSocialsImport.update({
+  path: '/socials',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -134,6 +139,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutVideosImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/socials': {
+      preLoaderRoute: typeof LayoutSocialsImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/': {
       preLoaderRoute: typeof LayoutIndexImport
       parentRoute: typeof LayoutImport
@@ -151,6 +160,7 @@ export const routeTree = rootRoute.addChildren([
     LayoutPlanRoute,
     LayoutSettingsRoute,
     LayoutVideosRoute,
+    LayoutSocialsRoute,
     LayoutIndexRoute,
   ]),
   LoginRoute,

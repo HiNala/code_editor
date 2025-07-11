@@ -98,6 +98,18 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str | None = None
     # Timeout (in seconds) for Gemini API calls, increase for longer videos
     GEMINI_TIMEOUT_SECONDS: float = 120.0
+    # Polling parameters for Files API uploads before calling generateContent
+    # Increase interval and retries to allow file processing to complete
+    GEMINI_FILE_POLL_INTERVAL_SECONDS: float = 2.0
+    GEMINI_FILE_POLL_MAX_RETRIES: int = 60
+    # Inline (base64) upload threshold for small videos (bytes)
+    GEMINI_INLINE_VIDEO_SIZE_LIMIT: int = 20 * 1024 * 1024  # 20 MB
+
+    # AWS S3 configuration
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+    AWS_REGION: str = "us-west-2"
+    S3_BUCKET_NAME: str
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":

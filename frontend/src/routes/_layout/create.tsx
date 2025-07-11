@@ -4,10 +4,11 @@ import {
   Heading,
   Text,
   Box,
+  Flex,
+  Icon,
   Input,
-  Spinner,
-  Table,
 } from "@chakra-ui/react"
+import { FiUpload, FiCpu, FiFilm, FiPlayCircle } from "react-icons/fi"
 import { Field } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
 import { createFileRoute } from "@tanstack/react-router"
@@ -17,32 +18,45 @@ export const Route = createFileRoute("/_layout/create")({
 })
 
 function CreatePage() {
-  const [url, setUrl] = React.useState("")
-  const [result, setResult] = React.useState<any>(null)
+  const [videoFiles, setVideoFiles] = React.useState<File[]>([])
+  const [audioFiles, setAudioFiles] = React.useState<File[]>([])
+  const [creation, setCreation] = React.useState<any>(null)
   const [isLoading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
-  const [creationsList, setCreationsList] = React.useState<any[]>([])
-  const [loadingList, setLoadingList] = React.useState(false)
+  // legacy creation list removed in favor of Videos page
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
     try {
-      const token = localStorage.getItem("access_token")
-      const resp = await fetch(
+      const token = localStorage.getItem("access_token") || undefined
+      // 1️⃣ Create a new creation record
+      const createResp = await fetch(
         `${import.meta.env.VITE_API_URL}/api/v1/create`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ youtube_url: url }),
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
         },
       )
-      if (!resp.ok) throw new Error(await resp.text())
-      setResult(await resp.json())
+      if (!createResp.ok) throw new Error(await createResp.text())
+      const created = await createResp.json()
+      setCreation(created)
+
+      // 2️⃣ Upload media files to S3 via our new endpoint
+      const form = new FormData()
+      videoFiles.forEach((f) => form.append("video_files", f))
+      audioFiles.forEach((f) => form.append("audio_files", f))
+      const uploadResp = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/v1/create/${created.id}/media`,
+        {
+          method: "POST",
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: form,
+        },
+      )
+      if (!uploadResp.ok) throw new Error(await uploadResp.text())
+      setCreation(await uploadResp.json())
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -50,44 +64,50 @@ function CreatePage() {
     }
   }
 
-  React.useEffect(() => {
-    setLoadingList(true)
-    const token = localStorage.getItem("access_token")
-    fetch(`${import.meta.env.VITE_API_URL}/api/v1/create`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then((r) => r.json())
-      .then((json) => setCreationsList(json.data || []))
-      .catch(() => {})
-      .finally(() => setLoadingList(false))
-  }, [])
-
-  const parsedEntries = React.useMemo(() => {
-    if (!result) return []
-    const text = result.timestamp_data?.candidates?.[0]?.content?.parts?.[0]?.text || ""
-    const match = text.match(/```json\n([\s\S]*?)```/)
-    const jsonStr = match ? match[1] : text
-    try {
-      return JSON.parse(jsonStr)
-    } catch {
-      return []
-    }
-  }, [result])
 
   return (
     <Container maxW="full" py={8}>
       <Heading size="lg">Creation Studio</Heading>
+      <Box mb={6} color="gray.600">
+        <Flex align="center" mb={2}>
+          <Icon as={FiUpload} color="blue.500" mr={2} />
+          <Text>Upload your videos and optional audio tracks</Text>
+        </Flex>
+        <Flex align="center" mb={2}>
+          <Icon as={FiCpu} color="purple.500" mr={2} />
+          <Text>Let Gemini AI analyze each clip and generate smart timestamps</Text>
+        </Flex>
+        <Flex align="center" mb={2}>
+          <Icon as={FiFilm} color="orange.500" mr={2} />
+          <Text>Stitch everything together via FFmpeg into your final edited video</Text>
+        </Flex>
+        <Flex align="center">
+          <Icon as={FiPlayCircle} color="green.500" mr={2} />
+          <Text>
+            Hit “Start Processing,” then check the <strong>Videos</strong> page to monitor progress and preview the results
+          </Text>
+        </Flex>
+      </Box>
 
       <Box as="form" mt={6} onSubmit={handleSubmit}>
-        <Field label="YouTube URL" required>
+        <Field label="Video files" required>
           <Input
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=..."
+            type="file"
+            accept="video/*"
+            multiple
+            onChange={(e) => setVideoFiles(Array.from(e.target.files || []))}
+          />
+        </Field>
+        <Field label="Music / Audio" mt={4}>
+          <Input
+            type="file"
+            accept="audio/*"
+            multiple
+            onChange={(e) => setAudioFiles(Array.from(e.target.files || []))}
           />
         </Field>
         <Button mt={4} type="submit" loading={isLoading}>
-          Generate Timestamps
+          Start Processing
         </Button>
       </Box>
 
@@ -97,56 +117,22 @@ function CreatePage() {
         </Text>
       )}
 
-      {result && (
+      {creation && (
         <Box mt={6}>
-          <Heading size="md">Timestamps</Heading>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader>Start</Table.ColumnHeader>
-                <Table.ColumnHeader>End</Table.ColumnHeader>
-                <Table.ColumnHeader>Description</Table.ColumnHeader>
-                <Table.ColumnHeader>Importance</Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {parsedEntries.map((e: any, i: number) => (
-                <Table.Row key={i}>
-                  <Table.Cell>{e.start}</Table.Cell>
-                  <Table.Cell>{e.end}</Table.Cell>
-                  <Table.Cell>{e.description}</Table.Cell>
-                  <Table.Cell>{e.importance}</Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+          <Heading size="md">Status: {creation.status}</Heading>
+          {creation.output_url && (
+            <Box mt={4}>
+              <Heading size="sm">Result Video</Heading>
+              <video
+                src={creation.output_url}
+                controls
+                style={{ maxWidth: "100%", marginTop: 8 }}
+              />
+            </Box>
+          )}
         </Box>
       )}
-      <Box mt={8}>
-        <Heading size="md">Previous Creations</Heading>
-        {loadingList ? (
-          <Spinner mt={4} />
-        ) : (
-          <Table.Root mt={4}>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeader>Date</Table.ColumnHeader>
-                <Table.ColumnHeader>YouTube URL</Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {creationsList.map((c: any) => (
-                <Table.Row key={c.id}>
-                  <Table.Cell>
-                    {new Date(c.created_at).toLocaleString()}
-                  </Table.Cell>
-                  <Table.Cell>{c.youtube_url}</Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        )}
-      </Box>
+      {/* Previous Creations table removed: replaced by Videos page */}
     </Container>
   )
 }

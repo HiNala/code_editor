@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router"
 
-import Gallery from "@/components/Videos/Gallery"
+import CreationsTable from "@/components/Creations/CreationsTable"
 
 export const Route = createFileRoute("/_layout/videos")({
   component: Videos,
 })
 
 function Videos() {
-  return <Gallery />
+  return <CreationsTable />
 }

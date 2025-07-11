@@ -112,10 +112,28 @@ class ItemsPublic(SQLModel):
 class Creation(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
-    youtube_url: str
+    # (legacy) YouTube URL and raw timestamps (Gemini output) if used
+    youtube_url: str | None = None
     timestamp_data: dict = Field(
-        sa_column=Column(MutableDict.as_mutable(JSON), nullable=False)
+        sa_column=Column(MutableDict.as_mutable(JSON), nullable=False), default={}
     )
+
+    # S3 keys for user‑uploaded videos and audio tracks
+    input_video_keys: list[str] = Field(
+        default_factory=list,
+        sa_column=Column(MutableList.as_mutable(JSON), nullable=False, server_default="[]"),
+    )
+    input_audio_keys: list[str] = Field(
+        default_factory=list,
+        sa_column=Column(MutableList.as_mutable(JSON), nullable=False, server_default="[]"),
+    )
+
+    # processing status: pending -> processing -> completed -> failed
+    status: str = Field(default="pending")
+
+    # S3 key for the final edited video
+    output_video_key: str | None = None
+
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
 
 
