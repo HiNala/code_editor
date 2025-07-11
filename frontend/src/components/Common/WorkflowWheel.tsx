@@ -26,9 +26,9 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
 
     let newIndex
     if (direction === "up") {
-      newIndex = (currentStateIndex + 1) % WORKFLOW_STATES.length
-    } else {
       newIndex = (currentStateIndex - 1 + WORKFLOW_STATES.length) % WORKFLOW_STATES.length
+    } else {
+      newIndex = (currentStateIndex + 1) % WORKFLOW_STATES.length
     }
     
     setCurrentStateIndex(newIndex)

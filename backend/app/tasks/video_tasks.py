@@ -7,7 +7,7 @@ from sqlmodel import Session
 
 from app.core.config import settings
 from app.core.db import engine
-from app.models import Creation
+from app.models import Creation, Item
 from app.services.s3_service import s3_client
 from app.services.gemini_service import generate_timestamps_from_youtube
 
@@ -56,8 +56,16 @@ def process_uploaded_media(creation_id: str) -> None:
             s3_client.download_file(settings.S3_BUCKET_NAME, key, local_path)
             local_audios.append(local_path)
 
+        # prepare inspiration item text
+        item_text = ""
+        if creation.item_id:
+            item_obj = session.get(Item, creation.item_id)
+            if item_obj:
+                # include full item data as JSON for inspiration
+                item_text = item_obj.model_dump_json()
+
         # generate timestamps using Gemini for each uploaded video
-        timestamp_data = {"videos": []}
+        timestamp_data: dict = {"videos": []}
         for key in creation.input_video_keys or []:
             presigned_url = s3_client.generate_presigned_url(
                 ClientMethod="get_object",
@@ -66,7 +74,7 @@ def process_uploaded_media(creation_id: str) -> None:
             )
             logger.info(f"Generating timestamps via Gemini for video {key}")
             try:
-                timestamps = generate_timestamps_from_youtube(presigned_url)
+                timestamps = generate_timestamps_from_youtube(presigned_url, item_text)
                 timestamp_data["videos"].append({"key": key, "timestamps": timestamps})
             except Exception as exc:
                 logger.error(f"Gemini timestamp generation failed for video {key}: {exc}")

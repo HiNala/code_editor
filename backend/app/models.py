@@ -1,9 +1,10 @@
 import uuid
 import datetime
+from typing import Optional
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
-from sqlalchemy import Column
+from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB as JSON
 from sqlalchemy.ext.mutable import MutableList, MutableDict
 
@@ -90,11 +91,16 @@ class Item(ItemBase, table=True):
         sa_column=Column(MutableList.as_mutable(JSON), nullable=False, server_default="[]"),
     )
 
+    # timestamp when the item was created
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
+
 
 # Properties to return via API, id is always required
 class ItemPublic(ItemBase):
     id: uuid.UUID
     owner_id: uuid.UUID
+    # timestamp when the item was created
+    created_at: datetime.datetime
 
     # store chat history as list of {role, content}
     chat_history: list[dict] = Field(
@@ -112,6 +118,12 @@ class ItemsPublic(SQLModel):
 class Creation(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: uuid.UUID = Field(foreign_key="user.id", nullable=False)
+    # optional link to an Item for inspiration (set to NULL if Item is deleted)
+    item_id: uuid.UUID | None = Field(
+        default=None,
+        sa_column=Column(ForeignKey("item.id", ondelete="SET NULL"), nullable=True),
+    )
+    item: Optional["Item"] = Relationship()
     # (legacy) YouTube URL and raw timestamps (Gemini output) if used
     youtube_url: str | None = None
     timestamp_data: dict = Field(

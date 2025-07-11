@@ -1,8 +1,7 @@
 import React from 'react'
 import { Button, Container, Heading, Text, Table, Box, IconButton } from '@chakra-ui/react'
-import { FiVideo, FiMusic } from 'react-icons/fi'
+import { FiVideo, FiMusic, FiTrash } from 'react-icons/fi'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from '@tanstack/react-router'
 import {
   DialogRoot,
   DialogContent,
@@ -11,7 +10,6 @@ import {
   DialogBody,
   DialogCloseTrigger,
 } from '@/components/ui/dialog'
-import { Route as SocialsRoute } from '@/routes/_layout/socials'
 
 const API_URL = import.meta.env.VITE_API_URL
 
@@ -28,12 +26,11 @@ interface Creation {
 }
 
 export default function CreationsTable() {
-  const navigate = useNavigate({ from: SocialsRoute.fullPath })
   const [isOpen, setIsOpen] = React.useState(false)
   const [previewUrl, setPreviewUrl] = React.useState('')
   const [expandedId, setExpandedId] = React.useState<string | null>(null)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['creations'],
     queryFn: async () => {
       const token = localStorage.getItem('access_token')
@@ -72,8 +69,8 @@ export default function CreationsTable() {
             <Table.ColumnHeader>Videos</Table.ColumnHeader>
             <Table.ColumnHeader>Status</Table.ColumnHeader>
             <Table.ColumnHeader>Timestamps</Table.ColumnHeader>
-            <Table.ColumnHeader>Preview</Table.ColumnHeader>
-            <Table.ColumnHeader>Socials</Table.ColumnHeader>
+            <Table.ColumnHeader>Edited</Table.ColumnHeader>
+            <Table.ColumnHeader>Actions</Table.ColumnHeader>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -129,14 +126,35 @@ export default function CreationsTable() {
                 )}
               </Table.Cell>
                 <Table.Cell>
-                  <Button
+                  <IconButton
                     size="sm"
-                    onClick={() =>
-                      navigate({ to: SocialsRoute.fullPath, params: { creationId: c.id } })
-                    }
+                    variant="ghost"
+                    colorScheme="red"
+                    aria-label="Delete creation"
+                    onClick={async () => {
+                      if (
+                        !window.confirm(
+                          'Are you sure you want to delete this creation? This will remove all videos, audio, and output permanently.'
+                        )
+                      )
+                        return
+                      const token = localStorage.getItem('access_token')
+                      const res = await fetch(
+                        `${API_URL}/api/v1/create/${c.id}`,
+                        {
+                          method: 'DELETE',
+                          headers: token ? { Authorization: `Bearer ${token}` } : {},
+                        }
+                      )
+                      if (res.ok) {
+                        refetch()
+                      } else {
+                        console.error('Failed to delete creation')
+                      }
+                    }}
                   >
-                    Socials
-                  </Button>
+                    <FiTrash />
+                  </IconButton>
                 </Table.Cell>
               </Table.Row>
               {expandedId === c.id && (
@@ -205,7 +223,7 @@ export default function CreationsTable() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {previewType === 'audio' ? 'Preview Audio' : 'Preview Video'}
+            {previewType === 'audio' ? 'Preview Audio' : 'Edited Video'}
             </DialogTitle>
             <DialogCloseTrigger />
           </DialogHeader>

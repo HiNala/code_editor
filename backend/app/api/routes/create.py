@@ -7,14 +7,18 @@ from sqlmodel import SQLModel, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.core.config import settings
-from app.models import Creation
+from app.models import Creation, Message
 from app.services.s3_service import s3_client
 from fastapi.responses import StreamingResponse
 from app.core.config import settings
 
 
+class CreationRequest(SQLModel):
+    item_id: uuid.UUID | None = None
+
 class CreationResponse(SQLModel):
     id: uuid.UUID
+    item_id: uuid.UUID | None
     # optional legacy YouTube URL
     youtube_url: str | None
     timestamp_data: dict
@@ -41,15 +45,17 @@ logger = logging.getLogger(__name__)
 
 @router.post("", response_model=CreationResponse)
 def run_creation(
+    *,
     background_tasks: BackgroundTasks,
     current_user: CurrentUser,
     session: SessionDep,
+    create_req: CreationRequest,
 ) -> CreationResponse:
     """
     Initialize a new Creation record (empty), no body required for MVP.
     """
     logger.info(f"Initializing Creation for user {current_user.id}")
-    creation = Creation(owner_id=current_user.id)
+    creation = Creation(owner_id=current_user.id, item_id=create_req.item_id)
     session.add(creation)
     session.commit()
     session.refresh(creation)
@@ -116,6 +122,7 @@ def list_creations(
         results.append(
             CreationResponse(
                 id=c.id,
+                item_id=c.item_id,
                 youtube_url=c.youtube_url,
                 timestamp_data=c.timestamp_data,
                 input_video_keys=c.input_video_keys,
@@ -191,3 +198,36 @@ def upload_media(
     background_tasks.add_task(process_uploaded_media, str(creation.id))
 
     return creation
+
+
+@router.delete("/{creation_id}", response_model=Message)
+def delete_creation(
+    creation_id: uuid.UUID,
+    current_user: CurrentUser,
+    session: SessionDep,
+) -> Message:
+    """
+    Delete a Creation and all associated media files (videos, audio, output) from S3.
+    """
+    creation = session.get(Creation, creation_id)
+    if not creation or creation.owner_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Creation not found")
+    bucket = settings.S3_BUCKET_NAME
+    for key in creation.input_video_keys or []:
+        try:
+            s3_client.delete_object(Bucket=bucket, Key=key)
+        except Exception:
+            pass
+    for key in creation.input_audio_keys or []:
+        try:
+            s3_client.delete_object(Bucket=bucket, Key=key)
+        except Exception:
+            pass
+    if creation.output_video_key:
+        try:
+            s3_client.delete_object(Bucket=bucket, Key=creation.output_video_key)
+        except Exception:
+            pass
+    session.delete(creation)
+    session.commit()
+    return Message(message="Creation deleted successfully")

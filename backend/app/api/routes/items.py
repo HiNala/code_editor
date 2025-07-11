@@ -2,10 +2,10 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from sqlmodel import func, select
+from sqlmodel import func, select, update
 
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
+from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message, Creation
 
 router = APIRouter(prefix="/items", tags=["items"])
 
@@ -104,6 +104,12 @@ def delete_item(
         raise HTTPException(status_code=404, detail="Item not found")
     if not current_user.is_superuser and (item.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
+    # Disassociate this plan from any Creations referencing it
+    session.exec(
+        update(Creation)
+        .where(Creation.item_id == id)
+        .values(item_id=None)
+    )
     session.delete(item)
     session.commit()
     return Message(message="Item deleted successfully")

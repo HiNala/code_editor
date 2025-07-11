@@ -155,9 +155,11 @@ function Card({
             overflow: "hidden",
           }}
         >
-          {title}
+        {title}
         </Text>
-        <CardActionsMenu item={item} />
+        <Box onClick={(e) => e.stopPropagation()}>
+          <CardActionsMenu item={item} />
+        </Box>
       </Flex>
 
       {/* Description */}

@@ -12,7 +12,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 
 
-def generate_timestamps_from_youtube(youtube_url: str) -> dict:
+def generate_timestamps_from_youtube(youtube_url: str, item_text: str = "") -> dict:
     """
     Uploads the video at youtube_url to the Gemini Files API and then
     calls Gemini generateContent to produce timestamped JSON for the video.
@@ -23,7 +23,10 @@ def generate_timestamps_from_youtube(youtube_url: str) -> dict:
         / "instructions"
         / "timestamp_instruction.txt"
     )
-    instruction = instr_path.read_text(encoding="utf-8")
+    template = instr_path.read_text(encoding="utf-8")
+    instruction = template.replace("{{ITEM}}", item_text or "")
+    # Log the populated instruction to verify ITEM placeholder substitution
+    logger.info("Using timestamp instruction (with ITEM filled): %s", instruction)
 
     # Download the video bytes from the given URL (e.g., S3 presigned URL)
     try:

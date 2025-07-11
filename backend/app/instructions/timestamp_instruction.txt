@@ -2,3 +2,5 @@ Give me a list of timestamps range with a description for each of what’s happe
 
 
 RETURN ONLY A JSON
+
+Follow these user demands and get inspiration from: {{ITEM}}

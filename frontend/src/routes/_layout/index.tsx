@@ -310,7 +310,7 @@ function Dashboard() {
             <Field
               invalid={!!errors.url}
               errorText={errors.url?.message}
-              label="Add Video"
+              label="Add video for inspiration"
             >
               <InputGroup
                 w="100%"
@@ -335,10 +335,7 @@ function Dashboard() {
 
         <VStack gap={{ base: 3, md: 6 }} align="stretch" height="100%">
           <Box flex="1">
-            <ProjectSection title="Your Feed" projects={placeholderProjects} videos={videos} />
-          </Box>
-          <Box flex="1">
-            <ProjectSection title="Inspiration" projects={placeholderProjects} />
+            <ProjectSection title="Inspiration" projects={placeholderProjects} videos={videos} />
           </Box>
         </VStack>
       </Box>

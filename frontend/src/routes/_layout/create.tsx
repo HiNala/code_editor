@@ -7,23 +7,33 @@ import {
   Flex,
   Icon,
   Input,
+  chakra,
 } from "@chakra-ui/react"
 import { FiUpload, FiCpu, FiFilm, FiPlayCircle } from "react-icons/fi"
 import { Field } from "@/components/ui/field"
 import { Button } from "@/components/ui/button"
-import { createFileRoute } from "@tanstack/react-router"
+
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
+import { useQuery } from "@tanstack/react-query"
+import { ItemsService } from "@/client"
+import { Route as VideosRoute } from "@/routes/_layout/videos"
 
 export const Route = createFileRoute("/_layout/create")({
   component: CreatePage,
 })
 
 function CreatePage() {
+  const navigate = useNavigate({ from: Route.fullPath })
   const [videoFiles, setVideoFiles] = React.useState<File[]>([])
   const [audioFiles, setAudioFiles] = React.useState<File[]>([])
+  const [selectedItemId, setSelectedItemId] = React.useState<string>("")
   const [creation, setCreation] = React.useState<any>(null)
   const [isLoading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
-  // legacy creation list removed in favor of Videos page
+
+  const { data: itemsData } = useQuery({ queryKey: ["items"], queryFn: () => ItemsService.readItems() })
+  const items = itemsData?.data || []
+  // styling the native select via chakra for consistent look
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,7 +46,11 @@ function CreatePage() {
         `${import.meta.env.VITE_API_URL}/api/v1/create`,
         {
           method: "POST",
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ item_id: selectedItemId || null }),
         },
       )
       if (!createResp.ok) throw new Error(await createResp.text())
@@ -57,6 +71,8 @@ function CreatePage() {
       )
       if (!uploadResp.ok) throw new Error(await uploadResp.text())
       setCreation(await uploadResp.json())
+      // after all uploads, redirect to videos page
+      navigate({ to: VideosRoute.fullPath })
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -90,6 +106,29 @@ function CreatePage() {
       </Box>
 
       <Box as="form" mt={6} onSubmit={handleSubmit}>
+        <Field label="Link a plan">
+          <chakra.select
+            value={selectedItemId}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+              setSelectedItemId(e.target.value)
+            }
+            mb={2}
+            width="full"
+            px={3}
+            py={2}
+            borderRadius="md"
+            borderColor="gray.200"
+          >
+            <option value="">None</option>
+            {items.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.title} (
+                {new Date((item as any).created_at).toLocaleDateString()}
+                )
+              </option>
+            ))}
+          </chakra.select>
+        </Field>
         <Field label="Video files" required>
           <Input
             type="file"

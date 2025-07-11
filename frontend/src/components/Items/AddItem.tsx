@@ -72,19 +72,19 @@ const AddItem = () => {
       open={isOpen}
       onOpenChange={({ open }) => setIsOpen(open)}
     >
-      <DialogTrigger asChild>
-        <Button value="add-item" my={4}>
+        <DialogTrigger asChild>
+        <Button value="add-plan" my={4}>
           <FaPlus fontSize="16px" />
-          Add Item
+          Add Plan
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           <DialogHeader>
-            <DialogTitle>Add Item</DialogTitle>
+            <DialogTitle>Add Plan</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <Text mb={4}>Fill in the details to add a new item.</Text>
+            <Text mb={4}>Fill in the details to add a new plan.</Text>
             <VStack gap={4}>
               <Field
                 required
@@ -105,12 +105,12 @@ const AddItem = () => {
               <Field
                 invalid={!!errors.description}
                 errorText={errors.description?.message}
-                label="Description"
+                label="Instructions"
               >
                 <Input
                   id="description"
                   {...register("description")}
-                  placeholder="Description"
+                  placeholder="Instructions"
                   type="text"
                 />
               </Field>

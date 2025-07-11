@@ -163,6 +163,52 @@ $ alembic upgrade head
 
 If you don't want to start with the default models and want to remove them / modify them, from the beginning, without having any previous revision, you can remove the revision files (`.py` Python files) under `./backend/app/alembic/versions/`. And then create a first migration as described above.
 
+### Adding `item_id` to Creation model
+
+After updating the `Creation` model to include an `item_id` field, generate a new Alembic migration and apply it:
+
+```bash
+docker compose exec backend bash
+alembic revision --autogenerate -m "Add item_id to Creation"
+alembic upgrade head
+```
+
+### Adding `created_at` to Item model
+
+After updating the `Item` model to include a `created_at` timestamp, generate and apply a migration:
+
+```bash
+# You can run this locally (so the file appears in your host repo):
+cd backend
+# Use your package manager or `uv` to run alembic with the local config
+uv run alembic revision --autogenerate -m "Add created_at to Item"
+uv run alembic upgrade head
+
+# Or in Docker (ensure you're in the repo root so alembic.ini is found):
+docker compose exec backend bash -lc '
+  alembic revision --autogenerate -m "Add created_at to Item" && \
+  alembic upgrade head
+'
+
+# Finally, commit the generated migration script:
+git add backend/app/alembic/versions/*_add_created_at_to_item.py
+git commit -m "Add Alembic migration for created_at on Item"
+
+### Update `Creation.item_id` foreign key on delete
+
+After updating the `Creation.item_id` foreign‑key to include `ondelete="SET NULL"`, generate and apply a migration:
+
+```bash
+docker compose exec backend bash
+alembic revision --autogenerate -m "Set ondelete=SET NULL on Creation.item_id"
+alembic upgrade head
+```
+
+# Commit the generated migration script:
+git add backend/app/alembic/versions/*_set_ondelete_set_null_on_creation_item_id.py
+git commit -m "Add Alembic migration for ondelete SET NULL on Creation.item_id"
+```
+
 ## Email Templates
 
 The email templates are in `./backend/app/email-templates/`. Here, there are two directories: `build` and `src`. The `src` directory contains the source files that are used to build the final email templates. The `build` directory contains the final email templates that are used by the application.
