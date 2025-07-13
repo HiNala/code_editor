@@ -52,7 +52,7 @@
     "@tanstack/router-devtools": "1.19.1",
     "@tanstack/router-vite-plugin": "1.19.0",
     "@types/node": "^22.15.3",
-    "@vitejs/plugin-react-swc": "^3.9.0",
+    "@vitejs/plugin-react-swc": "^3.10.2",
     "dotenv": "^16.4.5",
     "typescript": "^5.2.2",
     "vite": "^6.3.4",
