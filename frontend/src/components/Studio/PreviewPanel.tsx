@@ -34,7 +34,6 @@ type PreviewMode = 'preview' | 'console' | 'code'
 
 export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   files,
-  activeFile,
 }) => {
   const [viewportSize, setViewportSize] = useState<ViewportSize>('desktop')
   const [previewMode, setPreviewMode] = useState<PreviewMode>('preview')

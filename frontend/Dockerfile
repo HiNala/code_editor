@@ -3,9 +3,10 @@ FROM node:20 AS build-stage
 
 WORKDIR /app
 
-COPY package*.json /app/
+COPY package.json /app/
 
-RUN npm install
+# Clean install to avoid platform-specific dependency issues
+RUN npm cache clean --force && npm install
 
 COPY ./ /app/
 

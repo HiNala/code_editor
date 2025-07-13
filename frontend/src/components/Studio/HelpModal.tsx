@@ -1,21 +1,8 @@
 import React from 'react'
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Badge,
-  Kbd,
-} from '@chakra-ui/react'
-import {
-  DialogBody,
-  DialogCloseTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogRoot,
-  DialogTitle,
-} from '../ui/dialog'
-import { useColorModeValue } from '../ui/color-mode'
+import { X } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Button } from '../ui/button'
+import { cn } from '../../lib/utils'
 
 interface HelpModalProps {
   isOpen: boolean
@@ -75,96 +62,95 @@ const shortcuts = [
 ]
 
 export const HelpModal: React.FC<HelpModalProps> = ({ isOpen, onClose }) => {
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.600')
-
   return (
-    <DialogRoot open={isOpen} onOpenChange={(e) => !e.open && onClose()}>
-      <DialogContent maxW="2xl">
-        <DialogHeader>
-          <DialogTitle>Keyboard Shortcuts</DialogTitle>
-        </DialogHeader>
-        <DialogCloseTrigger />
-        
-        <DialogBody>
-          <VStack spacing={6} align="stretch">
-            <Text color="gray.600" fontSize="sm">
-              Boost your productivity with these keyboard shortcuts
-            </Text>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50"
+            onClick={onClose}
+          />
+          
+          {/* Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative w-full max-w-2xl max-h-[80vh] bg-background border border-border rounded-lg shadow-lg overflow-hidden"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-border">
+              <h2 className="text-lg font-semibold">Keyboard Shortcuts</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onClose}
+                className="h-8 w-8 p-0"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
             
-            {shortcuts.map((section, sectionIndex) => (
-              <Box key={section.category}>
-                <Text
-                  fontWeight="semibold"
-                  fontSize="sm"
-                  color="gray.700"
-                  mb={3}
-                  textTransform="uppercase"
-                  letterSpacing="wider"
-                >
-                  {section.category}
-                </Text>
-                <VStack spacing={2} align="stretch">
-                  {section.items.map((shortcut, index) => (
-                    <HStack
-                      key={index}
-                      justify="space-between"
-                      align="center"
-                      p={3}
-                      borderRadius="md"
-                      bg={useColorModeValue('gray.50', 'gray.700')}
-                      _hover={{
-                        bg: useColorModeValue('gray.100', 'gray.600')
-                      }}
-                      transition="background-color 0.15s ease"
-                    >
-                      <Text fontSize="sm">{shortcut.description}</Text>
-                      <HStack spacing={1}>
-                        {shortcut.keys.map((key, keyIndex) => (
-                          <React.Fragment key={keyIndex}>
-                            {keyIndex > 0 && (
-                              <Text fontSize="xs" color="gray.400">+</Text>
-                            )}
-                            <Kbd
-                              fontSize="xs"
-                              bg={useColorModeValue('white', 'gray.600')}
-                              border="1px"
-                              borderColor={borderColor}
-                              px={2}
-                              py={1}
-                            >
-                              {key}
-                            </Kbd>
-                          </React.Fragment>
-                        ))}
-                      </HStack>
-                    </HStack>
-                  ))}
-                </VStack>
-{sectionIndex < shortcuts.length - 1 && (
-                  <Box h="1px" bg={borderColor} mt={4} />
-                )}
-              </Box>
-            ))}
-            
-            <Box
-              p={4}
-              bg={useColorModeValue('blue.50', 'blue.900')}
-              borderRadius="md"
-              border="1px"
-              borderColor={useColorModeValue('blue.200', 'blue.700')}
-            >
-              <HStack spacing={2} mb={2}>
-                <Badge colorScheme="blue" variant="subtle">Tip</Badge>
-              </HStack>
-              <Text fontSize="sm" color={useColorModeValue('blue.700', 'blue.200')}>
-                Most shortcuts use ⌘ (Cmd) on macOS and Ctrl on Windows/Linux. 
-                The interface automatically adapts to your operating system.
-              </Text>
-            </Box>
-          </VStack>
-        </DialogBody>
-      </DialogContent>
-    </DialogRoot>
+            {/* Content */}
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              <p className="text-sm text-muted-foreground mb-6">
+                Boost your productivity with these keyboard shortcuts
+              </p>
+              
+              <div className="space-y-6">
+                {shortcuts.map((section, sectionIndex) => (
+                  <div key={section.category}>
+                    <h3 className="text-sm font-semibold text-foreground mb-3 uppercase tracking-wider">
+                      {section.category}
+                    </h3>
+                    <div className="space-y-2">
+                      {section.items.map((shortcut, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                        >
+                          <span className="text-sm">{shortcut.description}</span>
+                          <div className="flex items-center gap-1">
+                            {shortcut.keys.map((key, keyIndex) => (
+                              <React.Fragment key={keyIndex}>
+                                {keyIndex > 0 && (
+                                  <span className="text-xs text-muted-foreground">+</span>
+                                )}
+                                <kbd className="px-2 py-1 text-xs bg-background border border-border rounded">
+                                  {key}
+                                </kbd>
+                              </React.Fragment>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {sectionIndex < shortcuts.length - 1 && (
+                      <div className="h-px bg-border mt-4" />
+                    )}
+                  </div>
+                ))}
+                
+                <div className="p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
+                      Tip
+                    </span>
+                  </div>
+                  <p className="text-sm text-blue-700 dark:text-blue-200">
+                    Most shortcuts use ⌘ (Cmd) on macOS and Ctrl on Windows/Linux. 
+                    The interface automatically adapts to your operating system.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   )
 } 

@@ -1,21 +1,13 @@
 import uuid
-<<<<<<< HEAD
-import datetime
-from typing import Optional
+from datetime import datetime
+from typing import Any, Literal, Optional
+from enum import Enum
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 from sqlalchemy import Column, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB as JSON
 from sqlalchemy.ext.mutable import MutableList, MutableDict
-=======
-from datetime import datetime
-from typing import Any, Literal
-from enum import Enum
-
-from pydantic import EmailStr
-from sqlmodel import Field, Relationship, SQLModel, JSON, Column
->>>>>>> feature/v0-dev-transformation
 
 
 # Shared properties
@@ -70,7 +62,6 @@ class UsersPublic(SQLModel):
     count: int
 
 
-<<<<<<< HEAD
 # Shared properties
 class ItemBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
@@ -159,8 +150,6 @@ class Creation(SQLModel, table=True):
     created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
 
 
-=======
->>>>>>> feature/v0-dev-transformation
 # Generic message
 class Message(SQLModel):
     message: str

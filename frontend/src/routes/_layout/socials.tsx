@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Container, Heading, Text } from '@chakra-ui/react'
 
 export const Route = createFileRoute(
   '/_layout/socials'
@@ -12,13 +11,13 @@ export const Route = createFileRoute(
 function SocialsPage() {
   const { creationId } = Route.useParams() as { creationId: string }
   return (
-    <Container maxW="full" py={8}>
-      <Heading size="lg" mb={4}>
+    <div className="container mx-auto py-8">
+      <h1 className="text-2xl font-bold mb-4">
         Schedule Social Post
-      </Heading>
-      <Text>Creation ID: {creationId}</Text>
+      </h1>
+      <p className="text-muted-foreground">Creation ID: {creationId}</p>
       {/* TODO: implement social media scheduling UI */}
-    </Container>
+    </div>
   )
 }
 

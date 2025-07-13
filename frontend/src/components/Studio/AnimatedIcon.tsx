@@ -1,39 +1,12 @@
 import React from 'react'
-import { Box, keyframes } from '@chakra-ui/react'
-
-const spin = keyframes`
-  from { transform: rotate(0deg) }
-  to { transform: rotate(360deg) }
-`
-
-const pulse = keyframes`
-  0%, 100% { opacity: 1 }
-  50% { opacity: 0.5 }
-`
-
-const bounce = keyframes`
-  0%, 20%, 53%, 80%, 100% { transform: translateY(0) }
-  40%, 43% { transform: translateY(-8px) }
-  70% { transform: translateY(-4px) }
-  90% { transform: translateY(-2px) }
-`
-
-const shake = keyframes`
-  0%, 100% { transform: translateX(0) }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px) }
-  20%, 40%, 60%, 80% { transform: translateX(4px) }
-`
-
-const wave = keyframes`
-  0%, 100% { transform: scale(1) }
-  50% { transform: scale(1.1) }
-`
+import { cn } from '../../lib/utils'
 
 export interface AnimatedIconProps {
   children: React.ReactNode
   animation?: 'spin' | 'pulse' | 'bounce' | 'shake' | 'wave' | 'none'
   duration?: string
   isActive?: boolean
+  className?: string
 }
 
 export const AnimatedIcon: React.FC<AnimatedIconProps> = ({
@@ -41,35 +14,40 @@ export const AnimatedIcon: React.FC<AnimatedIconProps> = ({
   animation = 'none',
   duration = '1s',
   isActive = true,
+  className,
 }) => {
-  const getAnimation = () => {
-    if (!isActive || animation === 'none') return undefined
+  const getAnimationClass = () => {
+    if (!isActive || animation === 'none') return ''
     
     switch (animation) {
       case 'spin':
-        return `${spin} ${duration} linear infinite`
+        return 'animate-spin'
       case 'pulse':
-        return `${pulse} ${duration} ease-in-out infinite`
+        return 'animate-pulse'
       case 'bounce':
-        return `${bounce} ${duration} ease infinite`
+        return 'animate-bounce'
       case 'shake':
-        return `${shake} 0.5s ease-in-out 3`
+        return 'animate-pulse' // Tailwind doesn't have shake, using pulse
       case 'wave':
-        return `${wave} ${duration} ease-in-out infinite`
+        return 'animate-pulse'
       default:
-        return undefined
+        return ''
     }
   }
 
   return (
-    <Box
-      as="span"
-      display="inline-block"
-      animation={getAnimation()}
-      transformOrigin="center"
+    <span
+      className={cn(
+        'inline-block transform-gpu',
+        getAnimationClass(),
+        className
+      )}
+      style={{
+        animationDuration: duration,
+      }}
     >
       {children}
-    </Box>
+    </span>
   )
 }
 

@@ -1,26 +1,28 @@
 import React from 'react'
-import { IconButton } from '@chakra-ui/react'
 import { FiSun, FiMoon } from 'react-icons/fi'
-import { useColorMode, useColorModeValue } from './color-mode'
+import { Button } from './button'
+import { useTheme } from 'next-themes'
 
 export const ColorModeToggle: React.FC = () => {
-  const { toggleColorMode } = useColorMode()
-  const SunIcon = useColorModeValue(FiMoon, FiSun)
-  const label = useColorModeValue('Switch to dark mode', 'Switch to light mode')
+  const { theme, setTheme } = useTheme()
+  
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark')
+  }
+
+  const isDark = theme === 'dark'
+  const Icon = isDark ? FiSun : FiMoon
+  const label = isDark ? 'Switch to light mode' : 'Switch to dark mode'
 
   return (
-    <IconButton
-      aria-label={label}
-      icon={<SunIcon />}
-      onClick={toggleColorMode}
+    <Button
       variant="ghost"
       size="sm"
-      className="focus-ring"
-      _hover={{
-        bg: useColorModeValue('gray.100', 'gray.700'),
-        transform: 'scale(1.05)',
-      }}
-      transition="all var(--transition-fast)"
-    />
+      onClick={toggleTheme}
+      aria-label={label}
+      className="h-8 w-8 p-0 hover:scale-105 transition-transform"
+    >
+      <Icon className="h-4 w-4" />
+    </Button>
   )
 } 

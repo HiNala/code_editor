@@ -1,177 +1,234 @@
-import { Box, Flex, Icon, Text } from "@chakra-ui/react"
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useQueryClient } from "@tanstack/react-query"
 import { Link as RouterLink, useMatchRoute } from "@tanstack/react-router"
-import {
-  FiHome,
-  FiLayout,
-  FiPlusSquare,
-  FiSettings,
-  FiUsers,
-  FiVideo,
-} from "react-icons/fi"
+import { 
+  Home, 
+  User, 
+  Settings, 
+  LogOut, 
+  Menu, 
+  X, 
+  ChevronLeft, 
+  ChevronRight,
+  BarChart3,
+  FileText,
+  Bell,
+  Search,
+  HelpCircle,
+  MessageSquare,
+  Video,
+  PlusSquare,
+  Users
+} from 'lucide-react'
 import type { IconType } from "react-icons/lib"
 
 import type { UserPublic } from "@/client"
-import { useColorModeValue } from "../ui/color-mode"
+import { cn } from "@/lib/utils"
+import { Button } from "../ui/button"
+import { Avatar, AvatarFallback } from "../ui/avatar"
+import { Badge } from "../ui/badge"
+import { ScrollArea } from "../ui/scroll-area"
 
-const items = [
-  { icon: FiHome, title: "Dashboard", path: "/" },
-  { icon: FiLayout, title: "Plan", path: "/plan" },
-  { icon: FiPlusSquare, title: "Create", path: "/create" },
-  { icon: FiVideo, title: "Videos", path: "/videos" },
-  // { icon: FiBox, title: "Items", path: "/items" }, // hidden for now
-  { icon: FiSettings, title: "User Settings", path: "/settings" },
-]
+interface NavigationItem {
+  id: string
+  name: string
+  icon: any
+  href: string
+  badge?: string
+}
 
 interface SidebarItemsProps {
   onClose?: () => void
   isCollapsed?: boolean
 }
 
-interface Item {
-  icon: IconType
-  title: string
-  path: string
+// Navigation items
+const items = [
+  { id: "dashboard", name: "Dashboard", icon: Home, href: "/" },
+  { id: "plan", name: "Plan", icon: BarChart3, href: "/plan" },
+  { id: "create", name: "Create", icon: PlusSquare, href: "/create" },
+  { id: "videos", name: "Videos", icon: Video, href: "/videos" },
+  { id: "settings", name: "User Settings", icon: Settings, href: "/settings" },
+]
+
+const sidebarVariants = {
+  open: {
+    width: "16rem",
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 30
+    }
+  },
+  closed: {
+    width: "4rem",
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 30
+    }
+  }
+}
+
+const itemVariants = {
+  open: {
+    x: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 30
+    }
+  },
+  closed: {
+    x: -10,
+    opacity: 0,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 30
+    }
+  }
 }
 
 const SidebarItems = ({ onClose, isCollapsed = false }: SidebarItemsProps) => {
   const queryClient = useQueryClient()
   const currentUser = queryClient.getQueryData<UserPublic>(["currentUser"])
   const matchRoute = useMatchRoute()
+  const [activeItem, setActiveItem] = useState("dashboard")
 
-  // Theme-responsive colors
-  const menuTextColor = useColorModeValue("gray.600", "whiteAlpha.700")
-  const itemHoverBg = useColorModeValue("gray.100", "whiteAlpha.200")
-  const itemActiveBg = useColorModeValue("purple.100", "whiteAlpha.200")
-  const itemActiveHoverBg = useColorModeValue("purple.200", "whiteAlpha.300")
-  const itemTextColor = useColorModeValue("gray.700", "whiteAlpha.900")
-  const itemActiveTextColor = useColorModeValue("purple.700", "white")
-  const itemIconColor = useColorModeValue("gray.600", "whiteAlpha.800")
-  const itemActiveIconColor = useColorModeValue("purple.600", "white")
-  const activeIndicatorColor = useColorModeValue("purple.500", "white")
-
-  const finalItems: Item[] = currentUser?.is_superuser
-    ? [...items, { icon: FiUsers, title: "Admin", path: "/admin" }]
+  // Add admin item if user is superuser
+  const finalItems = currentUser?.is_superuser
+    ? [...items, { id: "admin", name: "Admin", icon: Users, href: "/admin" }]
     : items
 
-  const listItems = finalItems.map(({ icon, title, path }, index) => {
-    // Use TanStack Router's matchRoute for reactive active detection
-    const isActive = !!matchRoute({ to: path, fuzzy: false })
-
-    return (
-      <RouterLink key={title} to={path} onClick={onClose}>
-        <Flex
-          gap={isCollapsed ? 0 : 2}
-          px={isCollapsed ? 0 : 4}
-          py={isCollapsed ? 2 : 3}
-          mx={isCollapsed ? 1 : 0}
-          mb={isCollapsed ? 1 : 2}
-          _hover={{
-            background: isActive ? itemActiveHoverBg : itemHoverBg,
-            transform: isCollapsed ? "scale(1.05)" : "translateX(2px)",
-          }}
-          alignItems="center"
-          fontSize="sm"
-          justify={isCollapsed ? "center" : "flex-start"}
-          borderRadius="md"
-          w={isCollapsed ? "44px" : "full"}
-          h={isCollapsed ? "44px" : "auto"}
-          position="relative"
-          background={isActive ? itemActiveBg : "transparent"}
-          transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-          transitionDelay={`${index * 0.05}s`}
-          title={isCollapsed ? title : undefined}
-          css={{
-            "&:hover .sidebar-icon": {
-              transform: isCollapsed ? "scale(1.15)" : "scale(1.05)",
-            },
-          }}
-        >
-          {/* Active indicator */}
-          {isActive && !isCollapsed && (
-            <Box
-              position="absolute"
-              left={0}
-              top={0}
-              bottom={0}
-              width="3px"
-              bg={activeIndicatorColor}
-              borderRadius="0 2px 2px 0"
-              transition="all 0.3s ease-out"
-            />
-          )}
-          
-          {/* Active indicator for collapsed mode - small dot */}
-          {isActive && isCollapsed && (
-            <Box
-              position="absolute"
-              top={1}
-              right={1}
-              width="6px"
-              height="6px"
-              bg={activeIndicatorColor}
-              borderRadius="full"
-              transition="all 0.3s ease-out"
-            />
-          )}
-
-          <Icon
-            as={icon}
-            className="sidebar-icon"
-            alignSelf="center"
-            fontSize={isCollapsed ? "xl" : "md"}
-            color={isActive ? itemActiveIconColor : itemIconColor}
-            transition="all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)"
-            flexShrink={0}
-          />
-
-          <Text
-            ml={2}
-            color={isActive ? itemActiveTextColor : itemTextColor}
-            fontWeight={isActive ? "semibold" : "normal"}
-            opacity={isCollapsed ? 0 : 1}
-            transform={isCollapsed ? "translateX(-10px)" : "translateX(0)"}
-            transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-            transitionDelay={isCollapsed ? "0s" : "0.15s"}
-            whiteSpace="nowrap"
-            overflow="hidden"
-            maxW={isCollapsed ? "0" : "200px"}
-          >
-            {title}
-          </Text>
-        </Flex>
-      </RouterLink>
-    )
-  })
+  const handleItemClick = (itemId: string) => {
+    setActiveItem(itemId)
+    if (onClose) {
+      onClose()
+    }
+  }
 
   return (
-    <>
-      <Text
-        fontSize="xs"
-        px={4}
-        py={2}
-        fontWeight="bold"
-        color={menuTextColor}
-        textTransform="uppercase"
-        letterSpacing="wider"
-        opacity={isCollapsed ? 0 : 1}
-        transition="opacity 0.3s ease"
-        transitionDelay={isCollapsed ? "0s" : "0.15s"}
-        maxH={isCollapsed ? "0" : "auto"}
-        overflow="hidden"
-      >
-        Menu
-      </Text>
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems={isCollapsed ? "center" : "stretch"}
-        transition="all 0.3s ease-out"
-        px={isCollapsed ? 1 : 0}
-      >
-        {listItems}
-      </Box>
-    </>
+    <div className="flex flex-col h-full">
+      {/* Navigation */}
+      <ScrollArea className="flex-1">
+        <nav className="px-2 py-2">
+          <ul className="space-y-1">
+            {finalItems.map((item) => {
+              const Icon = item.icon
+              const isActive = !!matchRoute({ to: item.href, fuzzy: false })
+
+              return (
+                <li key={item.id}>
+                  <RouterLink to={item.href} onClick={() => handleItemClick(item.id)}>
+                    <Button
+                      variant={isActive ? "secondary" : "ghost"}
+                      className={cn(
+                        "w-full justify-start h-10 px-2 relative group",
+                        isCollapsed && "justify-center"
+                      )}
+                      title={isCollapsed ? item.name : undefined}
+                    >
+                      <Icon className={cn(
+                        "h-4 w-4 mr-2",
+                        isCollapsed && "mr-0",
+                        isActive ? "text-primary" : "text-muted-foreground"
+                      )} />
+                      
+                      <AnimatePresence>
+                        {!isCollapsed && (
+                          <motion.div
+                            variants={itemVariants}
+                            initial="closed"
+                            animate="open"
+                            exit="closed"
+                            className="flex items-center justify-between w-full"
+                          >
+                            <span className={cn(
+                              "text-sm",
+                              isActive && "font-medium"
+                            )}>
+                              {item.name}
+                            </span>
+                            
+                            {item.badge && (
+                              <Badge variant={isActive ? "default" : "secondary"} className="ml-auto">
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      {/* Badge for collapsed state */}
+                      {isCollapsed && item.badge && (
+                        <Badge 
+                          variant="default"
+                          className="absolute top-1 right-1 w-4 h-4 p-0 flex items-center justify-center text-[10px]"
+                        >
+                          {parseInt(item.badge) > 9 ? '9+' : item.badge}
+                        </Badge>
+                      )}
+
+                      {/* Active indicator */}
+                      {isActive && (
+                        <motion.div
+                          className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full"
+                          layoutId="activeIndicator"
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                    </Button>
+                  </RouterLink>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+      </ScrollArea>
+
+      {/* Bottom section with profile */}
+      <div className="mt-auto border-t border-border">
+        {/* Profile Section */}
+        <div className="p-3">
+          <div className={cn(
+            "flex items-center rounded-md p-2 bg-muted/50 hover:bg-muted transition-colors",
+            isCollapsed ? "justify-center" : "px-3"
+          )}>
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-primary/10 text-primary">
+                {currentUser?.full_name ? currentUser.full_name.charAt(0).toUpperCase() : "U"}
+              </AvatarFallback>
+            </Avatar>
+            
+            <AnimatePresence>
+              {!isCollapsed && (
+                <motion.div
+                  variants={itemVariants}
+                  initial="closed"
+                  animate="open"
+                  exit="closed"
+                  className="ml-3 flex-1 min-w-0"
+                >
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {currentUser?.full_name || "User"}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {currentUser?.email || "user@example.com"}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            {!isCollapsed && (
+              <div className="ml-auto w-2 h-2 bg-green-500 rounded-full" title="Online" />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

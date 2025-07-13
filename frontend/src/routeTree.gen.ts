@@ -11,104 +11,63 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LayoutVideosRouteImport } from './routes/_layout/videos'
+import { Route as LayoutSocialsRouteImport } from './routes/_layout/socials'
 
-<<<<<<< HEAD
-import { Route as rootRoute } from './routes/__root'
-import { Route as SignupImport } from './routes/signup'
-import { Route as ResetPasswordImport } from './routes/reset-password'
-import { Route as RecoverPasswordImport } from './routes/recover-password'
-import { Route as LoginImport } from './routes/login'
-import { Route as LayoutImport } from './routes/_layout'
-import { Route as LayoutIndexImport } from './routes/_layout/index'
-import { Route as LayoutVideosImport } from './routes/_layout/videos'
-import { Route as LayoutSettingsImport } from './routes/_layout/settings'
-import { Route as LayoutPlanImport } from './routes/_layout/plan'
-import { Route as LayoutItemsImport } from './routes/_layout/items'
-import { Route as LayoutCreateImport } from './routes/_layout/create'
-import { Route as LayoutAdminImport } from './routes/_layout/admin'
-
-// Create/Update Routes
-
-const SignupRoute = SignupImport.update({
-  path: '/signup',
-  getParentRoute: () => rootRoute,
-=======
 const StudioRoute = StudioRouteImport.update({
   id: '/studio',
   path: '/studio',
   getParentRoute: () => rootRouteImport,
->>>>>>> feature/v0-dev-transformation
 } as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-
-<<<<<<< HEAD
-const LayoutVideosRoute = LayoutVideosImport.update({
+const LayoutVideosRoute = LayoutVideosRouteImport.update({
+  id: '/_layout/videos',
   path: '/videos',
-  getParentRoute: () => LayoutRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const LayoutSettingsRoute = LayoutSettingsImport.update({
-  path: '/settings',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutPlanRoute = LayoutPlanImport.update({
-  path: '/plan',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutItemsRoute = LayoutItemsImport.update({
-  path: '/items',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutCreateRoute = LayoutCreateImport.update({
-  path: '/create',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutAdminRoute = LayoutAdminImport.update({
-  path: '/admin',
-  getParentRoute: () => LayoutRoute,
-} as any)
-
-const LayoutSocialsRoute = LayoutSocialsImport.update({
+const LayoutSocialsRoute = LayoutSocialsRouteImport.update({
+  id: '/_layout/socials',
   path: '/socials',
-  getParentRoute: () => LayoutRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 
-// Populate the FileRoutesByPath interface
-=======
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/socials': typeof LayoutSocialsRoute
+  '/videos': typeof LayoutVideosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/socials': typeof LayoutSocialsRoute
+  '/videos': typeof LayoutVideosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/studio': typeof StudioRoute
+  '/_layout/socials': typeof LayoutSocialsRoute
+  '/_layout/videos': typeof LayoutVideosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/studio'
+  fullPaths: '/' | '/studio' | '/socials' | '/videos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/studio'
-  id: '__root__' | '/' | '/studio'
+  to: '/' | '/studio' | '/socials' | '/videos'
+  id: '__root__' | '/' | '/studio' | '/_layout/socials' | '/_layout/videos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   StudioRoute: typeof StudioRoute
+  LayoutSocialsRoute: typeof LayoutSocialsRoute
+  LayoutVideosRoute: typeof LayoutVideosRoute
 }
->>>>>>> feature/v0-dev-transformation
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
@@ -119,93 +78,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StudioRouteImport
       parentRoute: typeof rootRouteImport
     }
-<<<<<<< HEAD
-    '/login': {
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
-    }
-    '/recover-password': {
-      preLoaderRoute: typeof RecoverPasswordImport
-      parentRoute: typeof rootRoute
-    }
-    '/reset-password': {
-      preLoaderRoute: typeof ResetPasswordImport
-      parentRoute: typeof rootRoute
-    }
-    '/signup': {
-      preLoaderRoute: typeof SignupImport
-      parentRoute: typeof rootRoute
-    }
-    '/_layout/admin': {
-      preLoaderRoute: typeof LayoutAdminImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/create': {
-      preLoaderRoute: typeof LayoutCreateImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/items': {
-      preLoaderRoute: typeof LayoutItemsImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/plan': {
-      preLoaderRoute: typeof LayoutPlanImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/settings': {
-      preLoaderRoute: typeof LayoutSettingsImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/videos': {
-      preLoaderRoute: typeof LayoutVideosImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/socials': {
-      preLoaderRoute: typeof LayoutSocialsImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/': {
-      preLoaderRoute: typeof LayoutIndexImport
-      parentRoute: typeof LayoutImport
-=======
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
->>>>>>> feature/v0-dev-transformation
+    }
+    '/_layout/videos': {
+      id: '/_layout/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof LayoutVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_layout/socials': {
+      id: '/_layout/socials'
+      path: '/socials'
+      fullPath: '/socials'
+      preLoaderRoute: typeof LayoutSocialsRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-<<<<<<< HEAD
-// Create and export the route tree
-
-export const routeTree = rootRoute.addChildren([
-  LayoutRoute.addChildren([
-    LayoutAdminRoute,
-    LayoutCreateRoute,
-    LayoutItemsRoute,
-    LayoutPlanRoute,
-    LayoutSettingsRoute,
-    LayoutVideosRoute,
-    LayoutSocialsRoute,
-    LayoutIndexRoute,
-  ]),
-  LoginRoute,
-  RecoverPasswordRoute,
-  ResetPasswordRoute,
-  SignupRoute,
-])
-
-/* prettier-ignore-end */
-=======
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   StudioRoute: StudioRoute,
+  LayoutSocialsRoute: LayoutSocialsRoute,
+  LayoutVideosRoute: LayoutVideosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
->>>>>>> feature/v0-dev-transformation
