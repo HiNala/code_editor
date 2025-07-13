@@ -1,57 +1,40 @@
-import { Button, Center, Flex, Text } from "@chakra-ui/react"
-import { Link } from "@tanstack/react-router"
+import React from 'react'
+import { AlertCircle, Home } from 'lucide-react'
+import { Button } from '../ui/button'
 
-const NotFound = () => {
+export const NotFound: React.FC = () => {
   return (
-    <>
-      <Flex
-        height="100vh"
-        align="center"
-        justify="center"
-        flexDir="column"
-        data-testid="not-found"
-        p={4}
-      >
-        <Flex alignItems="center" zIndex={1}>
-          <Flex flexDir="column" ml={4} align="center" justify="center" p={4}>
-            <Text
-              fontSize={{ base: "6xl", md: "8xl" }}
-              fontWeight="bold"
-              lineHeight="1"
-              mb={4}
-            >
-              404
-            </Text>
-            <Text fontSize="2xl" fontWeight="bold" mb={2}>
-              Oops!
-            </Text>
-          </Flex>
-        </Flex>
-
-        <Text
-          fontSize="lg"
-          color="gray.600"
-          mb={4}
-          textAlign="center"
-          zIndex={1}
-        >
-          The page you are looking for was not found.
-        </Text>
-        <Center zIndex={1}>
-          <Link to="/">
-            <Button
-              variant="solid"
-              colorScheme="teal"
-              mt={4}
-              alignSelf="center"
-            >
-              Go Back
-            </Button>
-          </Link>
-        </Center>
-      </Flex>
-    </>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="text-center space-y-6 max-w-md mx-auto px-4">
+        <div className="space-y-4">
+          <AlertCircle className="h-16 w-16 mx-auto text-muted-foreground" />
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold text-foreground">404</h1>
+            <h2 className="text-xl font-semibold text-foreground">Page Not Found</h2>
+            <p className="text-muted-foreground">
+              The page you're looking for doesn't exist or has been moved.
+            </p>
+          </div>
+        </div>
+        
+        <div className="space-y-3">
+          <Button 
+            onClick={() => window.history.back()}
+            className="w-full"
+          >
+            Go Back
+          </Button>
+          
+          <Button 
+            variant="outline"
+            onClick={() => window.location.href = '/'}
+            className="w-full"
+          >
+            <Home className="h-4 w-4 mr-2" />
+            Go Home
+          </Button>
+        </div>
+      </div>
+    </div>
   )
 }
-
-export default NotFound

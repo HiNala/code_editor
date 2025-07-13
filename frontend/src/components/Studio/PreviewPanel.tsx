@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from 'react'
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  IconButton,
-  Badge,
-  Flex,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
-  Code,
-  Alert,
-  Select,
-} from '@chakra-ui/react'
-import { FiEye, FiRefreshCw, FiExternalLink, FiCode, FiMonitor, FiSmartphone, FiTablet } from 'react-icons/fi'
+import React, { useState } from 'react'
+import { motion } from 'framer-motion'
+import { 
+  Eye, 
+  RefreshCw, 
+  ExternalLink, 
+  Monitor, 
+  Smartphone, 
+  Tablet,
+  AlertCircle,
+  Square
+} from 'lucide-react'
 import { 
   SandpackProvider, 
   SandpackPreview, 
@@ -25,184 +17,302 @@ import {
   SandpackLayout,
   SandpackCodeViewer
 } from '@codesandbox/sandpack-react'
+import { Button } from '../ui/button'
+import { cn } from '../../lib/utils'
 
-import { FileMap } from './StudioLayout'
-import { useColorModeValue } from '../ui/color-mode'
+export interface FileMap {
+  [filename: string]: string
+}
 
 export interface PreviewPanelProps {
   files: FileMap
   activeFile: string
 }
 
+type ViewportSize = 'mobile' | 'tablet' | 'desktop'
+type PreviewMode = 'preview' | 'console' | 'code'
+
 export const PreviewPanel: React.FC<PreviewPanelProps> = ({
   files,
   activeFile,
 }) => {
+  const [viewportSize, setViewportSize] = useState<ViewportSize>('desktop')
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('preview')
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const [previewError, setPreviewError] = useState<string | null>(null)
-  
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.600')
-  const previewBg = useColorModeValue('gray.50', 'gray.900')
+  const [showConsole, setShowConsole] = useState(false)
 
-  const fileList = Object.keys(files)
-  const hasFiles = fileList.length > 0
+  const getViewportDimensions = () => {
+    switch (viewportSize) {
+      case 'mobile':
+        return { width: '375px', height: '667px' }
+      case 'tablet':
+        return { width: '768px', height: '1024px' }
+      case 'desktop':
+        return { width: '100%', height: '100%' }
+    }
+  }
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    setPreviewError(null)
-    
     // Simulate refresh delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
+    await new Promise(resolve => setTimeout(resolve, 500))
     setIsRefreshing(false)
   }
 
-  const handleOpenInNewTab = () => {
-    // TODO: Implement opening preview in new tab
-    console.log('Opening preview in new tab')
+  const handleOpenExternal = () => {
+    // Open preview in new tab
+    window.open('about:blank', '_blank')
   }
 
-  const renderPreview = () => {
-    if (!hasFiles) {
-      return (
-        <Flex
-          h="100%"
-          align="center"
-          justify="center"
-          direction="column"
-          gap={4}
-          color="gray.500"
-        >
-          <FiEye size={48} />
-          <Text>No preview available</Text>
-          <Text fontSize="sm" textAlign="center">
-            Generate some code to see a preview
-          </Text>
-        </Flex>
-      )
+  const getViewportIcon = (size: ViewportSize) => {
+    switch (size) {
+      case 'mobile':
+        return <Smartphone className="h-4 w-4" />
+      case 'tablet':
+        return <Tablet className="h-4 w-4" />
+      case 'desktop':
+        return <Monitor className="h-4 w-4" />
     }
-
-    // Simple preview showing file structure
-    return (
-      <Box h="100%" overflow="auto" p={4}>
-        <VStack spacing={4} align="stretch">
-          <Box>
-            <Text fontSize="lg" fontWeight="semibold" mb={2}>
-              Generated Files
-            </Text>
-            <VStack spacing={2} align="stretch">
-              {fileList.map((filename) => (
-                <Box
-                  key={filename}
-                  p={3}
-                  bg={previewBg}
-                  borderRadius="md"
-                  border="1px"
-                  borderColor={borderColor}
-                >
-                  <HStack justify="space-between" align="center" mb={2}>
-                    <HStack>
-                      <FiCode size={16} />
-                      <Text fontWeight="medium" fontSize="sm">
-                        {filename}
-                      </Text>
-                    </HStack>
-                    <Badge size="sm" colorScheme="blue">
-                      {files[filename].split('\n').length} lines
-                    </Badge>
-                  </HStack>
-                  
-                  <Box
-                    bg={bgColor}
-                    borderRadius="md"
-                    p={3}
-                    border="1px"
-                    borderColor={borderColor}
-                    maxH="200px"
-                    overflowY="auto"
-                  >
-                    <Code
-                      fontSize="xs"
-                      whiteSpace="pre-wrap"
-                      display="block"
-                      color="inherit"
-                    >
-                      {files[filename]}
-                    </Code>
-                  </Box>
-                </Box>
-              ))}
-            </VStack>
-          </Box>
-          
-          <Box>
-            <Text fontSize="md" fontWeight="medium" mb={2}>
-              Preview Notes
-            </Text>
-            <Alert status="info" size="sm">
-              <Text fontSize="sm">
-                ℹ️ This is a basic preview. In a full implementation, you would integrate
-                Sandpack or a similar solution to provide live code execution and preview.
-              </Text>
-            </Alert>
-          </Box>
-        </VStack>
-      </Box>
-    )
   }
+
+  const dimensions = getViewportDimensions()
 
   return (
-    <Box h="100%" display="flex" flexDirection="column">
+    <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <Box
-        p={4}
-        borderBottom="1px"
-        borderColor={borderColor}
-        bg={bgColor}
-      >
-        <HStack justify="space-between" align="center">
-          <HStack>
-            <FiEye />
-            <Text fontWeight="semibold">Preview</Text>
-          </HStack>
+      <div className="p-4 border-b border-border bg-background/95 backdrop-blur">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            <h2 className="font-semibold">Preview</h2>
+          </div>
           
-          <HStack>
-            {hasFiles && (
-              <>
+          {/* Desktop Controls */}
+          <div className="desktop-only flex items-center gap-2">
+            {/* Viewport Size Selector */}
+            <div className="flex items-center border border-border rounded-md p-1">
+              {(['mobile', 'tablet', 'desktop'] as ViewportSize[]).map((size) => (
                 <Button
+                  key={size}
+                  variant={viewportSize === size ? "default" : "ghost"}
                   size="sm"
-                  leftIcon={<FiRefreshCw />}
-                  variant="outline"
-                  onClick={handleRefresh}
-                  isLoading={isRefreshing}
-                  loadingText="Refreshing"
+                  onClick={() => setViewportSize(size)}
+                  className="h-8 px-2"
                 >
-                  Refresh
+                  {getViewportIcon(size)}
+                  <span className="ml-1 capitalize text-xs">{size}</span>
                 </Button>
-                <IconButton
-                  aria-label="Open in new tab"
-                  icon={<FiExternalLink />}
-                  size="sm"
-                  variant="ghost"
-                  onClick={handleOpenInNewTab}
-                />
-              </>
-            )}
-          </HStack>
-        </HStack>
-      </Box>
+              ))}
+            </div>
+            
+            {/* Mode Selector */}
+            <div className="flex items-center border border-border rounded-md p-1">
+              <Button
+                variant={previewMode === 'preview' ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setPreviewMode('preview')}
+                className="h-8 px-2 text-xs"
+              >
+                <Eye className="h-3 w-3 mr-1" />
+                Preview
+              </Button>
+              <Button
+                variant={previewMode === 'console' ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setPreviewMode('console')}
+                className="h-8 px-2 text-xs"
+              >
+                <Square className="h-3 w-3 mr-1" />
+                Console
+              </Button>
+              <Button
+                variant={previewMode === 'code' ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setPreviewMode('code')}
+                className="h-8 px-2 text-xs"
+              >
+                <Monitor className="h-3 w-3 mr-1" />
+                Code
+              </Button>
+            </div>
+          </div>
+          
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="touch-target"
+            >
+              <RefreshCw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
+              <span className="hidden sm:inline ml-1">Refresh</span>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleOpenExternal}
+              className="touch-target"
+            >
+              <ExternalLink className="h-4 w-4" />
+              <span className="hidden sm:inline ml-1">Open</span>
+            </Button>
+          </div>
+        </div>
+        
+        {/* Mobile Controls */}
+        <div className="mobile-only mt-3 flex items-center gap-2">
+          <div className="flex items-center gap-1 flex-1">
+            {(['mobile', 'tablet', 'desktop'] as ViewportSize[]).map((size) => (
+              <Button
+                key={size}
+                variant={viewportSize === size ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewportSize(size)}
+                className="flex-1 text-xs"
+              >
+                {getViewportIcon(size)}
+              </Button>
+            ))}
+          </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowConsole(!showConsole)}
+            className="text-xs"
+          >
+            Console
+          </Button>
+        </div>
+      </div>
 
-      {/* Preview Content */}
-      <Box flex="1" position="relative">
-        {previewError ? (
-          <Alert status="error" m={4}>
-            <Text>❌ Preview Error: {previewError}</Text>
-          </Alert>
+      {/* Preview Area */}
+      <div className="flex-1 overflow-hidden">
+        {Object.keys(files).length === 0 ? (
+          <div className="h-full flex items-center justify-center text-muted-foreground">
+            <div className="text-center space-y-4">
+              <Eye className="h-12 w-12 mx-auto opacity-50" />
+              <div>
+                <div className="text-lg font-medium mb-2">No files to preview</div>
+                <div className="text-sm">Create some files to see the preview</div>
+              </div>
+            </div>
+          </div>
         ) : (
-          renderPreview()
+          <div className="h-full p-4">
+            <SandpackProvider
+              files={files}
+              template="react-ts"
+              theme="dark"
+            >
+              <div className={cn(
+                "h-full mx-auto transition-all duration-300",
+                viewportSize === 'desktop' ? "w-full" : "border border-border rounded-lg overflow-hidden shadow-lg"
+              )} style={viewportSize !== 'desktop' ? dimensions : undefined}>
+                
+                {previewMode === 'preview' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full"
+                  >
+                    <SandpackLayout>
+                      <SandpackPreview 
+                        showOpenInCodeSandbox={false}
+                        showRefreshButton={false}
+                      />
+                    </SandpackLayout>
+                  </motion.div>
+                )}
+                
+                {previewMode === 'console' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full"
+                  >
+                    <SandpackLayout>
+                      <SandpackConsole />
+                    </SandpackLayout>
+                  </motion.div>
+                )}
+                
+                {previewMode === 'code' && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-full"
+                  >
+                    <SandpackLayout>
+                      <SandpackCodeViewer />
+                    </SandpackLayout>
+                  </motion.div>
+                )}
+              </div>
+            </SandpackProvider>
+          </div>
         )}
-      </Box>
-    </Box>
+      </div>
+
+      {/* Mobile Console */}
+      {showConsole && (
+        <motion.div
+          initial={{ height: 0 }}
+          animate={{ height: '200px' }}
+          exit={{ height: 0 }}
+          className="mobile-only border-t border-border bg-background"
+        >
+          <div className="h-full p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-medium">Console</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowConsole(false)}
+                className="h-6 w-6 p-0"
+              >
+                <Square className="h-3 w-3" />
+              </Button>
+            </div>
+            
+            {Object.keys(files).length > 0 ? (
+              <SandpackProvider files={files} template="react-ts" theme="dark">
+                <div className="h-[140px]">
+                  <SandpackConsole />
+                </div>
+              </SandpackProvider>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <span className="text-sm">No files to run</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Status Bar */}
+      <div className="border-t border-border bg-muted/30 px-4 py-2">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center gap-4">
+            <span>Viewport: {viewportSize}</span>
+            <span>Files: {Object.keys(files).length}</span>
+            {viewportSize !== 'desktop' && (
+              <span>{dimensions.width} × {dimensions.height}</span>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            <span>Ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 } 

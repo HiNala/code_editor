@@ -1,15 +1,14 @@
-import { StrictMode } from "react"
+import React, { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { RouterProvider, createRouter } from "@tanstack/react-router"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 import { routeTree } from "./routeTree.gen"
 import { ApiError, OpenAPI } from "./client"
-import { CustomProvider } from "./components/ui/provider"
+import { Provider } from "./components/ui/provider"
 import "./styles/globals.css"
-import "./styles/scale.css"
 
-OpenAPI.BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
+OpenAPI.BASE = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:8000"
 
 const queryClient = new QueryClient()
 
@@ -22,14 +21,15 @@ declare module "@tanstack/react-router" {
 }
 
 const rootElement = document.getElementById("root")!
+
 if (!rootElement.innerHTML) {
   const root = createRoot(rootElement)
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <CustomProvider>
+        <Provider>
           <RouterProvider router={router} />
-        </CustomProvider>
+        </Provider>
       </QueryClientProvider>
     </StrictMode>,
   )

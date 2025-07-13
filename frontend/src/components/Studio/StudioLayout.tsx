@@ -1,350 +1,242 @@
-import React, { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Menu, X, MessageSquare, Code, Eye, Settings } from "lucide-react"
-import { StudioTopBar } from "../studio/StudioTopBar"
-import { WorkspaceTabs } from "../studio/WorkspaceTabs"
-import { ChatPanel } from "../Studio/ChatPanel"
-import { CodeEditor } from "../Studio/CodeEditor"
-import { PreviewPanel } from "../Studio/PreviewPanel"
-import { VersionSidebar } from "../Studio/VersionSidebar"
-import { useStudioStore } from "../../stores/studioStore"
-import { TubelightNavBar } from "../ui/tubelight-navbar"
-import { Button } from "../ui/button"
-import { cn } from "../../lib/utils"
+import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Menu, X, MessageCircle, Code, Eye, Settings } from 'lucide-react'
+import { Button } from '../ui/button'
+import { TubelightNavBar } from '../ui/tubelight-navbar'
+import { ChatPanel } from './ChatPanel'
+import { CodeEditor } from './CodeEditor'
+import { PreviewPanel } from './PreviewPanel'
+import { VersionSidebar } from './VersionSidebar'
+import { cn } from '../../lib/utils'
 
-interface StudioLayoutProps {
-  children?: React.ReactNode
-  className?: string
+export interface FileMap {
+  [filename: string]: string
 }
 
-// Mobile navigation items
-const MOBILE_NAV_ITEMS = [
-  { name: 'Chat', icon: MessageSquare, url: 'chat' },
-  { name: 'Code', icon: Code, url: 'code' },
-  { name: 'Preview', icon: Eye, url: 'preview' },
-  { name: 'Settings', icon: Settings, url: 'settings' },
-]
-
-// Mock data for components
-const mockFiles = {
-  'App.tsx': 'import React from "react";\n\nfunction App() {\n  return <div>Hello World</div>;\n}\n\nexport default App;',
-  'index.css': 'body {\n  margin: 0;\n  font-family: Inter, sans-serif;\n}',
+interface StudioState {
+  activeView: 'chat' | 'code' | 'preview'
+  showVersionSidebar: boolean
+  isMobileMenuOpen: boolean
+  files: FileMap
+  activeFile: string
 }
 
-export function StudioLayout({ children, className }: StudioLayoutProps) {
-  const { 
-    activeWorkspace, 
-    activeView,
-    showVersionSidebar,
-    setActiveWorkspace,
-    setActiveView
-  } = useStudioStore()
-  
-  // Mobile state management
-  const [showMobileMenu, setShowMobileMenu] = useState(false)
-  const [activeMobilePanel, setActiveMobilePanel] = useState<'chat' | 'code' | 'preview' | 'settings'>('chat')
-  const [showMobileModal, setShowMobileModal] = useState(false)
+export const StudioLayout: React.FC = () => {
+  const [state, setState] = useState<StudioState>({
+    activeView: 'chat',
+    showVersionSidebar: false,
+    isMobileMenuOpen: false,
+    files: {
+      'App.tsx': `import React from 'react'
 
-  // Handle mobile navigation
-  const handleMobileNavClick = (item: any) => {
-    const panel = item.url as 'chat' | 'code' | 'preview' | 'settings'
-    setActiveMobilePanel(panel)
-    
-    // Update main store based on mobile selection
-    if (panel === 'chat') {
-      setActiveWorkspace('chat')
-    } else if (panel === 'code') {
-      setActiveView('code')
-    } else if (panel === 'preview') {
-      setActiveView('preview')
-    }
-  }
+export default function App() {
+  return (
+    <div className="p-8">
+      <h1 className="text-2xl font-bold">Hello World!</h1>
+      <p className="text-gray-600">This is a sample React component.</p>
+    </div>
+  )
+}`
+    },
+    activeFile: 'App.tsx'
+  })
 
-  // Handle mobile panel modal
-  const openMobileModal = (panel: 'chat' | 'code' | 'preview' | 'settings') => {
-    setActiveMobilePanel(panel)
-    setShowMobileModal(true)
-  }
-
-  const closeMobileModal = () => {
-    setShowMobileModal(false)
-  }
-
-  // Mock handlers for components
-  const handleGenerate = (prompt: string) => {
-    console.log('Generate:', prompt)
-  }
-
-  const handleImprove = (prompt: string) => {
-    console.log('Improve:', prompt)
+  const updateState = (updates: Partial<StudioState>) => {
+    setState(prev => ({ ...prev, ...updates }))
   }
 
   const handleFileChange = (filename: string, content: string) => {
-    console.log('File changed:', filename, content)
+    updateState({
+      files: { ...state.files, [filename]: content }
+    })
   }
 
   const handleActiveFileChange = (filename: string) => {
-    console.log('Active file changed:', filename)
+    updateState({ activeFile: filename })
   }
 
-  const handleVersionRestore = (versionId: string) => {
-    console.log('Restore version:', versionId)
-  }
-
-  // Render mobile panel content
-  const renderMobilePanelContent = () => {
-    switch (activeMobilePanel) {
-      case 'chat':
-        return (
-          <ChatPanel 
-            onGenerate={handleGenerate}
-            onImprove={handleImprove}
-            isGenerating={false}
-          />
-        )
-      case 'code':
-        return (
-          <CodeEditor 
-            files={mockFiles}
-            activeFile="App.tsx"
-            onFileChange={handleFileChange}
-            onActiveFileChange={handleActiveFileChange}
-          />
-        )
-      case 'preview':
-        return (
-          <PreviewPanel 
-            files={mockFiles}
-            activeFile="App.tsx"
-          />
-        )
-      case 'settings':
-        return (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            <div className="text-center p-8">
-              <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <div className="text-lg font-medium mb-2">Settings</div>
-              <div className="text-sm">Project settings and preferences</div>
-            </div>
-          </div>
-        )
-      default:
-        return null
-    }
-  }
-
-  return (
-    <div className={cn("studio-workspace", className)}>
-      {/* Top Bar - Always visible, responsive */}
-      <StudioTopBar />
-      
-      {/* Desktop: Workspace Tabs */}
-      <div className="desktop-only">
-        <WorkspaceTabs />
-      </div>
-      
-      {/* Mobile: Simplified header with menu toggle */}
-      <div className="mobile-only border-b border-border bg-muted/30 p-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+  // Desktop Layout (1024px+)
+  const DesktopLayout = () => (
+    <div className="h-screen flex flex-col">
+      {/* Top Bar */}
+      <div className="h-16 border-b border-border bg-background/95 backdrop-blur flex items-center justify-between px-6">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-semibold">AI Studio</h1>
+        </div>
+        
+        <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
-            className="touch-target"
+            onClick={() => updateState({ showVersionSidebar: !state.showVersionSidebar })}
           >
-            {showMobileMenu ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            <Settings className="h-4 w-4" />
           </Button>
-          <span className="font-medium text-sm capitalize">{activeMobilePanel}</span>
         </div>
-        
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Chat Panel */}
+        <div className="w-80 border-r border-border">
+          <ChatPanel 
+            onGenerate={() => {}}
+            onImprove={() => {}}
+            isGenerating={false}
+          />
+        </div>
+
+        {/* Code/Preview Area */}
+        <div className="flex-1 flex">
+          <div className="flex-1">
+            {state.activeView === 'code' ? (
+              <CodeEditor
+                files={state.files}
+                activeFile={state.activeFile}
+                onFileChange={handleFileChange}
+                onActiveFileChange={handleActiveFileChange}
+              />
+            ) : (
+              <PreviewPanel
+                files={state.files}
+                activeFile={state.activeFile}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Version Sidebar */}
+        <VersionSidebar
+          isOpen={state.showVersionSidebar}
+          onClose={() => updateState({ showVersionSidebar: false })}
+        />
+      </div>
+    </div>
+  )
+
+  // Mobile Layout (<768px)
+  const MobileLayout = () => (
+    <div className="h-screen flex flex-col">
+      {/* Mobile Header */}
+      <div className="h-14 border-b border-border bg-background/95 backdrop-blur flex items-center justify-between px-4">
+        <h1 className="font-semibold">AI Studio</h1>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => openMobileModal(activeMobilePanel)}
-          className="text-xs"
+          onClick={() => updateState({ isMobileMenuOpen: !state.isMobileMenuOpen })}
         >
-          Expand
+          <Menu className="h-5 w-5" />
         </Button>
       </div>
 
-      {/* Mobile: Collapsible menu */}
-      <AnimatePresence>
-        {showMobileMenu && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="mobile-only border-b border-border bg-background overflow-hidden"
-          >
-            <div className="p-3">
-              <TubelightNavBar
-                items={MOBILE_NAV_ITEMS}
-                activeItem={activeMobilePanel}
-                onItemClick={handleMobileNavClick}
-                variant="mobile"
-                className="w-full"
-              />
-            </div>
-          </motion.div>
+      {/* Mobile Content */}
+      <div className="flex-1 overflow-hidden">
+        {state.activeView === 'chat' && <ChatPanel />}
+        {state.activeView === 'code' && (
+          <CodeEditor
+            files={state.files}
+            activeFile={state.activeFile}
+            onFileChange={handleFileChange}
+            onActiveFileChange={handleActiveFileChange}
+          />
         )}
-      </AnimatePresence>
- 
-      {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Desktop: Three-panel layout */}
-        <div className="desktop-only flex w-full">
-          {/* Left Panel - Chat or Design workspace */}
-          <div className="studio-panel-left">
-            {activeWorkspace === 'chat' ? (
-              <ChatPanel 
-                onGenerate={handleGenerate}
-                onImprove={handleImprove}
-                isGenerating={false}
-              />
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-muted-foreground">
-                <div className="text-center p-8">
-                  <div className="text-lg font-medium mb-2">Design Workspace</div>
-                  <div className="text-sm">Visual design tools coming soon...</div>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Center Panel - Preview or Code */}
-          <div className="studio-panel-center">
-            {activeView === 'preview' ? (
-              <PreviewPanel 
-                files={mockFiles}
-                activeFile="App.tsx"
-              />
-            ) : (
-              <CodeEditor 
-                files={mockFiles}
-                activeFile="App.tsx"
-                onFileChange={handleFileChange}
-                onActiveFileChange={handleActiveFileChange}
-              />
-            )}
-          </div>
-          
-          {/* Right Panel - Version Sidebar (conditional) */}
-          {showVersionSidebar && (
-            <div className="w-80 border-l border-border">
-              <VersionSidebar 
-                isOpen={showVersionSidebar}
-                onClose={() => {}}
-                projectId="mock-project"
-                onVersionRestore={handleVersionRestore}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Tablet: Two-panel layout */}
-        <div className="tablet-only flex w-full">
-          {/* Left Panel */}
-          <div className="studio-panel-left">
-            {activeWorkspace === 'chat' ? (
-              <ChatPanel 
-                onGenerate={handleGenerate}
-                onImprove={handleImprove}
-                isGenerating={false}
-              />
-            ) : (
-              <CodeEditor 
-                files={mockFiles}
-                activeFile="App.tsx"
-                onFileChange={handleFileChange}
-                onActiveFileChange={handleActiveFileChange}
-              />
-            )}
-          </div>
-          
-          {/* Right Panel */}
-          <div className="studio-panel-right">
-            {activeView === 'preview' ? (
-              <PreviewPanel 
-                files={mockFiles}
-                activeFile="App.tsx"
-              />
-            ) : (
-              <CodeEditor 
-                files={mockFiles}
-                activeFile="App.tsx"
-                onFileChange={handleFileChange}
-                onActiveFileChange={handleActiveFileChange}
-              />
-            )}
-          </div>
-        </div>
-
-        {/* Mobile: Single panel with bottom navigation */}
-        <div className="mobile-only w-full flex flex-col">
-          <div className="flex-1 overflow-hidden">
-            {renderMobilePanelContent()}
-          </div>
-        </div>
+        {state.activeView === 'preview' && (
+          <PreviewPanel
+            files={state.files}
+            activeFile={state.activeFile}
+          />
+        )}
       </div>
 
-      {/* Mobile: Bottom Navigation */}
-      <div className="mobile-nav">
+      {/* Mobile Bottom Navigation */}
+      <div className="h-16 border-t border-border bg-background/95 backdrop-blur">
         <TubelightNavBar
-          items={MOBILE_NAV_ITEMS}
-          activeItem={activeMobilePanel}
-          onItemClick={handleMobileNavClick}
-          variant="mobile"
-          className="h-full flex items-center justify-center"
+          items={[
+            {
+              id: 'chat',
+              label: 'Chat',
+              icon: MessageCircle,
+              isActive: state.activeView === 'chat'
+            },
+            {
+              id: 'code',
+              label: 'Code',
+              icon: Code,
+              isActive: state.activeView === 'code'
+            },
+            {
+              id: 'preview',
+              label: 'Preview',
+              icon: Eye,
+              isActive: state.activeView === 'preview'
+            }
+          ]}
+          onItemClick={(id) => updateState({ activeView: id as any })}
         />
       </div>
 
-      {/* Mobile: Full-screen modal for expanded panels */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
-        {showMobileModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="mobile-panel-modal"
-          >
-            {/* Modal Header */}
-            <div className="h-14 border-b border-border flex items-center justify-between px-4 bg-background/95 backdrop-blur">
-              <h2 className="font-semibold capitalize">{activeMobilePanel}</h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={closeMobileModal}
-                className="touch-target"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+        {state.isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-40"
+              onClick={() => updateState({ isMobileMenuOpen: false })}
+            />
             
-            {/* Modal Content */}
-            <div className="flex-1 overflow-hidden">
-              {renderMobilePanelContent()}
-            </div>
-            
-            {/* Modal Footer - Quick actions */}
-            <div className="h-16 border-t border-border bg-background/95 backdrop-blur flex items-center justify-center gap-4 px-4">
-              <TubelightNavBar
-                items={MOBILE_NAV_ITEMS}
-                activeItem={activeMobilePanel}
-                onItemClick={(item) => {
-                  handleMobileNavClick(item)
-                  // Keep modal open for quick switching
-                }}
-                variant="desktop"
-                className="flex-1"
-              />
-            </div>
-          </motion.div>
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              className="fixed right-0 top-0 h-full w-80 bg-background border-l border-border shadow-xl z-50"
+            >
+              <div className="p-4">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="font-semibold">Menu</h2>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => updateState({ isMobileMenuOpen: false })}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                <div className="space-y-2">
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => updateState({ showVersionSidebar: true, isMobileMenuOpen: false })}
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Version History
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-      
-      {/* Any additional children */}
-      {children}
+
+      {/* Mobile Version Sidebar */}
+      <VersionSidebar
+        isOpen={state.showVersionSidebar}
+        onClose={() => updateState({ showVersionSidebar: false })}
+      />
     </div>
+  )
+
+  return (
+    <>
+      <div className="desktop-only">
+        <DesktopLayout />
+      </div>
+      <div className="mobile-only">
+        <MobileLayout />
+      </div>
+    </>
   )
 } 

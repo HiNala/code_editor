@@ -1,333 +1,330 @@
-import React, { useState, useEffect } from 'react'
-import {
-  Box,
-  VStack,
-  HStack,
-  Text,
-  Button,
-  IconButton,
-  Badge,
-  Flex,
-
-} from '@chakra-ui/react'
-import {
-  MenuRoot,
-  MenuTrigger,
-  MenuContent,
-  MenuItem,
-  MenuSeparator,
-} from '../ui/menu'
-import {
-  FiX,
-  FiClock,
-  FiRotateCcw,
-  FiMoreVertical,
-  FiDownload,
-  FiTrash2,
-  FiGitBranch,
-  FiCalendar,
-} from 'react-icons/fi'
-import { useColorModeValue } from '../ui/color-mode'
-import { toaster } from '../ui/toaster'
+import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { 
+  GitBranch, 
+  History, 
+  Plus, 
+  MoreHorizontal,
+  Clock,
+  User,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  FileText,
+  Download,
+  Upload,
+  RefreshCw
+} from 'lucide-react'
+import { Button } from '../ui/button'
+import { cn } from '../../lib/utils'
 
 interface Version {
   id: string
   name: string
-  description?: string
-  createdAt: Date
-  filesCount: number
-  size: string
-  isActive?: boolean
+  description: string
+  timestamp: string
+  author: string
+  status: 'saved' | 'published' | 'draft'
+  changes: number
 }
 
 interface VersionSidebarProps {
   isOpen: boolean
   onClose: () => void
-  projectId: string | null
-  onVersionRestore: (versionId: string) => void
-}
-
-// Mock data - in real app this would come from API
-const mockVersions: Version[] = [
-  {
-    id: 'v1',
-    name: 'Initial Component Setup',
-    description: 'Created basic React component structure',
-    createdAt: new Date('2024-01-15T10:30:00'),
-    filesCount: 3,
-    size: '2.1 KB',
-    isActive: true,
-  },
-  {
-    id: 'v2',
-    name: 'Added Styling',
-    description: 'Implemented responsive design with CSS Grid',
-    createdAt: new Date('2024-01-15T11:45:00'),
-    filesCount: 5,
-    size: '4.7 KB',
-  },
-  {
-    id: 'v3',
-    name: 'Interactive Features',
-    description: 'Added click handlers and state management',
-    createdAt: new Date('2024-01-15T14:20:00'),
-    filesCount: 7,
-    size: '8.3 KB',
-  },
-  {
-    id: 'v4',
-    name: 'Performance Optimization',
-    description: 'Optimized renders and added memoization',
-    createdAt: new Date('2024-01-15T16:10:00'),
-    filesCount: 8,
-    size: '9.1 KB',
-  },
-]
-
-const formatDate = (date: Date) => {
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-  
-  if (diffHours < 1) {
-    const diffMinutes = Math.floor(diffMs / (1000 * 60))
-    return `${diffMinutes} minutes ago`
-  } else if (diffHours < 24) {
-    return `${diffHours} hours ago`
-  } else {
-    return date.toLocaleDateString()
-  }
 }
 
 export const VersionSidebar: React.FC<VersionSidebarProps> = ({
   isOpen,
   onClose,
-  projectId,
-  onVersionRestore,
 }) => {
-  const [versions, setVersions] = useState<Version[]>(mockVersions)
-  const [loading, setLoading] = useState(false)
-  const [expandedVersion, setExpandedVersion] = useState<string | null>(null)
+  const [activeVersion, setActiveVersion] = useState('current')
+  const [isCreatingVersion, setIsCreatingVersion] = useState(false)
 
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.600')
-  const hoverBg = useColorModeValue('gray.50', 'gray.700')
+  // Mock version data
+  const versions: Version[] = [
+    {
+      id: 'current',
+      name: 'Current Draft',
+      description: 'Working on responsive design improvements',
+      timestamp: 'Just now',
+      author: 'You',
+      status: 'draft',
+      changes: 12
+    },
+    {
+      id: 'v1.2.0',
+      name: 'Mobile Optimization',
+      description: 'Added mobile-first responsive design',
+      timestamp: '2 hours ago',
+      author: 'John Doe',
+      status: 'published',
+      changes: 8
+    },
+    {
+      id: 'v1.1.0',
+      name: 'UI Components',
+      description: 'Enhanced component library with new animations',
+      timestamp: '1 day ago',
+      author: 'Jane Smith',
+      status: 'published',
+      changes: 15
+    },
+    {
+      id: 'v1.0.0',
+      name: 'Initial Release',
+      description: 'First stable version with core features',
+      timestamp: '3 days ago',
+      author: 'Team',
+      status: 'published',
+      changes: 45
+    }
+  ]
 
-  const handleRestore = (versionId: string) => {
-    const version = versions.find(v => v.id === versionId)
-    if (!version) return
-
-    // Update active version
-    setVersions(prev => prev.map(v => ({
-      ...v,
-      isActive: v.id === versionId
-    })))
-
-    onVersionRestore(versionId)
-    
-    toaster.create({
-      title: 'Version restored',
-      description: `Restored to "${version.name}"`,
-      status: 'success',
-      duration: 3000,
-    })
+  const getStatusIcon = (status: Version['status']) => {
+    switch (status) {
+      case 'published':
+        return <CheckCircle2 className="h-3 w-3 text-green-500" />
+      case 'saved':
+        return <Clock className="h-3 w-3 text-blue-500" />
+      case 'draft':
+        return <AlertCircle className="h-3 w-3 text-yellow-500" />
+      default:
+        return <XCircle className="h-3 w-3 text-red-500" />
+    }
   }
 
-  const handleDelete = (versionId: string) => {
-    const version = versions.find(v => v.id === versionId)
-    if (!version) return
-
-    setVersions(prev => prev.filter(v => v.id !== versionId))
-    
-    toaster.create({
-      title: 'Version deleted',
-      description: `"${version.name}" has been deleted`,
-      status: 'info',
-      duration: 3000,
-    })
+  const getStatusColor = (status: Version['status']) => {
+    switch (status) {
+      case 'published':
+        return 'text-green-600 bg-green-50 border-green-200'
+      case 'saved':
+        return 'text-blue-600 bg-blue-50 border-blue-200'
+      case 'draft':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+      default:
+        return 'text-red-600 bg-red-50 border-red-200'
+    }
   }
 
-  const handleDownload = (versionId: string) => {
-    const version = versions.find(v => v.id === versionId)
-    if (!version) return
+  const handleCreateVersion = () => {
+    setIsCreatingVersion(true)
+    // Simulate version creation
+    setTimeout(() => {
+      setIsCreatingVersion(false)
+    }, 1000)
+  }
 
-    // TODO: Implement actual download
-    toaster.create({
-      title: 'Download started',
-      description: `Downloading "${version.name}"...`,
-      status: 'info',
-      duration: 3000,
-    })
+  const handleVersionSelect = (versionId: string) => {
+    setActiveVersion(versionId)
+  }
+
+  const handleVersionAction = (action: string, versionId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    console.log(`${action} version:`, versionId)
   }
 
   return (
-    <Box
-      position="fixed"
-      right={0}
-      top={0}
-      bottom={0}
-      w="400px"
-      bg={bgColor}
-      borderLeft="1px"
-      borderColor={borderColor}
-      transform={isOpen ? 'translateX(0)' : 'translateX(100%)'}
-      transition="transform 0.22s cubic-bezier(0.4, 0, 0.2, 1)"
-      zIndex={50}
-      boxShadow="xl"
-    >
-      {/* Header */}
-      <Flex
-        p={4}
-        borderBottom="1px"
-        borderColor={borderColor}
-        justify="space-between"
-        align="center"
-      >
-        <HStack spacing={2}>
-          <FiClock />
-          <Text fontWeight="semibold">Version History</Text>
-        </HStack>
-        <IconButton
-          aria-label="Close sidebar"
-          icon={<FiX />}
-          size="sm"
-          variant="ghost"
-          onClick={onClose}
-        />
-      </Flex>
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Mobile Overlay */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="mobile-only fixed inset-0 bg-black/50 z-40"
+            onClick={onClose}
+          />
+          
+          {/* Sidebar */}
+          <motion.div
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+            className={cn(
+              "fixed right-0 top-0 h-full bg-background border-l border-border shadow-xl z-50",
+              "w-80 desktop-only", // Desktop: Fixed width
+              "w-full mobile-only" // Mobile: Full width
+            )}
+          >
+            {/* Header */}
+            <div className="p-4 border-b border-border bg-background/95 backdrop-blur">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <History className="h-5 w-5" />
+                  <h2 className="font-semibold">Version History</h2>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCreateVersion}
+                    disabled={isCreatingVersion}
+                    className="touch-target"
+                  >
+                    {isCreatingVersion ? (
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                    <span className="hidden sm:inline ml-1">Save</span>
+                  </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClose}
+                    className="touch-target"
+                  >
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Stats */}
+              <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <GitBranch className="h-3 w-3" />
+                  <span>{versions.length} versions</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <User className="h-3 w-3" />
+                  <span>3 contributors</span>
+                </div>
+              </div>
+            </div>
 
-      {/* Content */}
-      <Box flex={1} overflow="auto">
-        {!projectId ? (
-          <Box p={8} textAlign="center">
-            <FiGitBranch size={32} color="gray.400" />
-            <Text color="gray.500" mt={4}>
-              Select a project to view version history
-            </Text>
-          </Box>
-        ) : (
-          <VStack spacing={0} align="stretch">
-            {versions.map((version, index) => (
-              <Box key={version.id}>
-                <Box
-                  p={4}
-                  cursor="pointer"
-                  _hover={{ bg: hoverBg }}
-                  onClick={() => setExpandedVersion(
-                    expandedVersion === version.id ? null : version.id
-                  )}
-                  transition="background-color 0.15s ease"
-                >
-                  <HStack justify="space-between" align="start">
-                    <VStack align="start" spacing={1} flex={1}>
-                      <HStack spacing={2}>
-                        <Text fontWeight="medium" fontSize="sm">
-                          {version.name}
-                        </Text>
-                        {version.isActive && (
-                          <Badge colorScheme="green" size="sm">
-                            Active
-                          </Badge>
-                        )}
-                      </HStack>
+            {/* Version List */}
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <div className="p-4 space-y-3">
+                {versions.map((version, index) => (
+                  <motion.div
+                    key={version.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className={cn(
+                      "p-3 rounded-lg border cursor-pointer transition-all duration-200",
+                      activeVersion === version.id
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border hover:border-accent hover:bg-accent/50"
+                    )}
+                    onClick={() => handleVersionSelect(version.id)}
+                  >
+                    {/* Version Header */}
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          {getStatusIcon(version.status)}
+                          <h3 className="font-medium text-sm truncate">
+                            {version.name}
+                          </h3>
+                        </div>
+                        
+                        <div className={cn(
+                          "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border",
+                          getStatusColor(version.status)
+                        )}>
+                          {version.status}
+                        </div>
+                      </div>
                       
-                      {version.description && (
-                        <Text fontSize="xs" color="gray.600" noOfLines={2}>
-                          {version.description}
-                        </Text>
-                      )}
-                      
-                      <HStack spacing={3} fontSize="xs" color="gray.500">
-                        <HStack spacing={1}>
-                          <FiCalendar size={12} />
-                          <Text>{formatDate(version.createdAt)}</Text>
-                        </HStack>
-                        <Text>•</Text>
-                        <Text>{version.filesCount} files</Text>
-                        <Text>•</Text>
-                        <Text>{version.size}</Text>
-                      </HStack>
-                    </VStack>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleVersionAction('menu', version.id, e)}
+                        className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100"
+                      >
+                        <MoreHorizontal className="h-3 w-3" />
+                      </Button>
+                    </div>
 
-                    <MenuRoot>
-                      <MenuTrigger asChild>
-                        <IconButton
-                          aria-label="Version options"
-                          icon={<FiMoreVertical />}
-                          size="sm"
+                    {/* Description */}
+                    {version.description && (
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                        {version.description}
+                      </p>
+                    )}
+
+                    {/* Metadata */}
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{version.timestamp}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <User className="h-3 w-3" />
+                          <span>{version.author}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-1">
+                        <FileText className="h-3 w-3" />
+                        <span>{version.changes} changes</span>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    {activeVersion === version.id && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="mt-3 pt-3 border-t border-border flex items-center gap-2"
+                      >
+                        <Button
                           variant="ghost"
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </MenuTrigger>
-                      <MenuContent>
-                        <MenuItem
-                          value="restore"
-                          onClick={() => handleRestore(version.id)}
-                          disabled={version.isActive}
+                          size="sm"
+                          onClick={(e) => handleVersionAction('restore', version.id, e)}
+                          className="flex-1 text-xs"
                         >
-                          <FiRotateCcw />
-                          Restore Version
-                        </MenuItem>
-                        <MenuItem
-                          value="download"
-                          onClick={() => handleDownload(version.id)}
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Restore
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => handleVersionAction('download', version.id, e)}
+                          className="flex-1 text-xs"
                         >
-                          <FiDownload />
-                          Download
-                        </MenuItem>
-                        <MenuSeparator />
-                        <MenuItem
-                          value="delete"
-                          onClick={() => handleDelete(version.id)}
-                          color="red.500"
-                          disabled={version.isActive}
-                        >
-                          <FiTrash2 />
-                          Delete
-                        </MenuItem>
-                      </MenuContent>
-                    </MenuRoot>
-                  </HStack>
-                </Box>
+                          <Download className="h-3 w-3 mr-1" />
+                          Export
+                        </Button>
+                        
+                        {version.status === 'draft' && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleVersionAction('publish', version.id, e)}
+                            className="flex-1 text-xs"
+                          >
+                            <Upload className="h-3 w-3 mr-1" />
+                            Publish
+                          </Button>
+                        )}
+                      </motion.div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </div>
 
-{expandedVersion === version.id && (
-                  <Box px={4} pb={4}>
-                    <Box
-                      p={3}
-                      bg={useColorModeValue('gray.50', 'gray.700')}
-                      borderRadius="md"
-                      fontSize="sm"
-                    >
-                      <Text fontWeight="medium" mb={2}>Details</Text>
-                      <VStack spacing={1} align="start">
-                        <Text>Created: {version.createdAt.toLocaleString()}</Text>
-                        <Text>Size: {version.size}</Text>
-                        <Text>Files: {version.filesCount}</Text>
-                      </VStack>
-                    </Box>
-                  </Box>
-                )}
-
-{index < versions.length - 1 && (
-                  <Box h="1px" bg={borderColor} />
-                )}
-              </Box>
-            ))}
-          </VStack>
-        )}
-      </Box>
-
-      {/* Footer */}
-      <Box
-        p={4}
-        borderTop="1px"
-        borderColor={borderColor}
-        bg={useColorModeValue('gray.50', 'gray.700')}
-      >
-        <Text fontSize="xs" color="gray.500" textAlign="center">
-          Versions are automatically saved when you generate code
-        </Text>
-      </Box>
-    </Box>
+            {/* Footer */}
+            <div className="border-t border-border bg-muted/30 p-4">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Auto-save enabled</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full" />
+                  <span>Synced</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   )
 } 
