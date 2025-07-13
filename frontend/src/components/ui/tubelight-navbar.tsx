@@ -6,12 +6,12 @@ import { cn } from "../../lib/utils"
 
 export interface NavItem {
   name: string
-  url: string
   icon: React.ComponentType<{ className?: string }>
+  url: string
   badge?: number
 }
 
-interface TubelightNavBarProps {
+export interface TubelightNavBarProps {
   items: NavItem[]
   activeItem?: string
   onItemClick?: (item: NavItem) => void
@@ -33,13 +33,13 @@ export function TubelightNavBar({
       "relative flex items-center",
       variant === "desktop" 
         ? "bg-background/95 backdrop-blur-md border border-border rounded-full p-1 shadow-lg"
-        : "bg-background border-t border-border w-full justify-center py-2",
+        : "bg-background border-t border-border w-full justify-center py-2 px-4",
       className
     )}>
       {/* Background highlight */}
       {activeIndex >= 0 && (
         <motion.div
-          layoutId="navbar-highlight"
+          layoutId={`navbar-highlight-${variant}`}
           className={cn(
             "absolute bg-primary/10 rounded-full",
             variant === "desktop" ? "inset-y-1" : "inset-y-1"
@@ -64,19 +64,19 @@ export function TubelightNavBar({
       {/* Tubelight glow effect */}
       {activeIndex >= 0 && (
         <motion.div
-          layoutId="navbar-glow"
+          layoutId={`navbar-glow-${variant}`}
           className={cn(
-            "absolute bg-primary/20 rounded-full blur-sm",
+            "absolute bg-primary/20 blur-sm rounded-full",
             variant === "desktop" ? "inset-y-0" : "inset-y-0"
           )}
           initial={false}
           animate={{
             x: variant === "desktop" 
               ? `calc(${activeIndex} * (100% / ${items.length}) + 0.125rem)`
-              : `calc(${activeIndex} * (100% / ${items.length}))`,
+              : `calc(${activeIndex} * (100% / ${items.length}) + 0.125rem)`,
             width: variant === "desktop" 
               ? `calc(100% / ${items.length} - 0.25rem)`
-              : `calc(100% / ${items.length})`
+              : `calc(100% / ${items.length} - 0.25rem)`
           }}
           transition={{
             type: "spring",
@@ -85,8 +85,7 @@ export function TubelightNavBar({
           }}
         />
       )}
-
-      {/* Navigation items */}
+      
       <div className={cn(
         "relative flex w-full",
         variant === "desktop" ? "gap-0" : "justify-around"
@@ -100,26 +99,36 @@ export function TubelightNavBar({
               key={item.name}
               onClick={() => onItemClick?.(item)}
               className={cn(
-                "relative flex items-center justify-center transition-colors duration-200 focus-ring",
+                "relative flex items-center justify-center transition-all duration-200 focus-ring-mobile",
                 variant === "desktop" 
-                  ? "px-4 py-2 text-sm font-medium rounded-full min-w-[80px]"
-                  : "p-3 flex-col gap-1",
+                  ? "px-4 py-2 text-sm font-medium rounded-full min-w-[80px] hover:scale-105"
+                  : "p-3 flex-col gap-1 min-h-[56px] min-w-[56px] hover:scale-110",
                 isActive 
-                  ? "text-primary" 
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "text-primary scale-105" 
+                  : "text-muted-foreground hover:text-foreground",
+                // Enhanced mobile touch targets
+                variant === "mobile" && "touch-target"
               )}
               aria-current={isActive ? "page" : undefined}
+              aria-label={`${item.name}${item.badge ? ` (${item.badge} notifications)` : ''}`}
             >
               <Icon className={cn(
-                variant === "desktop" ? "w-4 h-4 mr-2" : "w-5 h-5"
+                "transition-transform duration-200",
+                variant === "desktop" ? "w-4 h-4 mr-2" : "w-5 h-5",
+                isActive && "scale-110"
               )} />
               
               {variant === "desktop" && (
-                <span>{item.name}</span>
+                <span className="font-medium">{item.name}</span>
               )}
               
               {variant === "mobile" && (
-                <span className="text-xs font-medium">{item.name}</span>
+                <span className={cn(
+                  "text-xs font-medium transition-opacity duration-200",
+                  isActive ? "opacity-100" : "opacity-75"
+                )}>
+                  {item.name}
+                </span>
               )}
 
               {/* Badge */}
@@ -128,8 +137,10 @@ export function TubelightNavBar({
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   className={cn(
-                    "absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center",
-                    variant === "mobile" && "top-0 right-2"
+                    "absolute bg-destructive text-destructive-foreground text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center font-medium shadow-md",
+                    variant === "desktop" 
+                      ? "-top-1 -right-1" 
+                      : "top-1 right-1"
                   )}
                 >
                   {item.badge > 99 ? "99+" : item.badge}
@@ -150,6 +161,14 @@ export function TubelightNavBar({
                   }}
                 />
               )}
+
+              {/* Hover effect overlay */}
+              <motion.div
+                className="absolute inset-0 bg-primary/5 rounded-full opacity-0"
+                whileHover={{ opacity: 1 }}
+                whileTap={{ opacity: 0.5, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+              />
             </button>
           )
         })}
@@ -158,7 +177,7 @@ export function TubelightNavBar({
   )
 }
 
-// Preset configurations
+// Convenience functions for different variants
 export const createDesktopNavBar = (props: Omit<TubelightNavBarProps, "variant">) => (
   <TubelightNavBar {...props} variant="desktop" />
 )
