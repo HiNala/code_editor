@@ -1,5 +1,4 @@
 import type { ApiError } from "./client"
-import useCustomToast from "./hooks/useCustomToast"
 
 export const emailPattern = {
   value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -8,7 +7,7 @@ export const emailPattern = {
 
 export const namePattern = {
   value: /^[A-Za-z\s\u00C0-\u017F]{1,30}$/,
-  message: "Invalid name",
+  message: "Name can only contain letters and spaces",
 }
 
 export const passwordRules = (isRequired = true) => {
@@ -33,7 +32,9 @@ export const confirmPasswordRules = (
   const rules: any = {
     validate: (value: string) => {
       const password = getValues().password || getValues().new_password
-      return value === password ? true : "The passwords do not match"
+      if (value !== password) {
+        return "The passwords do not match"
+      }
     },
   }
 
@@ -45,11 +46,11 @@ export const confirmPasswordRules = (
 }
 
 export const handleError = (err: ApiError) => {
-  const { showErrorToast } = useCustomToast()
-  const errDetail = (err.body as any)?.detail
-  let errorMessage = errDetail || "Something went wrong."
-  if (Array.isArray(errDetail) && errDetail.length > 0) {
-    errorMessage = errDetail[0].msg
+  // Simple error handling without toast
+  console.error("API Error:", err)
+  
+  // You could integrate with a different notification system here
+  if (typeof window !== 'undefined') {
+    alert(err.message || "An error occurred")
   }
-  showErrorToast(errorMessage)
 }

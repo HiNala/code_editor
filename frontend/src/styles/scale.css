@@ -1,0 +1,221 @@
+/* Design System Scale - 4px Grid */
+:root {
+  /* Spacing Scale */
+  --space-tight: 4px;
+  --space-standard: 8px;
+  --space-comfortable: 16px;
+  --space-spacious: 24px;
+  --space-generous: 32px;
+  
+  /* Studio Color Palette */
+  --color-studio-blue: #0ea5e9;
+  --color-success-green: #10b981;
+  --color-warning-amber: #f59e0b;
+  --color-error-crimson: #ef4444;
+  --color-deep-charcoal: #1e293b;
+  
+  /* Neutral Foundation */
+  --color-pure-white: #ffffff;
+  --color-soft-gray: #f8fafc;
+  --color-medium-gray: #64748b;
+  --color-border-gray: #e2e8f0;
+  
+  /* Typography Scale */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 32px;
+  
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.7;
+  
+  /* Border Radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 400ms ease;
+  
+  /* Z-Index Scale */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] {
+  --color-pure-white: #1a202c;
+  --color-soft-gray: #2d3748;
+  --color-medium-gray: #a0aec0;
+  --color-border-gray: #4a5568;
+  --color-deep-charcoal: #f7fafc;
+}
+
+/* Base Typography */
+@layer base {
+  html {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-md);
+    line-height: var(--line-height-normal);
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    color: var(--color-deep-charcoal);
+    background-color: var(--color-pure-white);
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  /* Typography Classes */
+  .display-large {
+    font-size: var(--font-size-3xl);
+    font-weight: 600;
+    line-height: var(--line-height-tight);
+  }
+  
+  .title-medium {
+    font-size: var(--font-size-xl);
+    font-weight: 500;
+    line-height: var(--line-height-tight);
+  }
+  
+  .body-regular {
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+    line-height: var(--line-height-normal);
+  }
+  
+  .caption-small {
+    font-size: var(--font-size-xs);
+    font-weight: 400;
+    line-height: var(--line-height-normal);
+  }
+  
+  .code-mono {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+  }
+}
+
+/* Animation Utilities */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+  20%, 40%, 60%, 80% { transform: translateX(4px); }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% { transform: translateY(0); }
+  40%, 43% { transform: translateY(-8px); }
+  70% { transform: translateY(-4px); }
+  90% { transform: translateY(-2px); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes highlightFlash {
+  0% { background-color: var(--color-success-green); }
+  100% { background-color: transparent; }
+}
+
+/* Animation Classes */
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.animate-spin {
+  animation: spin 2s linear infinite;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out 3;
+}
+
+.animate-bounce {
+  animation: bounce 1s ease infinite;
+}
+
+.animate-wave {
+  animation: wave 2s ease-in-out infinite;
+}
+
+.animate-highlight-flash {
+  animation: highlightFlash 400ms ease-out;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-spin,
+  .animate-shake,
+  .animate-bounce,
+  .animate-wave {
+    animation: none;
+  }
+  
+  .animate-highlight-flash {
+    animation: none;
+    background-color: var(--color-success-green);
+    transition: background-color var(--transition-normal);
+  }
+}
+
+/* Focus Styles */
+.focus-ring {
+  outline: 2px solid var(--color-studio-blue);
+  outline-offset: 2px;
+}
+
+/* Utility Classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+} 
