@@ -55,6 +55,7 @@ export default function WorkflowWheel({ onStateChange = () => {} }: WorkflowWhee
 
   const getStateBlur = (index: number) => {
     // Blur only the duplicate label inside the wheel (matching active button)
+    // Ensure blur value is never negative to avoid CSS warnings
     return index === currentStateIndex ? "blur(2px)" : "blur(0px)"
   }
 

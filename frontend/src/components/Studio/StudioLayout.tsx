@@ -1,27 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { MessageCircle, Code, Eye, Menu, Settings, X, ChevronRight, Save, Download, Share } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { cn } from '../../lib/utils'
 import { ChatPanel } from './ChatPanel'
 import { CodeEditor } from './CodeEditor'
 import { PreviewPanel } from './PreviewPanel'
+import { FileExplorer } from './FileExplorer'
+import { StudioTopBar } from './StudioTopBar'
 import { VersionSidebar } from './VersionSidebar'
-import { Button } from '../ui/button'
-import { Tabs, TabsList, TabsTrigger } from '../ui/tabs'
-import { Tooltip } from '../ui/tooltip'
-import { Separator } from '../ui/separator'
-import { Badge } from '../ui/badge'
+import { ConnectionStatus } from './ConnectionStatus'
+import { UserDropdown } from './UserDropdown'
+import { fileSystemService, FileItem } from '../../services/fileSystemService'
 
-export interface FileMap {
-  [filename: string]: string
-}
-
-// Studio state interface
 interface StudioState {
   activeView: 'chat' | 'code' | 'preview'
   showVersionSidebar: boolean
   isMobileMenuOpen: boolean
-  files: FileMap
-  activeFile: string
   isGenerating: boolean
   isPanelCollapsed: {
     chat: boolean
@@ -68,19 +61,6 @@ export const StudioLayout: React.FC = () => {
     activeView: 'chat',
     showVersionSidebar: false,
     isMobileMenuOpen: false,
-    files: {
-      'app.tsx': `import React from 'react'
-
-export function App() {
-  return (
-    <div className="p-4">
-      <h1>Hello World!</h1>
-      <p>This is a live preview of your responsive application.</p>
-    </div>
-  )
-}`,
-    },
-    activeFile: 'app.tsx',
     isGenerating: false,
     isPanelCollapsed: {
       chat: false,
@@ -88,14 +68,22 @@ export function App() {
     }
   })
 
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const [fileSystemState, setFileSystemState] = useState(fileSystemService.getState())
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
 
+  // Subscribe to file system changes
   useEffect(() => {
-    // Simulate initial loading animation
+    const unsubscribe = fileSystemService.subscribe(() => {
+      setFileSystemState(fileSystemService.getState())
+    })
+    return unsubscribe
+  }, [])
+
+  // Initial loading animation
+  useEffect(() => {
     const timer = setTimeout(() => {
-      setIsInitialLoad(false)
-    }, 500)
-    
+      setIsInitialLoading(false)
+    }, 1000)
     return () => clearTimeout(timer)
   }, [])
 
@@ -103,14 +91,11 @@ export function App() {
     setState(prev => ({ ...prev, ...updates }))
   }
 
-  const handleFileChange = (filename: string, content: string) => {
-    updateState({
-      files: { ...state.files, [filename]: content }
-    })
-  }
-
-  const handleActiveFileChange = (filename: string) => {
-    updateState({ activeFile: filename })
+  const handleFileSelect = (file: FileItem) => {
+    if (file.type === 'file') {
+      // Switch to code view when a file is selected
+      updateState({ activeView: 'code' })
+    }
   }
 
   const handleGenerate = (_prompt: string) => {
@@ -129,13 +114,60 @@ export function App() {
     }, 2000)
   }
 
-  const togglePanel = (panel: 'chat' | 'preview') => {
+  const _togglePanel = (panel: 'chat' | 'preview') => {
     updateState({
       isPanelCollapsed: {
         ...state.isPanelCollapsed,
         [panel]: !state.isPanelCollapsed[panel]
       }
     })
+  }
+
+  // Get current file content
+  const _getCurrentFileContent = () => {
+    if (fileSystemState.activeFile) {
+      return fileSystemService.getFileContent(fileSystemState.activeFile) || ''
+    }
+    return ''
+  }
+
+  // Get current file name
+  const getCurrentFileName = () => {
+    if (fileSystemState.activeFile) {
+      const allFiles = fileSystemService.getAllFiles()
+      const activeFile = allFiles.find(f => f.id === fileSystemState.activeFile)
+      return activeFile?.name || 'Untitled'
+    }
+    return 'No file selected'
+  }
+
+  // Handle code changes
+  const handleCodeChange = (_filename: string, content: string) => {
+    if (fileSystemState.activeFile) {
+      fileSystemService.updateFileContent(fileSystemState.activeFile, content)
+    }
+  }
+
+  // Handle active file change
+  const handleActiveFileChange = (filename: string) => {
+    // Find file by name and set as active
+    const allFiles = fileSystemService.getAllFiles()
+    const file = allFiles.find(f => f.name === filename)
+    if (file) {
+      fileSystemService.setActiveFile(file.id)
+    }
+  }
+
+  // Convert file system state to legacy format for existing components
+  const getLegacyFiles = () => {
+    const files: { [filename: string]: string } = {}
+    const allFiles = fileSystemService.getAllFiles()
+    allFiles.forEach(file => {
+      if (file.type === 'file' && file.content) {
+        files[file.name] = file.content
+      }
+    })
+    return files
   }
 
   // Desktop Layout (1024px+)
@@ -147,227 +179,132 @@ export function App() {
     }
 
     return (
-      <div className="h-screen flex flex-col">
+      <div className="hidden lg:flex h-screen bg-background">
         {/* Top Bar */}
-        <motion.div 
-          className="h-14 border-b border-border bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60 flex items-center justify-between px-4"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="flex items-center gap-4">
+        <div className="absolute top-0 left-0 right-0 z-50">
+          <div className="h-14 border-b border-border bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60 flex items-center justify-between px-4">
             <AnimatedLogo />
-            
-            <Separator orientation="vertical" className="h-6" />
-            
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs font-normal">
-                v0.1.0
-              </Badge>
-              <Badge variant="secondary" className="text-xs font-normal">
-                Beta
-              </Badge>
+            <StudioTopBar />
+          </div>
+        </div>
+
+        {/* Main Content Area */}
+        <div className="flex w-full pt-14">
+          {/* Left Sidebar - File Explorer */}
+          <motion.div
+            initial={{ width: 300 }}
+            animate={{ width: 300 }}
+            transition={panelTransition}
+            className="border-r border-border bg-background/50 backdrop-blur-sm"
+          >
+            <FileExplorer onFileSelect={handleFileSelect} className="h-full" />
+          </motion.div>
+
+          {/* Center Panel - Code Editor */}
+          <div className="flex-1 flex flex-col">
+            {/* Code Editor */}
+            <div className="flex-1">
+              <CodeEditor
+                files={getLegacyFiles()}
+                activeFile={getCurrentFileName()}
+                onFileChange={handleCodeChange}
+                onActiveFileChange={handleActiveFileChange}
+              />
             </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Tooltip content="Share">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Share className="h-4 w-4" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Save">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Save className="h-4 w-4" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Download">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Download className="h-4 w-4" />
-              </Button>
-            </Tooltip>
-            <Tooltip content="Settings">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => updateState({ showVersionSidebar: !state.showVersionSidebar })}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </Tooltip>
-          </div>
-        </motion.div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden relative">
-          {/* Chat Panel */}
-          <motion.div 
-            className="border-r border-border bg-background/50 backdrop-blur-sm"
-            initial={{ width: state.isPanelCollapsed.chat ? 0 : 320 }}
-            animate={{ 
-              width: state.isPanelCollapsed.chat ? 0 : 320,
-              opacity: state.isPanelCollapsed.chat ? 0 : 1
-            }}
-            transition={panelTransition}
-          >
+          {/* Right Sidebar - Chat */}
+          <AnimatePresence>
             {!state.isPanelCollapsed.chat && (
-              <div className="h-full w-full">
+              <motion.div
+                key="chat-panel"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 400, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={panelTransition}
+                className="border-l border-border bg-background/50 backdrop-blur-sm"
+              >
                 <ChatPanel 
                   onGenerate={handleGenerate}
                   onImprove={handleImprove}
                   isGenerating={state.isGenerating}
                 />
-              </div>
-            )}
-          </motion.div>
-
-          {/* Chat Panel Toggle */}
-          <motion.div 
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              className="h-8 px-1.5 rounded-l-none shadow-md"
-              onClick={() => togglePanel('chat')}
-            >
-              <motion.div
-                animate={{ rotate: state.isPanelCollapsed.chat ? 0 : 180 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ChevronRight className="h-4 w-4" />
               </motion.div>
-            </Button>
-          </motion.div>
-
-          {/* Code Editor */}
-          <motion.div 
-            className="flex-1 bg-background"
-            layout
-            transition={panelTransition}
-          >
-            <CodeEditor
-              files={state.files}
-              activeFile={state.activeFile}
-              onFileChange={handleFileChange}
-              onActiveFileChange={handleActiveFileChange}
-            />
-          </motion.div>
-
-          {/* Preview Panel */}
-          <motion.div 
-            className="border-l border-border bg-background/50 backdrop-blur-sm"
-            initial={{ width: state.isPanelCollapsed.preview ? 0 : 380 }}
-            animate={{ 
-              width: state.isPanelCollapsed.preview ? 0 : 380,
-              opacity: state.isPanelCollapsed.preview ? 0 : 1
-            }}
-            transition={panelTransition}
-          >
-            {!state.isPanelCollapsed.preview && (
-              <div className="h-full w-full">
-                <PreviewPanel
-                  files={state.files}
-                  activeFile={state.activeFile}
-                />
-              </div>
             )}
-          </motion.div>
+          </AnimatePresence>
 
-          {/* Preview Panel Toggle */}
-          <motion.div 
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Button 
-              variant="secondary" 
-              size="sm" 
-              className="h-8 px-1.5 rounded-r-none shadow-md"
-              onClick={() => togglePanel('preview')}
-            >
-              <motion.div
-                animate={{ rotate: state.isPanelCollapsed.preview ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </motion.div>
-            </Button>
-          </motion.div>
-
-          {/* Version Sidebar */}
+          {/* Bottom Panel - Preview (when expanded) */}
           <AnimatePresence>
-            {state.showVersionSidebar && (
+            {!state.isPanelCollapsed.preview && (
               <motion.div
-                initial={{ x: 300, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: 300, opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="w-80 border-l border-border bg-background/95 backdrop-blur-sm"
+                key="preview-panel"
+                initial={{ height: 0 }}
+                animate={{ height: 300 }}
+                exit={{ height: 0 }}
+                transition={panelTransition}
+                className="absolute bottom-0 left-300 right-0 border-t border-border bg-background/95 backdrop-blur-sm"
               >
-                <VersionSidebar 
-                  isOpen={state.showVersionSidebar}
-                  onClose={() => updateState({ showVersionSidebar: false })}
+                <PreviewPanel 
+                  files={getLegacyFiles()}
+                  activeFile={getCurrentFileName()}
                 />
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+
+        {/* Version Sidebar */}
+        <AnimatePresence>
+          {state.showVersionSidebar && (
+            <motion.div
+              key="version-sidebar"
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 320, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={panelTransition}
+              className="w-80 border-l border-border bg-background/95 backdrop-blur-sm"
+            >
+              <VersionSidebar 
+                isOpen={state.showVersionSidebar}
+                onClose={() => updateState({ showVersionSidebar: false })} 
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     )
   }
 
   // Mobile Layout (< 1024px)
   const MobileLayout = () => (
-    <div className="h-screen flex flex-col">
+    <div className="lg:hidden flex flex-col h-screen bg-background">
       {/* Mobile Header */}
-      <motion.div 
-        className="h-14 border-b border-border bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60 flex items-center justify-between px-4"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
+      <div className="h-14 border-b border-border bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60 flex items-center justify-between px-4">
         <AnimatedLogo />
-        
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => updateState({ isMobileMenuOpen: !state.isMobileMenuOpen })}
-          >
-            {state.isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </Button>
+          <ConnectionStatus status="connected" />
+          <UserDropdown />
         </div>
-      </motion.div>
+      </div>
 
-      {/* Mobile Tabs */}
+      {/* Mobile Tab Navigation */}
       <div className="border-b border-border bg-background/50 backdrop-blur-sm">
-        <Tabs 
-          value={state.activeView} 
-          onValueChange={(value) => updateState({ activeView: value as 'chat' | 'code' | 'preview' })}
-          className="w-full"
-        >
-          <TabsList className="w-full h-12 grid grid-cols-3">
-            <TabsTrigger value="chat" className="data-[state=active]:bg-background/80">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Chat
-            </TabsTrigger>
-            <TabsTrigger value="code" className="data-[state=active]:bg-background/80">
-              <Code className="h-4 w-4 mr-2" />
-              Code
-            </TabsTrigger>
-            <TabsTrigger value="preview" className="data-[state=active]:bg-background/80">
-              <Eye className="h-4 w-4 mr-2" />
-              Preview
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="flex">
+          {(['chat', 'code', 'preview'] as const).map((view) => (
+            <button
+              key={view}
+              className={cn(
+                "flex-1 py-3 px-4 text-sm font-medium transition-colors",
+                state.activeView === view
+                  ? "text-primary border-b-2 border-primary bg-accent/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/30"
+              )}
+              onClick={() => updateState({ activeView: view })}
+            >
+              {view.charAt(0).toUpperCase() + view.slice(1)}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Mobile Content */}
@@ -375,10 +312,10 @@ export function App() {
         <AnimatePresence mode="wait">
           {state.activeView === 'chat' && (
             <motion.div
-              key="chat"
+              key="mobile-chat"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
+              exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
               className="h-full"
             >
@@ -389,79 +326,70 @@ export function App() {
               />
             </motion.div>
           )}
+
           {state.activeView === 'code' && (
             <motion.div
-              key="code"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              key="mobile-code"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
-              className="h-full"
+              className="h-full flex flex-col"
             >
-              <CodeEditor
-                files={state.files}
-                activeFile={state.activeFile}
-                onFileChange={handleFileChange}
-                onActiveFileChange={handleActiveFileChange}
-              />
+              {/* Mobile File Explorer (Collapsible) */}
+              <div className="border-b border-border">
+                <FileExplorer onFileSelect={handleFileSelect} className="max-h-40" />
+              </div>
+              
+              {/* Mobile Code Editor */}
+              <div className="flex-1">
+                <CodeEditor
+                  files={getLegacyFiles()}
+                  activeFile={getCurrentFileName()}
+                  onFileChange={handleCodeChange}
+                  onActiveFileChange={handleActiveFileChange}
+                />
+              </div>
             </motion.div>
           )}
+
           {state.activeView === 'preview' && (
             <motion.div
-              key="preview"
-              initial={{ opacity: 0, x: 20 }}
+              key="mobile-preview"
+              initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.2 }}
               className="h-full"
             >
-              <PreviewPanel
-                files={state.files}
-                activeFile={state.activeFile}
+              <PreviewPanel 
+                files={getLegacyFiles()}
+                activeFile={getCurrentFileName()}
               />
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Overlay Menu */}
       <AnimatePresence>
         {state.isMobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
             className="fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
             onClick={() => updateState({ isMobileMenuOpen: false })}
           >
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ x: '-100%' }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="absolute right-0 top-0 h-full w-80 bg-background border-l border-border"
+              exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="w-80 h-full bg-background border-r border-border"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex flex-col h-full">
-                <div className="p-4 border-b border-border flex items-center justify-between">
-                  <h2 className="font-semibold">Settings</h2>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => updateState({ isMobileMenuOpen: false })}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex-1 overflow-auto">
-                  <VersionSidebar 
-                    isOpen={state.isMobileMenuOpen}
-                    onClose={() => updateState({ isMobileMenuOpen: false })}
-                  />
-                </div>
-              </div>
+              <FileExplorer onFileSelect={handleFileSelect} className="h-full" />
             </motion.div>
           </motion.div>
         )}
@@ -469,16 +397,25 @@ export function App() {
     </div>
   )
 
-  // Initial loading animation
-  if (isInitialLoad) {
+  // Loading Screen
+  if (isInitialLoading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-background">
+      <div className="h-screen bg-background flex items-center justify-center">
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
         >
           <AnimatedLogo />
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="mt-4 text-muted-foreground"
+          >
+            Initializing AI Studio...
+          </motion.p>
         </motion.div>
       </div>
     )
@@ -486,15 +423,8 @@ export function App() {
 
   return (
     <>
-      {/* Desktop Layout */}
-      <div className="hidden lg:block">
-        <DesktopLayout />
-      </div>
-      
-      {/* Mobile Layout */}
-      <div className="lg:hidden">
-        <MobileLayout />
-      </div>
+      <DesktopLayout />
+      <MobileLayout />
     </>
   )
 }

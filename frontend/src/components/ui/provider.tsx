@@ -1,5 +1,10 @@
 import { type PropsWithChildren } from "react"
+import { TooltipProvider } from "./tooltip"
 
 export function Provider({ children }: PropsWithChildren) {
-  return <>{children}</>
+  return (
+    <TooltipProvider>
+      {children}
+    </TooltipProvider>
+  )
 }

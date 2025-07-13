@@ -1,281 +1,297 @@
-# 🎨 AI Studio - World-Class Responsive Development Platform
+# 🚀 AI Studio - Advanced Coding Environment
 
-A sophisticated AI-powered code generation studio with **comprehensive responsive design** that delivers an optimal experience across **all devices and browsers**. Built with modern web technologies and mobile-first architecture.
+A powerful, AI-assisted coding environment that enables developers to build applications using natural language. Built with React, TypeScript, FastAPI, and powered by cutting-edge AI technology.
 
-## 🌟 **Key Features**
+![AI Studio Interface](img/dashboard.png)
 
-### 📱 **Fully Responsive Design**
-- **Mobile-First Architecture**: Optimized for phones (375px+), tablets (768px+), and desktops (1024px+)
-- **Cross-Browser Compatibility**: Chrome, Safari, Firefox, Edge, Samsung Internet
-- **Touch-Optimized**: 44px minimum touch targets, swipe gestures, momentum scrolling
-- **Accessibility Compliant**: WCAG 2.1 AA standards with keyboard navigation and screen reader support
+## ✨ Features
 
-### 🎯 **Device-Specific Experiences**
+### 🤖 AI-Powered Coding Assistant
+- **Natural Language Programming**: Describe what you want to build and watch AI create it
+- **Intelligent Code Generation**: Create React components, functions, and entire features with simple prompts
+- **Smart Code Analysis**: Get instant code reviews, bug fixes, and optimization suggestions
+- **Context-Aware Help**: AI understands your project structure and provides relevant assistance
 
-#### 📱 **Mobile (< 768px)**
-- Single-panel layout with bottom navigation
-- Full-screen modals for detailed views
-- Collapsible menu system
-- Touch-friendly chat interface
-- Quick action buttons
+### 🗂️ Dynamic File System
+- **Real-time File Management**: Create, edit, delete, and organize files dynamically
+- **Project Structure**: Intelligent project scaffolding with proper folder organization
+- **File Explorer**: Beautiful, responsive file browser with search and filtering
+- **Auto-save**: Never lose your work with automatic file saving
 
-#### 📋 **Tablet (768px - 1023px)**
-- Two-panel layout for optimal viewing
-- Simplified workspace tabs
-- Essential actions in top bar
-- Hybrid desktop/mobile experience
+### 💻 Professional Code Editor
+- **Monaco Editor Integration**: Full Visual Studio Code editing experience
+- **Multi-language Support**: TypeScript, JavaScript, React, HTML, CSS, and more
+- **Intelligent IntelliSense**: Auto-completion, syntax highlighting, and error detection
+- **Multiple Themes**: Dark mode, light mode, and high contrast options
+- **Customizable Settings**: Font size, word wrap, minimap, and line numbers
 
-#### 💻 **Desktop (1024px+)**
-- Three-panel layout: Chat | Code/Preview | Sidebar
-- Complete feature set with version history
-- Floating generate button with hover effects
-- Full workspace management
+### 🔄 Live Preview System
+- **Real-time Updates**: See your changes instantly as you code
+- **Multi-device Preview**: Test on mobile, tablet, and desktop views
+- **Error Handling**: Clear error messages and debugging information
+- **Console Output**: Monitor logs and debug information in real-time
 
-### 🎨 **Enhanced UI/UX**
-- **v0.dev-Inspired Design**: Workspace-first approach with project-centric navigation
-- **Tubelight Navigation**: Animated pill indicators with spring physics
-- **Hover Border Gradients**: Enhanced CTAs with rotating gradient borders
-- **Smooth Animations**: 60fps performance with reduced motion support
-- **Professional Design System**: 4px spacing grid with semantic colors
+### 📱 Responsive Design
+- **Mobile-First**: Optimized for all screen sizes and devices
+- **Touch-Friendly**: Perfect for tablets and touch devices
+- **Adaptive Layout**: Intelligent panel management and workspace optimization
+- **Modern UI**: Beautiful, accessible interface following design best practices
 
-### 🤖 **AI-Powered Features**
-- **Test-Driven Generation**: 6-stage ReAct pipeline (Interpret → Scaffold → Unit-Test → Execute → Repair → Report)
-- **Real-Time Streaming**: WebSocket-based live code generation
-- **Plugin System**: Extensible tool ecosystem with manifest-driven architecture
-- **Cost-Optimized**: Smart model selection with token usage tracking
+## 🛠️ Technology Stack
 
-## 🚀 **Quick Start**
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for lightning-fast development
+- **TanStack Router** for type-safe routing
+- **Framer Motion** for smooth animations
+- **Tailwind CSS** for styling
+- **Monaco Editor** for code editing
+- **Radix UI** for accessible components
+
+### Backend
+- **FastAPI** with Python 3.10+
+- **SQLModel** for database operations
+- **PostgreSQL** for data persistence
+- **Alembic** for database migrations
+- **Pydantic** for data validation
+- **WebSockets** for real-time communication
+
+### Infrastructure
+- **Docker** for containerization
+- **Traefik** for reverse proxy
+- **PostgreSQL** database
+- **Redis** for caching (optional)
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 18+ and npm
-- Python 3.8+ and uv
-- Docker (optional)
+- Docker and Docker Compose
+- Git
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd code_editor
+   ```
+
+2. **Start the application**
+   ```bash
+   docker compose up --build
+   ```
+
+3. **Access the application**
+   - **Frontend**: http://localhost:3000
+   - **Backend API**: http://localhost:8000
+   - **API Documentation**: http://localhost:8000/docs
+
+## 💡 How to Use AI Studio
+
+### 1. Getting Started
+1. Open AI Studio in your browser
+2. Click "Open Studio" to enter the coding environment
+3. The AI Assistant will greet you and offer help
+
+### 2. Creating Components with AI
+Use natural language to create React components:
+
+```
+Create a responsive navigation component with logo and menu items
+```
+
+```
+Build a user profile card with avatar, name, and contact information
+```
+
+```
+Generate a data table component with sorting and filtering
+```
+
+### 3. AI Commands
+Use these powerful commands to enhance your coding:
+
+- `/component` - Create new React components
+- `/fix` - Fix bugs and issues in your code
+- `/explain` - Get detailed code explanations
+- `/optimize` - Optimize code for better performance
+- `/test` - Generate unit tests
+- `/docs` - Create documentation
+
+### 4. File Management
+- **Create Files**: Use the file explorer or ask AI to create files
+- **Edit Code**: Use the powerful Monaco editor with full IntelliSense
+- **Organize**: Drag and drop files, create folders, and manage your project structure
+- **Search**: Quickly find files and code across your entire project
+
+### 5. Live Preview
+- **Instant Updates**: See changes as you type
+- **Device Testing**: Switch between mobile, tablet, and desktop views
+- **Error Handling**: Get clear feedback on issues
+- **Console Monitoring**: Track logs and debug information
+
+## 🎯 Use Cases
+
+### For Beginners
+- **Learn by Doing**: Ask AI to explain concepts and generate examples
+- **Template Generation**: Get started quickly with pre-built components
+- **Error Resolution**: Get help fixing bugs and understanding error messages
+
+### For Experienced Developers
+- **Rapid Prototyping**: Quickly build and test ideas
+- **Code Optimization**: Get AI-powered performance improvements
+- **Documentation**: Auto-generate docs and comments
+- **Testing**: Create comprehensive test suites
+
+### For Teams
+- **Consistent Code Style**: AI ensures consistent patterns
+- **Knowledge Sharing**: AI can explain complex code to team members
+- **Onboarding**: Help new team members understand the codebase
+
+## 🔧 Configuration
+
+### Environment Variables
+Create a `.env` file with the following variables:
+
+```env
+# Frontend
+FRONTEND_HOST=http://localhost:3000
+
+# Database
+POSTGRES_SERVER=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=app
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=changethis
+
+# Security
+SECRET_KEY=changethis
+FIRST_SUPERUSER=admin@example.com
+FIRST_SUPERUSER_PASSWORD=changethis
+
+# AI Services (Optional)
+OPENAI_API_KEY=your_openai_key
+GEMINI_API_KEY=your_gemini_key
+
+# AWS S3 (For file storage)
+AWS_ACCESS_KEY_ID=changethis
+AWS_SECRET_ACCESS_KEY=changethis
+AWS_REGION=us-west-2
+S3_BUCKET_NAME=changethis
+```
 
 ### Development Setup
 
+1. **Frontend Development**
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+2. **Backend Development**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   uvicorn app.main:app --reload
+   ```
+
+## 📖 API Documentation
+
+The API documentation is automatically generated and available at:
+- **Interactive Docs**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+### Key Endpoints
+
+- `GET /api/v1/studio/projects` - List all projects
+- `POST /api/v1/studio/projects` - Create new project
+- `GET /api/v1/studio/files` - List project files
+- `POST /api/v1/studio/files` - Create new file
+- `PUT /api/v1/studio/files/{id}` - Update file content
+- `DELETE /api/v1/studio/files/{id}` - Delete file
+
+## 🧪 Testing
+
+### Frontend Tests
 ```bash
-# Clone the repository
-git clone https://github.com/HiNala/code_editor.git
-cd code_editor
-
-# Backend setup
-cd backend
-uv install
-cp .env.example .env  # Add your OpenAI API key
-uv run fastapi dev app/main.py
-
-# Frontend setup (new terminal)
 cd frontend
-npm install
-npm run dev
-
-# Access the application
-# Frontend: http://localhost:5173
-# Backend API: http://localhost:8000
-# API Documentation: http://localhost:8000/docs
+npm run test
 ```
 
-### Docker Setup (Recommended)
-
+### Backend Tests
 ```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
+cd backend
+pytest
 ```
 
-## 📱 **Responsive Design System**
-
-### **Breakpoint System**
-```css
-xs: 375px    /* Small phones */
-sm: 640px    /* Large phones */
-md: 768px    /* Tablets */
-lg: 1024px   /* Small laptops */
-xl: 1280px   /* Desktop */
-2xl: 1536px  /* Large desktop */
-```
-
-### **Mobile Optimizations**
-- **Safe Areas**: Support for notched devices (iPhone X+)
-- **Viewport Fixes**: Proper height handling for mobile browsers
-- **Touch Actions**: Optimized for touch interactions
-- **Performance**: GPU-accelerated animations and optimized rendering
-
-### **Accessibility Features**
-- **Keyboard Navigation**: Full keyboard support with focus management
-- **Screen Readers**: Comprehensive ARIA labels and semantic markup
-- **High Contrast**: Support for high contrast mode
-- **Reduced Motion**: Respects user motion preferences
-- **Focus Management**: Proper focus trapping in modals
-
-## 🏗️ **Architecture**
-
-### **Frontend Stack**
-- **React 18** with TypeScript
-- **Tailwind CSS** for responsive design
-- **Framer Motion** for animations
-- **TanStack Router** for navigation
-- **Zustand** for state management
-- **Radix UI** for accessible components
-
-### **Backend Stack**
-- **FastAPI** with Python 3.8+
-- **SQLModel** with PostgreSQL
-- **WebSocket** for real-time communication
-- **OpenAI API** for code generation
-- **Redis** for caching and rate limiting
-
-### **Key Components**
-
-#### **StudioLayout** - Responsive Panel Management
-```typescript
-// Automatically adapts to screen size
-<StudioLayout>
-  {/* Desktop: 3 panels, Tablet: 2 panels, Mobile: 1 panel */}
-</StudioLayout>
-```
-
-#### **TubelightNavBar** - Adaptive Navigation
-```typescript
-// Desktop and mobile variants
-<TubelightNavBar variant="mobile" items={navItems} />
-```
-
-#### **ChatPanel** - Mobile-Optimized Chat
-```typescript
-// Touch-friendly with auto-resizing input
-<ChatPanel onGenerate={handleGenerate} isGenerating={false} />
-```
-
-## 🎯 **Performance Metrics**
-
-### **Lighthouse Scores**
-- **Mobile Performance**: 90+ 
-- **Desktop Performance**: 95+
-- **Accessibility**: 100
-- **Best Practices**: 95+
-- **SEO**: 90+
-
-### **Core Web Vitals**
-- **First Contentful Paint**: <1.5s
-- **Largest Contentful Paint**: <2.5s
-- **Cumulative Layout Shift**: <0.1
-- **Time to Interactive**: <3s
-
-### **Bundle Optimization**
-- **Main Bundle**: ~800KB (gzipped)
-- **Code Splitting**: Dynamic route imports
-- **Tree Shaking**: Unused code elimination
-- **Asset Optimization**: WebP images, font subsetting
-
-## 🌐 **Browser Support**
-
-### **Desktop Browsers**
-- Chrome 90+ ✅
-- Safari 14+ ✅
-- Firefox 88+ ✅
-- Edge 90+ ✅
-
-### **Mobile Browsers**
-- Chrome Mobile ✅
-- Safari iOS ✅
-- Firefox Mobile ✅
-- Samsung Internet ✅
-
-### **Device Support**
-- **iPhones**: iPhone SE to iPhone 15 Pro Max
-- **Android**: All modern Android devices
-- **Tablets**: iPad, Android tablets, Surface
-- **Laptops**: MacBook, Windows laptops, Chromebooks
-- **Desktops**: All screen sizes up to ultrawide monitors
-
-## 📖 **Usage Guide**
-
-### **Mobile Navigation**
-1. **Bottom Navigation**: Primary actions (Chat, Code, Preview, Settings)
-2. **Collapsible Menu**: Tap hamburger menu for workspace switching
-3. **Full-Screen Modals**: Tap "Expand" for detailed panel views
-4. **Swipe Gestures**: Swipe between panels (coming soon)
-
-### **Desktop Features**
-1. **Three-Panel Layout**: Chat, Code/Preview, Version History
-2. **Workspace Tabs**: Switch between Chat and Design workspaces
-3. **View Toggle**: Switch between Preview and Code views
-4. **Floating Generate**: Always-accessible generation button
-
-### **Tablet Experience**
-1. **Two-Panel Layout**: Optimized for landscape orientation
-2. **Simplified Navigation**: Essential features prominently displayed
-3. **Touch-Friendly**: Larger touch targets for tablet interaction
-
-## 🔧 **Development**
-
-### **Available Scripts**
-
+### E2E Tests
 ```bash
-# Frontend
-npm run dev          # Development server
-npm run build        # Production build
-npm run preview      # Preview production build
-npm run lint         # Lint and format code
-
-# Backend
-uv run fastapi dev   # Development server
-uv run pytest       # Run tests
-uv run alembic upgrade head  # Database migrations
+cd frontend
+npm run test:e2e
 ```
 
-### **Environment Variables**
+## 🚀 Deployment
 
+### Production Build
 ```bash
-# Backend (.env)
-OPENAI_API_KEY=your_openai_api_key
-DATABASE_URL=postgresql://user:pass@localhost/dbname
-REDIS_URL=redis://localhost:6379
+# Build frontend
+cd frontend
+npm run build
 
-# Frontend (.env)
-VITE_API_URL=http://localhost:8000
+# Build and deploy with Docker
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build
 ```
 
-## 🤝 **Contributing**
+### Environment-Specific Configs
+- **Development**: `docker-compose.override.yml`
+- **Production**: `docker-compose.prod.yml`
+- **Testing**: `docker-compose.test.yml`
 
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Follow responsive design principles**: Test on mobile, tablet, and desktop
-4. **Ensure accessibility**: Use proper ARIA labels and keyboard navigation
-5. **Test cross-browser**: Verify functionality across major browsers
-6. **Commit changes**: `git commit -m 'Add amazing responsive feature'`
-7. **Push to branch**: `git push origin feature/amazing-feature`
-8. **Open a Pull Request**
+## 🔒 Security
 
-### **Development Guidelines**
-- **Mobile-First**: Always design for mobile first, then enhance for larger screens
-- **Touch-Friendly**: Minimum 44px touch targets for interactive elements
-- **Performance**: Optimize for 60fps animations and fast loading
-- **Accessibility**: Follow WCAG 2.1 AA guidelines
-- **Testing**: Test on real devices when possible
+- **Authentication**: JWT-based authentication system
+- **Authorization**: Role-based access control
+- **Data Validation**: Comprehensive input validation with Pydantic
+- **CORS**: Properly configured cross-origin resource sharing
+- **Environment Variables**: Secure configuration management
 
-## 📄 **License**
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Development Guidelines
+- Follow TypeScript/Python best practices
+- Write comprehensive tests
+- Update documentation
+- Follow conventional commit messages
+
+## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 **Acknowledgments**
+## 🙏 Acknowledgments
 
-- **v0.dev** for design inspiration
-- **Tailwind CSS** for the responsive design system
-- **Framer Motion** for smooth animations
-- **Radix UI** for accessible components
-- **FastAPI** for the robust backend framework
+- **Monaco Editor** for the incredible code editing experience
+- **React** and **FastAPI** communities for excellent frameworks
+- **Tailwind CSS** for beautiful, utility-first styling
+- **Docker** for simplifying deployment
+- **OpenAI** and **Google Gemini** for AI capabilities
+
+## 📞 Support
+
+- **Documentation**: Check this README and the `/docs` endpoint
+- **Issues**: Report bugs and request features on GitHub
+- **Community**: Join our Discord server for discussions
 
 ---
 
-**Built with ❤️ for developers who demand excellence across all devices**
+**Built with ❤️ by the AI Studio Team**
 
-*Experience the future of AI-powered development with our comprehensive responsive design system that works beautifully on every screen, from the smallest phone to the largest desktop monitor.*
+*Empowering developers to build the future with AI assistance*
 
 

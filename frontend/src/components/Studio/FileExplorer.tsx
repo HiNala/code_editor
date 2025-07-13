@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useMemo } from 'react'
+import React, { useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Folder, 
@@ -12,16 +12,10 @@ import {
   MoreHorizontal, 
   ChevronRight, 
   ChevronDown,
-  Upload,
-  Download,
   Trash2,
   Edit,
-  Copy,
-  Move,
   Settings,
   Star,
-  Clock,
-  Filter,
   Grid,
   List,
   SortAsc,
@@ -30,156 +24,42 @@ import {
 import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Card } from '../ui/card'
-import { Badge } from '../ui/badge'
 import { Separator } from '../ui/separator'
 import { Tooltip } from '../ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../ui/dialog'
 import { ScrollArea } from '../ui/scroll-area'
 import { cn } from '../../lib/utils'
-
-interface FileItem {
-  id: string
-  name: string
-  type: 'file' | 'folder'
-  size?: number
-  modified: Date
-  children?: FileItem[]
-  isExpanded?: boolean
-  isStarred?: boolean
-  extension?: string
-  path: string
-}
+import { fileSystemService, FileItem } from '../../services/fileSystemService'
 
 interface FileExplorerProps {
-  initialFiles?: FileItem[]
   onFileSelect?: (file: FileItem) => void
-  onFileCreate?: (name: string, type: 'file' | 'folder', parentPath: string) => void
-  onFileDelete?: (file: FileItem) => void
-  onFileRename?: (file: FileItem, newName: string) => void
   className?: string
 }
 
-const defaultFiles: FileItem[] = [
-  {
-    id: '1',
-    name: 'src',
-    type: 'folder',
-    modified: new Date('2024-01-15'),
-    isExpanded: true,
-    path: '/src',
-    children: [
-      {
-        id: '2',
-        name: 'components',
-        type: 'folder',
-        modified: new Date('2024-01-14'),
-        isExpanded: true,
-        path: '/src/components',
-        children: [
-          {
-            id: '3',
-            name: 'Button.tsx',
-            type: 'file',
-            size: 2048,
-            modified: new Date('2024-01-14'),
-            extension: 'tsx',
-            path: '/src/components/Button.tsx',
-            isStarred: true
-          },
-          {
-            id: '4',
-            name: 'Modal.tsx',
-            type: 'file',
-            size: 3072,
-            modified: new Date('2024-01-13'),
-            extension: 'tsx',
-            path: '/src/components/Modal.tsx'
-          }
-        ]
-      },
-      {
-        id: '5',
-        name: 'utils',
-        type: 'folder',
-        modified: new Date('2024-01-12'),
-        path: '/src/utils',
-        children: [
-          {
-            id: '6',
-            name: 'helpers.ts',
-            type: 'file',
-            size: 1024,
-            modified: new Date('2024-01-12'),
-            extension: 'ts',
-            path: '/src/utils/helpers.ts'
-          }
-        ]
-      }
-    ]
-  },
-  {
-    id: '7',
-    name: 'public',
-    type: 'folder',
-    modified: new Date('2024-01-10'),
-    path: '/public',
-    children: [
-      {
-        id: '8',
-        name: 'logo.png',
-        type: 'file',
-        size: 5120,
-        modified: new Date('2024-01-10'),
-        extension: 'png',
-        path: '/public/logo.png'
-      }
-    ]
-  },
-  {
-    id: '9',
-    name: 'README.md',
-    type: 'file',
-    size: 1536,
-    modified: new Date('2024-01-15'),
-    extension: 'md',
-    path: '/README.md',
-    isStarred: true
-  },
-  {
-    id: '10',
-    name: 'package.json',
-    type: 'file',
-    size: 2560,
-    modified: new Date('2024-01-14'),
-    extension: 'json',
-    path: '/package.json'
-  }
-]
-
 const getFileIcon = (file: FileItem) => {
   if (file.type === 'folder') {
-    return file.isExpanded ? FolderOpen : Folder
+    return file.isExpanded ? <FolderOpen className="w-4 h-4" /> : <Folder className="w-4 h-4" />
   }
-  
-  switch (file.extension) {
-    case 'tsx':
-    case 'ts':
-    case 'js':
-    case 'jsx':
-      return Code
-    case 'png':
-    case 'jpg':
-    case 'jpeg':
-    case 'gif':
-    case 'svg':
-      return Image
-    case 'md':
-    case 'txt':
-      return FileText
-    default:
-      return File
+
+  const iconMap: Record<string, React.ReactNode> = {
+    'tsx': <Code className="w-4 h-4 text-blue-500" />,
+    'ts': <Code className="w-4 h-4 text-blue-500" />,
+    'jsx': <Code className="w-4 h-4 text-cyan-500" />,
+    'js': <Code className="w-4 h-4 text-yellow-500" />,
+    'html': <FileText className="w-4 h-4 text-orange-500" />,
+    'css': <FileText className="w-4 h-4 text-purple-500" />,
+    'scss': <FileText className="w-4 h-4 text-pink-500" />,
+    'json': <FileText className="w-4 h-4 text-green-500" />,
+    'md': <FileText className="w-4 h-4 text-gray-500" />,
+    'png': <Image className="w-4 h-4 text-green-600" />,
+    'jpg': <Image className="w-4 h-4 text-green-600" />,
+    'jpeg': <Image className="w-4 h-4 text-green-600" />,
+    'gif': <Image className="w-4 h-4 text-green-600" />,
+    'svg': <Image className="w-4 h-4 text-purple-600" />,
   }
+
+  return iconMap[file.extension || ''] || <File className="w-4 h-4 text-gray-500" />
 }
 
 const formatFileSize = (bytes?: number): string => {
@@ -189,387 +69,398 @@ const formatFileSize = (bytes?: number): string => {
   return `${(bytes / Math.pow(1024, i)).toFixed(1)} ${sizes[i]}`
 }
 
-const formatDate = (date: Date): string => {
-  return new Intl.DateTimeFormat('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(date)
-}
-
 export const FileExplorer: React.FC<FileExplorerProps> = ({
-  initialFiles = defaultFiles,
   onFileSelect,
-  onFileCreate,
-  onFileDelete,
-  onFileRename,
   className = ''
 }) => {
-  const [files, setFiles] = useState<FileItem[]>(initialFiles)
-  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null)
+  const [fileSystemState, setFileSystemState] = useState(fileSystemService.getState())
   const [searchQuery, setSearchQuery] = useState('')
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
-  const [sortBy, setSortBy] = useState<'name' | 'modified' | 'size'>('name')
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [createType, setCreateType] = useState<'file' | 'folder'>('file')
-  const [createParentPath, setCreateParentPath] = useState('')
-  const [newFileName, setNewFileName] = useState('')
-  const [draggedItem, setDraggedItem] = useState<FileItem | null>(null)
+  const [viewMode, setViewMode] = useState<'tree' | 'grid' | 'list'>('tree')
+  const [_sortBy, setSortBy] = useState<'name' | 'modified' | 'size'>('name')
+  const [showHidden] = useState(false)
+  const [selectedFiles] = useState<Set<string>>(new Set())
+  const [, setContextMenu] = useState<{ x: number; y: number; file: FileItem } | null>(null)
+  const [draggedFile, setDraggedFile] = useState<FileItem | null>(null)
   const [dropTarget, setDropTarget] = useState<string | null>(null)
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['/src', '/src/components']))
+
+  // Dialog states
+  const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showRenameDialog, setShowRenameDialog] = useState(false)
+  const [createType, setCreateType] = useState<'file' | 'folder'>('file')
+  const [createParent, setCreateParent] = useState<FileItem | null>(null)
+  const [renameFile, setRenameFile] = useState<FileItem | null>(null)
+  const [newName, setNewName] = useState('')
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const toggleFolder = useCallback((folderId: string) => {
-    setExpandedFolders(prev => {
-      const newSet = new Set(prev)
-      if (newSet.has(folderId)) {
-        newSet.delete(folderId)
-      } else {
-        newSet.add(folderId)
-      }
-      return newSet
+  // Subscribe to file system changes
+  useEffect(() => {
+    const unsubscribe = fileSystemService.subscribe(() => {
+      setFileSystemState(fileSystemService.getState())
     })
-  }, [])
-
-  const updateFileInTree = useCallback((files: FileItem[], targetId: string, updater: (file: FileItem) => FileItem): FileItem[] => {
-    return files.map(file => {
-      if (file.id === targetId) {
-        return updater(file)
-      }
-      if (file.children) {
-        return {
-          ...file,
-          children: updateFileInTree(file.children, targetId, updater)
-        }
-      }
-      return file
-    })
-  }, [])
-
-  const searchFiles = useCallback((files: FileItem[], query: string): FileItem[] => {
-    if (!query) return files
-    
-    const filtered: FileItem[] = []
-    
-    for (const file of files) {
-      if (file.name.toLowerCase().includes(query.toLowerCase())) {
-        filtered.push(file)
-      } else if (file.children) {
-        const childMatches = searchFiles(file.children, query)
-        if (childMatches.length > 0) {
-          filtered.push({
-            ...file,
-            children: childMatches,
-            isExpanded: true
-          })
-        }
-      }
+    return () => {
+      unsubscribe()
     }
-    
-    return filtered
   }, [])
 
-  const sortFiles = useCallback((files: FileItem[]): FileItem[] => {
-    return [...files].sort((a, b) => {
-      if (a.type !== b.type) {
-        return a.type === 'folder' ? -1 : 1
-      }
-      
-      switch (sortBy) {
-        case 'modified':
-          return b.modified.getTime() - a.modified.getTime()
-        case 'size':
-          return (b.size || 0) - (a.size || 0)
-        default:
-          return a.name.localeCompare(b.name)
-      }
-    }).map(file => ({
-      ...file,
-      children: file.children ? sortFiles(file.children) : undefined
-    }))
-  }, [sortBy])
-
-  const filteredAndSortedFiles = useMemo(() => {
-    const searched = searchFiles(files, searchQuery)
-    return sortFiles(searched)
-  }, [files, searchQuery, sortFiles, searchFiles])
-
+  // Handle file selection
   const handleFileSelect = useCallback((file: FileItem) => {
-    setSelectedFile(file)
-    onFileSelect?.(file)
+    if (file.type === 'file') {
+      fileSystemService.openFile(file.id)
+      onFileSelect?.(file)
+    } else {
+      fileSystemService.toggleFolder(file.id)
+    }
   }, [onFileSelect])
 
-  const handleCreateFile = useCallback(() => {
-    if (!newFileName.trim()) return
-
-    const newFile: FileItem = {
-      id: Date.now().toString(),
-      name: newFileName,
-      type: createType,
-      modified: new Date(),
-      path: `${createParentPath}/${newFileName}`,
-      size: createType === 'file' ? 0 : undefined,
-      extension: createType === 'file' ? newFileName.split('.').pop() : undefined,
-      children: createType === 'folder' ? [] : undefined
+  // Handle file creation
+  const handleCreateFile = useCallback((name: string, type: 'file' | 'folder', parent: FileItem) => {
+    try {
+      if (type === 'file') {
+        const newFile = fileSystemService.createFile(name, parent.path)
+        handleFileSelect(newFile)
+      } else {
+        fileSystemService.createFolder(name, parent.path)
+      }
+      setShowCreateDialog(false)
+      setNewName('')
+    } catch (error) {
+      console.error('Failed to create file:', error)
     }
+  }, [handleFileSelect])
 
-    if (createParentPath === '') {
-      setFiles(prev => [...prev, newFile])
-    } else {
-      setFiles(prev => updateFileInTree(prev, createParentPath, parent => ({
-        ...parent,
-        children: [...(parent.children || []), newFile]
-      })))
+  // Handle file deletion
+  const handleDeleteFile = useCallback((file: FileItem) => {
+    if (confirm(`Are you sure you want to delete "${file.name}"?`)) {
+      fileSystemService.deleteFile(file.id)
     }
-
-    onFileCreate?.(newFileName, createType, createParentPath)
-    setShowCreateDialog(false)
-    setNewFileName('')
-  }, [newFileName, createType, createParentPath, onFileCreate, updateFileInTree])
-
-  const handleDragStart = useCallback((e: React.DragEvent, file: FileItem) => {
-    setDraggedItem(file)
-    e.dataTransfer.effectAllowed = 'move'
   }, [])
 
-  const handleDragOver = useCallback((e: React.DragEvent, targetFile: FileItem) => {
-    e.preventDefault()
-    if (targetFile.type === 'folder' && draggedItem?.id !== targetFile.id) {
-      setDropTarget(targetFile.id)
+  // Handle file rename
+  const handleRenameFile = useCallback((file: FileItem, name: string) => {
+    fileSystemService.renameFile(file.id, name)
+    setShowRenameDialog(false)
+    setRenameFile(null)
+    setNewName('')
+  }, [])
+
+  // Handle star toggle
+  const handleToggleStar = useCallback((file: FileItem) => {
+    fileSystemService.toggleStar(file.id)
+  }, [])
+
+  // Filter and sort files
+  const filteredFiles = useMemo(() => {
+    let files = fileSystemState.files
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const searchResults = fileSystemService.searchFiles(searchQuery)
+      files = searchResults
     }
-  }, [draggedItem])
+
+    // Apply hidden files filter
+    if (!showHidden) {
+      const filterHidden = (items: FileItem[]): FileItem[] => {
+        return items.filter(item => !item.name.startsWith('.'))
+          .map(item => ({
+            ...item,
+            children: item.children ? filterHidden(item.children) : undefined
+          }))
+      }
+      files = filterHidden(files)
+    }
+
+    return files
+  }, [fileSystemState.files, searchQuery, showHidden])
+
+  // Context menu handlers
+  const handleContextMenu = useCallback((e: React.MouseEvent, file: FileItem) => {
+    e.preventDefault()
+    setContextMenu({ x: e.clientX, y: e.clientY, file })
+  }, [])
+
+  // Drag and drop handlers
+  const handleDragStart = useCallback((file: FileItem) => {
+    setDraggedFile(file)
+  }, [])
+
+  const handleDragOver = useCallback((e: React.DragEvent, file: FileItem) => {
+    if (file.type === 'folder' && draggedFile && draggedFile.id !== file.id) {
+      e.preventDefault()
+      setDropTarget(file.id)
+    }
+  }, [draggedFile])
 
   const handleDrop = useCallback((e: React.DragEvent, targetFile: FileItem) => {
     e.preventDefault()
-    setDropTarget(null)
-    
-    if (draggedItem && targetFile.type === 'folder' && draggedItem.id !== targetFile.id) {
-      // Move file logic would go here
-      console.log(`Moving ${draggedItem.name} to ${targetFile.name}`)
+    if (draggedFile && targetFile.type === 'folder' && draggedFile.id !== targetFile.id) {
+      // TODO: Implement move file functionality
+      console.log('Move', draggedFile.name, 'to', targetFile.name)
     }
-    
-    setDraggedItem(null)
-  }, [draggedItem])
+    setDraggedFile(null)
+    setDropTarget(null)
+  }, [draggedFile])
 
+  // File upload handler
+  const handleFileUpload = useCallback((files: FileList, parent: FileItem) => {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const content = e.target?.result as string
+        fileSystemService.createFile(file.name, parent.path, content)
+      }
+      reader.readAsText(file)
+    })
+  }, [])
+
+  // Render file tree item
   const renderFileItem = useCallback((file: FileItem, depth: number = 0) => {
-    const Icon = getFileIcon(file)
-    const isExpanded = expandedFolders.has(file.path)
-    const isSelected = selectedFile?.id === file.id
+    const isSelected = selectedFiles.has(file.id)
     const isDropTarget = dropTarget === file.id
+    const isActive = fileSystemState.activeFile === file.id
 
     return (
       <motion.div
         key={file.id}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.2 }}
+        initial={{ opacity: 0, x: -10 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -10 }}
+        className={cn(
+          "group relative",
+          isSelected && "bg-accent",
+          isDropTarget && "bg-accent/50 border-2 border-primary border-dashed",
+          isActive && "bg-primary/10"
+        )}
       >
         <div
           className={cn(
-            "group flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer hover:bg-accent/50 transition-colors",
-            isSelected && "bg-accent text-accent-foreground",
-            isDropTarget && "bg-primary/10 border border-primary/20"
+            "flex items-center gap-2 py-1.5 px-2 hover:bg-accent/50 cursor-pointer transition-colors",
+            "select-none"
           )}
-          style={{ paddingLeft: `${depth * 16 + 8}px` }}
-          onClick={() => {
-            if (file.type === 'folder') {
-              toggleFolder(file.path)
-            } else {
-              handleFileSelect(file)
-            }
-          }}
+          style={{ paddingLeft: `${depth * 20 + 8}px` }}
+          onClick={() => handleFileSelect(file)}
+          onContextMenu={(e) => handleContextMenu(e, file)}
           draggable
-          onDragStart={(e) => handleDragStart(e, file)}
+          onDragStart={() => handleDragStart(file)}
           onDragOver={(e) => handleDragOver(e, file)}
           onDrop={(e) => handleDrop(e, file)}
         >
+          {/* Expand/Collapse Icon */}
           {file.type === 'folder' && (
-            <motion.div
-              animate={{ rotate: isExpanded ? 90 : 0 }}
-              transition={{ duration: 0.2 }}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-4 h-4 p-0 hover:bg-transparent"
+              onClick={(e) => {
+                e.stopPropagation()
+                fileSystemService.toggleFolder(file.id)
+              }}
             >
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </motion.div>
+              {file.isExpanded ? (
+                <ChevronDown className="w-3 h-3" />
+              ) : (
+                <ChevronRight className="w-3 h-3" />
+              )}
+            </Button>
           )}
-          
-          <Icon className={cn(
-            "h-4 w-4",
-            file.type === 'folder' ? 'text-blue-500' : 'text-muted-foreground'
-          )} />
-          
-          <span className="flex-1 text-sm truncate">{file.name}</span>
-          
+
+          {/* File Icon */}
+          <div className="flex-shrink-0">
+            {getFileIcon(file)}
+          </div>
+
+          {/* File Name */}
+          <span className={cn(
+            "flex-1 truncate text-sm",
+            isActive && "font-medium"
+          )}>
+            {file.name}
+          </span>
+
+          {/* Star Icon */}
           {file.isStarred && (
-            <Star className="h-3 w-3 text-yellow-500 fill-current" />
+            <Star className="w-3 h-3 text-yellow-500 fill-current" />
           )}
-          
-          {file.size && (
-            <span className="text-xs text-muted-foreground">
+
+          {/* File Size (for files only) */}
+          {file.type === 'file' && file.size && (
+            <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
               {formatFileSize(file.size)}
             </span>
           )}
-          
-          <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-            {formatDate(file.modified)}
-          </span>
-          
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+
+          {/* Actions Menu */}
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-6 h-6 p-0">
+                  <MoreHorizontal className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleToggleStar(file)}>
+                  <Star className="w-4 h-4 mr-2" />
+                  {file.isStarred ? 'Remove Star' : 'Add Star'}
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
+                    setRenameFile(file)
+                    setNewName(file.name)
+                    setShowRenameDialog(true)
+                  }}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleDeleteFile(file)}>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+                {file.type === 'folder' && (
+                  <>
+                    <Separator />
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        setCreateType('file')
+                        setCreateParent(file)
+                        setShowCreateDialog(true)
+                      }}
+                    >
+                      <File className="w-4 h-4 mr-2" />
+                      New File
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => {
+                        setCreateType('folder')
+                        setCreateParent(file)
+                        setShowCreateDialog(true)
+                      }}
+                    >
+                      <Folder className="w-4 h-4 mr-2" />
+                      New Folder
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        {/* Render children */}
+        {file.type === 'folder' && file.isExpanded && file.children && (
+          <AnimatePresence>
+            {file.children.map(child => renderFileItem(child, depth + 1))}
+          </AnimatePresence>
+        )}
+      </motion.div>
+    )
+  }, [
+    selectedFiles, dropTarget, fileSystemState.activeFile, handleFileSelect,
+    handleContextMenu, handleDragStart, handleDragOver, handleDrop,
+    handleToggleStar, handleDeleteFile
+  ])
+
+  return (
+    <Card className={cn("h-full flex flex-col", className)}>
+      {/* Header */}
+      <div className="p-4 border-b border-border">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm">Explorer</h3>
+          <div className="flex items-center gap-1">
+            <Tooltip content="New File">
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="w-7 h-7 p-0"
+                onClick={() => {
+                  setCreateType('file')
+                  setCreateParent(filteredFiles[0] || null)
+                  setShowCreateDialog(true)
+                }}
               >
-                <MoreHorizontal className="h-3 w-3" />
+                <Plus className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+            <Tooltip content="Settings">
+              <Button variant="ghost" size="sm" className="w-7 h-7 p-0">
+                <Settings className="w-4 h-4" />
+              </Button>
+            </Tooltip>
+          </div>
+        </div>
+
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search files..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-8 text-sm"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 w-6 h-6 p-0"
+              onClick={() => setSearchQuery('')}
+            >
+              <X className="w-3 h-3" />
+            </Button>
+          )}
+        </div>
+
+        {/* View Options */}
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center gap-1">
+            <Button
+              variant={viewMode === 'tree' ? 'default' : 'ghost'}
+              size="sm"
+              className="w-7 h-7 p-0"
+              onClick={() => setViewMode('tree')}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              className="w-7 h-7 p-0"
+              onClick={() => setViewMode('grid')}
+            >
+              <Grid className="w-4 h-4" />
+            </Button>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-7 h-7 p-0">
+                <SortAsc className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>
-                <Edit className="h-4 w-4 mr-2" />
-                Rename
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setSortBy('name')}>
+                Sort by Name
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Copy className="h-4 w-4 mr-2" />
-                Copy
+              <DropdownMenuItem onClick={() => setSortBy('modified')}>
+                Sort by Modified
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete
+              <DropdownMenuItem onClick={() => setSortBy('size')}>
+                Sort by Size
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
-        <AnimatePresence>
-          {file.type === 'folder' && isExpanded && file.children && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="overflow-hidden"
-            >
-              {file.children.map(child => renderFileItem(child, depth + 1))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    )
-  }, [expandedFolders, selectedFile, dropTarget, toggleFolder, handleFileSelect, handleDragStart, handleDragOver, handleDrop])
+      </div>
 
-  return (
-    <>
-      <Card className={cn("h-full flex flex-col", className)}>
-        {/* Header */}
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold">File Explorer</h2>
-            <div className="flex items-center gap-2">
-              <Tooltip content={`Switch to ${viewMode === 'list' ? 'grid' : 'list'} view`}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')}
-                >
-                  {viewMode === 'list' ? <Grid className="h-4 w-4" /> : <List className="h-4 w-4" />}
-                </Button>
-              </Tooltip>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <SortAsc className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setSortBy('name')}>
-                    Sort by Name
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('modified')}>
-                    Sort by Modified
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('size')}>
-                    Sort by Size
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => {
-                    setCreateType('file')
-                    setCreateParentPath('')
-                    setShowCreateDialog(true)
-                  }}>
-                    <File className="h-4 w-4 mr-2" />
-                    New File
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {
-                    setCreateType('folder')
-                    setCreateParentPath('')
-                    setShowCreateDialog(true)
-                  }}>
-                    <Folder className="h-4 w-4 mr-2" />
-                    New Folder
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-          
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search files..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9"
-            />
-            {searchQuery && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-                onClick={() => setSearchQuery('')}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* File Tree */}
-        <ScrollArea className="flex-1 p-2">
+      {/* File Tree */}
+      <ScrollArea className="flex-1">
+        <div className="p-2">
           <AnimatePresence>
-            {filteredAndSortedFiles.map(file => renderFileItem(file))}
+            {filteredFiles.map(file => renderFileItem(file))}
           </AnimatePresence>
-          
-          {filteredAndSortedFiles.length === 0 && searchQuery && (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-              <Search className="h-8 w-8 mb-2" />
-              <p>No files found matching "{searchQuery}"</p>
-            </div>
-          )}
-        </ScrollArea>
-
-        {/* Footer */}
-        <div className="p-3 border-t border-border">
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{filteredAndSortedFiles.length} items</span>
-            {selectedFile && (
-              <span>Selected: {selectedFile.name}</span>
-            )}
-          </div>
         </div>
-      </Card>
+      </ScrollArea>
 
       {/* Create File/Folder Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -579,26 +470,69 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
               Create New {createType === 'file' ? 'File' : 'Folder'}
             </DialogTitle>
           </DialogHeader>
-          
-          <div className="space-y-4">
+          <div className="py-4">
             <Input
-              placeholder={`Enter ${createType} name...`}
-              value={newFileName}
-              onChange={(e) => setNewFileName(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleCreateFile()
+              placeholder={`Enter ${createType} name`}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newName.trim() && createParent) {
+                  handleCreateFile(newName.trim(), createType, createParent)
                 }
               }}
+              autoFocus
             />
           </div>
-          
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleCreateFile} disabled={!newFileName.trim()}>
-              Create {createType === 'file' ? 'File' : 'Folder'}
+            <Button
+              onClick={() => {
+                if (newName.trim() && createParent) {
+                  handleCreateFile(newName.trim(), createType, createParent)
+                }
+              }}
+              disabled={!newName.trim()}
+            >
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rename Dialog */}
+      <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename {renameFile?.type}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Enter new name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newName.trim() && renameFile) {
+                  handleRenameFile(renameFile, newName.trim())
+                }
+              }}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRenameDialog(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (newName.trim() && renameFile) {
+                  handleRenameFile(renameFile, newName.trim())
+                }
+              }}
+              disabled={!newName.trim()}
+            >
+              Rename
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -611,10 +545,11 @@ export const FileExplorer: React.FC<FileExplorerProps> = ({
         multiple
         className="hidden"
         onChange={(e) => {
-          // Handle file upload
-          console.log('Files uploaded:', e.target.files)
+          if (e.target.files && createParent) {
+            handleFileUpload(e.target.files, createParent)
+          }
         }}
       />
-    </>
+    </Card>
   )
 } 

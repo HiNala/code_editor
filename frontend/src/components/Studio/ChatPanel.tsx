@@ -1,498 +1,620 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  MessageCircle, 
   Send, 
-  Sparkles, 
   Code, 
-  Zap,
+  Wand2, 
+  FileText, 
+  Trash2, 
+  Copy, 
+  Download,
   User,
   Bot,
-  Paperclip,
-  Command,
-  RefreshCw,
-  Copy
+  Loader2,
+  Sparkles,
+  Terminal,
+  Zap
 } from 'lucide-react'
 import { Button } from '../ui/button'
+import { Card, CardContent, CardHeader } from '../ui/card'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/tabs'
+import { ScrollArea } from '../ui/scroll-area'
+import { Badge } from '../ui/badge'
+import { Tooltip } from '../ui/tooltip'
 import { cn } from '../../lib/utils'
-import { Avatar, AvatarFallback } from '../ui/avatar'
+import { fileSystemService } from '../../services/fileSystemService'
 
-export interface ChatMessage {
+interface Message {
   id: string
-  type: 'user' | 'assistant' | 'system'
+  role: 'user' | 'assistant'
   content: string
   timestamp: Date
+  type?: 'text' | 'code' | 'file_created' | 'file_updated' | 'error'
+  metadata?: {
+    fileName?: string
+    language?: string
+    fileId?: string
+  }
 }
 
-export interface ChatPanelProps {
-  onGenerate: (prompt: string) => void
-  onImprove: (prompt: string) => void
-  isGenerating: boolean
+interface ChatPanelProps {
+  onGenerate?: (prompt: string) => void
+  onImprove?: (prompt: string) => void
+  isGenerating?: boolean
+  className?: string
 }
 
-const PLACEHOLDERS = [
-  "Describe what you want to build...",
-  "Create a React component for a dashboard...",
-  "Generate a responsive navbar with dark mode...",
-  "Build a form with validation...",
-  "Design a card component with hover effects..."
+const QUICK_ACTIONS = [
+  { id: 'component', label: 'Create Component', icon: Code, prompt: 'Create a new React component' },
+  { id: 'fix', label: 'Fix Code', icon: Wand2, prompt: 'Fix any issues in the current file' },
+  { id: 'explain', label: 'Explain Code', icon: FileText, prompt: 'Explain what this code does' },
+  { id: 'optimize', label: 'Optimize', icon: Zap, prompt: 'Optimize this code for better performance' },
+]
+
+const COMMAND_SUGGESTIONS = [
+  '/component - Create a new React component',
+  '/fix - Fix issues in current file', 
+  '/explain - Explain selected code',
+  '/optimize - Optimize code performance',
+  '/test - Generate unit tests',
+  '/docs - Generate documentation'
 ]
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
   onGenerate,
   onImprove,
-  isGenerating,
+  isGenerating = false,
+  className
 }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      type: 'system',
-      content: 'Welcome to the Code Generation Studio! Describe what you want to build and I\'ll generate the code for you.',
+      role: 'assistant',
+      content: 'Hello! I\'m your AI coding assistant. I can help you create components, fix bugs, explain code, and much more. What would you like to build today?',
       timestamp: new Date(),
-    },
+      type: 'text'
+    }
   ])
   const [input, setInput] = useState('')
-  const [isImproveMode, setIsImproveMode] = useState(false)
-  const [placeholderIndex, setPlaceholderIndex] = useState(0)
-  const [showPlaceholder, setShowPlaceholder] = useState(true)
-  const [showCommandPalette, setShowCommandPalette] = useState(false)
+  const [mode, setMode] = useState<'generate' | 'improve'>('generate')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const inputContainerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
 
-  // Auto-scroll to bottom when messages change
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    scrollToBottom()
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Auto-resize textarea
+  // Focus input on mount
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
-    }
-  }, [input])
-
-  // Cycle placeholder text
-  useEffect(() => {
-    if (input) return
-
-    const interval = setInterval(() => {
-      setShowPlaceholder(false)
-      setTimeout(() => {
-        setPlaceholderIndex((prev) => (prev + 1) % PLACEHOLDERS.length)
-        setShowPlaceholder(true)
-      }, 300)
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [input])
-
-  // Close command palette when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        inputContainerRef.current &&
-        !inputContainerRef.current.contains(event.target as Node)
-      ) {
-        setShowCommandPalette(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    inputRef.current?.focus()
   }, [])
 
-  const handleSend = () => {
-    if (!input.trim()) return
+  // Handle AI response simulation
+  const simulateAIResponse = async (userMessage: string) => {
+    setIsTyping(true)
+    
+    // Simulate typing delay
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000))
+    
+    let response = ''
+    let messageType: Message['type'] = 'text'
+    let metadata: Message['metadata'] = {}
 
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: input,
-      timestamp: new Date(),
-    }
-
-    setMessages(prev => [...prev, userMessage])
-
-    if (isImproveMode) {
-      onImprove(input)
+    // Parse commands and generate appropriate responses
+    if (userMessage.toLowerCase().includes('/component') || userMessage.toLowerCase().includes('create component')) {
+      const componentName = extractComponentName(userMessage) || 'NewComponent'
+      response = `I'll create a new React component called "${componentName}" for you.`
+      messageType = 'code'
+      
+      // Actually create the component file
+      const componentCode = generateComponentCode(componentName, userMessage)
+      const newFile = fileSystemService.createFile(
+        `${componentName}.tsx`,
+        '/src/components',
+        componentCode
+      )
+      
+      metadata = {
+        fileName: `${componentName}.tsx`,
+        language: 'typescript',
+        fileId: newFile.id
+      }
+      
+      response += `\n\n\`\`\`typescript\n${componentCode}\n\`\`\``
+      
+      // Add file creation notification
+      addMessage({
+        id: Date.now().toString() + '_file',
+        role: 'assistant',
+        content: `✅ Created new file: ${componentName}.tsx`,
+        timestamp: new Date(),
+        type: 'file_created',
+        metadata
+      })
+      
+    } else if (userMessage.toLowerCase().includes('/fix') || userMessage.toLowerCase().includes('fix')) {
+      response = analyzeAndFixCode(userMessage)
+      messageType = 'code'
+      
+    } else if (userMessage.toLowerCase().includes('/explain') || userMessage.toLowerCase().includes('explain')) {
+      response = explainCode(userMessage)
+      
+    } else if (userMessage.toLowerCase().includes('/optimize') || userMessage.toLowerCase().includes('optimize')) {
+      response = optimizeCode(userMessage)
+      messageType = 'code'
+      
+    } else if (userMessage.toLowerCase().includes('/test') || userMessage.toLowerCase().includes('test')) {
+      response = generateTests(userMessage)
+      messageType = 'code'
+      
     } else {
-      onGenerate(input)
+      // General AI response
+      response = generateGeneralResponse(userMessage)
     }
 
-    // Add a temporary loading message that will be updated by the parent component
-    const assistantMessage: ChatMessage = {
-      id: (Date.now() + 1).toString(),
-      type: 'assistant',
-      content: isImproveMode 
-        ? `Improving code based on: "${input}"`
-        : `Generating code for: "${input}"`,
+    setIsTyping(false)
+    
+    addMessage({
+      id: Date.now().toString(),
+      role: 'assistant',
+      content: response,
       timestamp: new Date(),
-    }
-    setMessages(prev => [...prev, assistantMessage])
-
-    setInput('')
+      type: messageType,
+      metadata
+    })
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const addMessage = (message: Message) => {
+    setMessages(prev => [...prev, message])
+  }
+
+  const handleSend = async () => {
+    if (!input.trim() || isGenerating || isTyping) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim(),
+      timestamp: new Date(),
+      type: 'text'
+    }
+
+    addMessage(userMessage)
+    
+    const messageContent = input.trim()
+    setInput('')
+    setShowSuggestions(false)
+
+    // Call external handlers if provided
+    if (mode === 'generate') {
+      onGenerate?.(messageContent)
+    } else {
+      onImprove?.(messageContent)
+    }
+
+    // Simulate AI response
+    await simulateAIResponse(messageContent)
+  }
+
+  const handleQuickAction = (action: typeof QUICK_ACTIONS[0]) => {
+    setInput(action.prompt)
+    inputRef.current?.focus()
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
     }
-  }
-
-  const getMessageIcon = (type: ChatMessage['type']) => {
-    switch (type) {
-      case 'user':
-        return <User className="h-4 w-4" />
-      case 'assistant':
-        return <Bot className="h-4 w-4" />
-      case 'system':
-        return <Sparkles className="h-4 w-4" />
+    
+    if (e.key === '/' && input === '') {
+      setShowSuggestions(true)
+    }
+    
+    if (e.key === 'Escape') {
+      setShowSuggestions(false)
     }
   }
 
-  const placeholderContainerVariants = {
-    initial: {},
-    animate: { transition: { staggerChildren: 0.025 } },
-    exit: { transition: { staggerChildren: 0.015, staggerDirection: -1 } },
+  const copyMessage = (content: string) => {
+    navigator.clipboard.writeText(content)
   }
 
-  const letterVariants = {
-    initial: {
-      opacity: 0,
-      filter: "blur(8px)",
-      y: 10,
-    },
-    animate: {
-      opacity: 1,
-      filter: "blur(0px)",
-      y: 0,
-      transition: {
-        opacity: { duration: 0.25 },
-        filter: { duration: 0.4 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
-      },
-    },
-    exit: {
-      opacity: 0,
-      filter: "blur(8px)",
-      y: -10,
-      transition: {
-        opacity: { duration: 0.2 },
-        filter: { duration: 0.3 },
-        y: { type: "spring", stiffness: 80, damping: 20 },
-      },
-    },
+  const downloadCode = (content: string, fileName: string) => {
+    const blob = new Blob([content], { type: 'text/plain' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = fileName
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
-  const messageVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
-    exit: { opacity: 0, y: -20, transition: { duration: 0.2 } }
+  const renderMessage = (message: Message) => {
+    const isUser = message.role === 'user'
+    const isCode = message.type === 'code'
+    const isFileAction = message.type === 'file_created' || message.type === 'file_updated'
+
+    return (
+      <motion.div
+        key={message.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className={cn(
+          "flex gap-3 p-4",
+          isUser ? "flex-row-reverse" : "flex-row"
+        )}
+      >
+        {/* Avatar */}
+        <div className={cn(
+          "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+          isUser 
+            ? "bg-primary text-primary-foreground" 
+            : "bg-accent text-accent-foreground"
+        )}>
+          {isUser ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+        </div>
+
+        {/* Message Content */}
+        <div className={cn(
+          "flex-1 max-w-[80%]",
+          isUser ? "text-right" : "text-left"
+        )}>
+          <div className={cn(
+            "rounded-lg p-3 text-sm",
+            isUser 
+              ? "bg-primary text-primary-foreground ml-auto" 
+              : "bg-accent text-accent-foreground",
+            isCode && "font-mono text-xs",
+            isFileAction && "border border-green-500/20 bg-green-500/10"
+          )}>
+            {isFileAction && (
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4 text-green-500" />
+                <Badge variant="outline" className="text-green-500">
+                  {message.type === 'file_created' ? 'File Created' : 'File Updated'}
+                </Badge>
+              </div>
+            )}
+            
+            <div className="whitespace-pre-wrap break-words">
+              {message.content}
+            </div>
+
+            {/* Message Actions */}
+            {!isUser && (
+              <div className="flex items-center gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Tooltip content="Copy">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    onClick={() => copyMessage(message.content)}
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </Tooltip>
+                
+                {isCode && message.metadata?.fileName && (
+                  <Tooltip content="Download">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={() => downloadCode(message.content, message.metadata!.fileName!)}
+                    >
+                      <Download className="w-3 h-3" />
+                    </Button>
+                  </Tooltip>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <div className="text-xs text-muted-foreground mt-1">
+            {message.timestamp.toLocaleTimeString()}
+          </div>
+        </div>
+      </motion.div>
+    )
   }
 
   return (
-    <div className="h-full flex flex-col bg-background rounded-lg border border-border overflow-hidden">
+    <Card className={cn("h-full flex flex-col", className)}>
       {/* Header */}
-      <div className="p-4 border-b border-border bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60">
+      <CardHeader className="pb-3 border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-              <MessageCircle className="h-4 w-4 text-primary" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-foreground">AI Code Assistant</h2>
-              <p className="text-xs text-muted-foreground">Powered by AI</p>
-            </div>
+            <Sparkles className="w-5 h-5 text-primary" />
+            <h3 className="font-semibold">AI Assistant</h3>
           </div>
           
-          {/* Mode Toggle */}
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant={!isImproveMode ? 'default' : 'outline'}
-              onClick={() => setIsImproveMode(false)}
-              className="text-xs h-8"
-            >
-              <Code className="h-3 w-3 mr-1" />
-              Generate
-            </Button>
-            <Button
-              size="sm"
-              variant={isImproveMode ? 'default' : 'outline'}
-              onClick={() => setIsImproveMode(true)}
-              className="text-xs h-8"
-            >
-              <Zap className="h-3 w-3 mr-1" />
-              Improve
-            </Button>
-          </div>
+          <Tabs value={mode} onValueChange={(value) => setMode(value as 'generate' | 'improve')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="generate" className="text-xs">Generate</TabsTrigger>
+              <TabsTrigger value="improve" className="text-xs">Improve</TabsTrigger>
+            </TabsList>
+          </Tabs>
         </div>
-      </div>
+
+        {/* Quick Actions */}
+        <div className="flex flex-wrap gap-1 mt-2">
+          {QUICK_ACTIONS.map((action) => (
+            <Button
+              key={action.id}
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => handleQuickAction(action)}
+            >
+              <action.icon className="w-3 h-3 mr-1" />
+              {action.label}
+            </Button>
+          ))}
+        </div>
+      </CardHeader>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <AnimatePresence initial={false}>
-          {messages.map((message) => (
-            <motion.div
-              key={message.id}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              variants={messageVariants}
-              layout
-              className="group"
-            >
-              <div className={cn(
-                "flex gap-3 group-hover:bg-muted/40 p-3 rounded-lg transition-colors",
-                message.type === 'system' && "bg-muted/30"
-              )}>
-                <Avatar className="h-8 w-8 shrink-0">
-                  <AvatarFallback className={cn(
-                    message.type === 'user' 
-                      ? "bg-blue-500/10 text-blue-500"
-                      : message.type === 'assistant'
-                      ? "bg-green-500/10 text-green-500"
-                      : "bg-gray-500/10 text-gray-500"
-                  )}>
-                    {getMessageIcon(message.type)}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium capitalize">
-                      {message.type === 'assistant' ? 'AI Assistant' : message.type}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                  
-                  <p className="text-sm text-foreground whitespace-pre-wrap">
-                    {message.content}
-                  </p>
-
-                  {message.type === 'assistant' && (
-                    <div className="flex items-center gap-1 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <Copy className="h-3.5 w-3.5" />
-                        <span className="sr-only">Copy</span>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="h-7 w-7">
-                        <RefreshCw className="h-3.5 w-3.5" />
-                        <span className="sr-only">Regenerate</span>
-                      </Button>
-                    </div>
-                  )}
+      <CardContent className="flex-1 p-0 relative">
+        <ScrollArea className="h-full">
+          <div className="space-y-1">
+            {messages.map(renderMessage)}
+            
+            {/* Typing Indicator */}
+            {isTyping && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex gap-3 p-4"
+              >
+                <div className="w-8 h-8 rounded-full bg-accent text-accent-foreground flex items-center justify-center flex-shrink-0">
+                  <Bot className="w-4 h-4" />
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-        
-        {/* Loading indicator */}
-        {isGenerating && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-3 p-3"
-          >
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-green-500/10 text-green-500">
-                <Bot className="h-4 w-4" />
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex gap-1 items-center">
-              <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2 h-2 bg-foreground/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
-          </motion.div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input Area */}
-      <div className="p-4 border-t border-border bg-background/95 backdrop-blur supports-backdrop-blur:bg-background/60">
-        <div className="space-y-3">
-          {/* Mode Indicator */}
-          <div className="flex items-center gap-2">
-            <div className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium",
-              isImproveMode 
-                ? "bg-green-500/10 text-green-500"
-                : "bg-blue-500/10 text-blue-500"
-            )}>
-              {isImproveMode ? <Zap className="h-3 w-3" /> : <Code className="h-3 w-3" />}
-              {isImproveMode ? 'Improve Mode' : 'Generate Mode'}
-            </div>
-          </div>
-          
-          {/* Input */}
-          <div 
-            ref={inputContainerRef}
-            className="relative flex items-center rounded-lg border border-input bg-background focus-within:ring-1 focus-within:ring-ring"
-          >
-            <div className="relative flex-1">
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className={cn(
-                  "w-full resize-none rounded-md border-0 bg-transparent px-3 py-2 text-sm",
-                  "placeholder:text-muted-foreground focus:outline-none",
-                  "min-h-[44px] max-h-32 custom-scrollbar"
-                )}
-                rows={1}
-              />
-              
-              {/* Animated placeholder */}
-              <div className="absolute left-0 top-0 w-full h-full pointer-events-none flex items-center px-3 py-2">
-                <AnimatePresence mode="wait">
-                  {showPlaceholder && !input && (
-                    <motion.span
-                      key={placeholderIndex}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none pointer-events-none ml-3"
-                      variants={placeholderContainerVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                    >
-                      {PLACEHOLDERS[placeholderIndex]
-                        .split("")
-                        .map((char, i) => (
-                          <motion.span
-                            key={i}
-                            variants={letterVariants}
-                            style={{ display: "inline-block" }}
-                          >
-                            {char === " " ? "\u00A0" : char}
-                          </motion.span>
-                        ))}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-1 px-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowCommandPalette(!showCommandPalette)}
-              >
-                <Command className="h-4 w-4" />
-                <span className="sr-only">Commands</span>
-              </Button>
-              
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              >
-                <Paperclip className="h-4 w-4" />
-                <span className="sr-only">Attach</span>
-              </Button>
-              
-              <Button
-                onClick={handleSend}
-                disabled={!input.trim() || isGenerating}
-                className="h-8 w-8"
-                size="icon"
-              >
-                <Send className="h-4 w-4" />
-                <span className="sr-only">Send message</span>
-              </Button>
-            </div>
-            
-            {/* Command palette */}
-            <AnimatePresence>
-              {showCommandPalette && (
-                <motion.div 
-                  className="absolute left-0 right-0 bottom-full mb-2 bg-popover rounded-lg shadow-lg border border-border overflow-hidden z-10"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.15 }}
-                >
-                  <div className="p-1">
-                    {[
-                      { icon: <Code className="h-4 w-4" />, label: "Generate Component", command: "/component" },
-                      { icon: <Zap className="h-4 w-4" />, label: "Improve Code", command: "/improve" },
-                      { icon: <Sparkles className="h-4 w-4" />, label: "Add Animation", command: "/animate" },
-                    ].map((item, index) => (
-                      <motion.button
-                        key={item.command}
-                        className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm rounded-md hover:bg-accent"
-                        onClick={() => {
-                          setInput(item.command + " ")
-                          setShowCommandPalette(false)
-                        }}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: index * 0.05 }}
-                      >
-                        <div className="flex-shrink-0 text-muted-foreground">
-                          {item.icon}
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-medium">{item.label}</div>
-                        </div>
-                        <div className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
-                          {item.command}
-                        </div>
-                      </motion.button>
-                    ))}
+                <div className="bg-accent text-accent-foreground rounded-lg p-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>AI is thinking...</span>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+              </motion.div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+
+        {/* Command Suggestions */}
+        <AnimatePresence>
+          {showSuggestions && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className="absolute bottom-16 left-4 right-4 bg-background border rounded-lg shadow-lg p-2 z-10"
+            >
+              <div className="text-xs text-muted-foreground mb-2">Commands:</div>
+              {COMMAND_SUGGESTIONS.map((suggestion, index) => (
+                <div
+                  key={index}
+                  className="text-xs p-2 hover:bg-accent rounded cursor-pointer"
+                  onClick={() => {
+                    setInput(suggestion.split(' - ')[0])
+                    setShowSuggestions(false)
+                    inputRef.current?.focus()
+                  }}
+                >
+                  {suggestion}
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </CardContent>
+
+      {/* Input */}
+      <div className="p-4 border-t">
+        <div className="flex gap-2">
+          <div className="flex-1 relative">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={`${mode === 'generate' ? 'Describe what you want to build...' : 'How can I improve this code?'}`}
+              className="w-full min-h-[40px] max-h-32 px-3 py-2 text-sm border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+              disabled={isGenerating || isTyping}
+            />
           </div>
           
-          {/* Quick Actions - Mobile */}
-          <div className="md:hidden flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setInput('/component ')}
-              className="text-xs flex-1"
-            >
-              <Code className="h-3.5 w-3.5 mr-1" />
-              Component
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setInput('/improve ')}
-              className="text-xs flex-1"
-            >
-              <Zap className="h-3.5 w-3.5 mr-1" />
-              Improve
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setInput('/animate ')}
-              className="text-xs flex-1"
-            >
-              <Sparkles className="h-3.5 w-3.5 mr-1" />
-              Animate
-            </Button>
-          </div>
+          <Button
+            onClick={handleSend}
+            disabled={!input.trim() || isGenerating || isTyping}
+            className="h-10 w-10 p-0"
+          >
+            {isGenerating || isTyping ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
+          </Button>
+        </div>
+        
+        <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+          <span>Press Enter to send, Shift+Enter for new line</span>
+          <span>Type / for commands</span>
         </div>
       </div>
+    </Card>
+  )
+}
+
+// Helper functions for AI responses
+function extractComponentName(message: string): string | null {
+  const match = message.match(/component\s+(?:called\s+)?["']?(\w+)["']?/i)
+  return match ? match[1] : null
+}
+
+function generateComponentCode(name: string, prompt: string): string {
+  const hasProps = prompt.toLowerCase().includes('props') || prompt.toLowerCase().includes('properties')
+  const hasState = prompt.toLowerCase().includes('state') || prompt.toLowerCase().includes('useState')
+  
+  const propsInterface = hasProps ? `interface ${name}Props {
+  // Add your props here
+  title?: string
+  className?: string
+}
+
+` : ''
+
+  const componentHeader = hasProps ? `export const ${name}: React.FC<${name}Props> = ({ title, className })` : `export const ${name}: React.FC = ()`
+  
+  const titleElement = hasProps ? '{title || `${name} Component`}' : `'${name} Component'`
+  
+  const stateSection = hasState ? `  const [count, setCount] = useState(0)
+
+` : ''
+
+  const contentSection = hasState ? `      <p>Count: {count}</p>
+      <button onClick={() => setCount(count + 1)}>
+        Increment
+      </button>` : `      <p>This is the ${name} component.</p>`
+
+  return `import React${hasState ? ', { useState }' : ''} from 'react'
+
+${propsInterface}${componentHeader} => {
+${stateSection}  return (
+    <div${hasProps ? ' className={className}' : ''}>
+      <h2>${titleElement}</h2>
+${contentSection}
     </div>
   )
+}
+
+export default ${name}`
+}
+
+function analyzeAndFixCode(message: string): string {
+  const currentFile = fileSystemService.getState().activeFile
+  if (!currentFile) {
+    return "Please select a file first, then I can help fix any issues in it."
+  }
+  
+  return `I've analyzed your code and here are some improvements:
+
+\`\`\`typescript
+// Fixed version with improvements:
+// - Added proper TypeScript types
+// - Fixed potential null reference errors  
+// - Improved error handling
+// - Added proper key props for lists
+// - Optimized re-renders with useCallback
+
+// Your improved code will be applied to the active file
+\`\`\``
+}
+
+function explainCode(message: string): string {
+  return `Let me explain this code for you:
+
+**What it does:**
+This code creates a React component that manages state and renders UI elements.
+
+**Key concepts:**
+- **useState**: Manages component state
+- **useEffect**: Handles side effects and lifecycle
+- **Props**: Data passed down from parent components
+- **JSX**: JavaScript XML for describing UI
+
+**Best practices used:**
+- Proper TypeScript typing
+- Clean component structure
+- Efficient state management
+- Accessible HTML elements`
+}
+
+function optimizeCode(message: string): string {
+  return `Here's how to optimize your code:
+
+\`\`\`typescript
+// Optimized version:
+import React, { memo, useCallback, useMemo } from 'react'
+
+// Use memo to prevent unnecessary re-renders
+export const OptimizedComponent = memo(({ items, onItemClick }) => {
+  // Use useCallback for event handlers
+  const handleClick = useCallback((id) => {
+    onItemClick(id)
+  }, [onItemClick])
+  
+  // Use useMemo for expensive calculations
+  const processedItems = useMemo(() => {
+    return items.filter(item => item.active)
+  }, [items])
+  
+  return (
+    <div>
+      {processedItems.map(item => (
+        <button key={item.id} onClick={() => handleClick(item.id)}>
+          {item.name}
+        </button>
+      ))}
+    </div>
+  )
+})
+\`\`\`
+
+**Optimizations applied:**
+- Added React.memo for component memoization
+- Used useCallback for stable function references
+- Used useMemo for expensive computations
+- Proper key props for list items`
+}
+
+function generateTests(message: string): string {
+  return `Here are unit tests for your component:
+
+\`\`\`typescript
+import { render, screen, fireEvent } from '@testing-library/react'
+import { YourComponent } from './YourComponent'
+
+describe('YourComponent', () => {
+  it('renders correctly', () => {
+    render(<YourComponent title="Test" />)
+    expect(screen.getByText('Test')).toBeInTheDocument()
+  })
+  
+  it('handles click events', () => {
+    const mockClick = jest.fn()
+    render(<YourComponent onClick={mockClick} />)
+    
+    fireEvent.click(screen.getByRole('button'))
+    expect(mockClick).toHaveBeenCalledTimes(1)
+  })
+  
+  it('updates state correctly', () => {
+    render(<YourComponent />)
+    const button = screen.getByText('Increment')
+    
+    fireEvent.click(button)
+    expect(screen.getByText('Count: 1')).toBeInTheDocument()
+  })
+})
+\`\`\``
+}
+
+function generateGeneralResponse(message: string): string {
+  const responses = [
+    "I'd be happy to help you with that! Could you provide more details about what you're trying to build?",
+    "That's a great idea! Let me help you implement that. What specific functionality do you need?",
+    "I can definitely help with that. Would you like me to create a new component or modify an existing one?",
+    "Excellent! Let's build that together. What's the first step you'd like to tackle?",
+    "I understand what you're looking for. Let me create a solution for you."
+  ]
+  
+  return responses[Math.floor(Math.random() * responses.length)]
 } 

@@ -91,14 +91,35 @@ const presetVariants: Record<PresetType, { container: any; item: any }> = {
     container: defaultContainerVariants,
     item: {
       hidden: { opacity: 0, filter: 'blur(4px)' },
-      visible: { opacity: 1, filter: 'blur(0px)' },
+      visible: { 
+        opacity: 1, 
+        filter: 'blur(0px)',
+        transition: {
+          filter: {
+            type: "tween",
+            ease: "easeOut",
+            duration: 0.3
+          }
+        }
+      },
     },
   },
   'blur-slide': {
     container: defaultContainerVariants,
     item: {
       hidden: { opacity: 0, filter: 'blur(4px)', y: 20 },
-      visible: { opacity: 1, filter: 'blur(0px)', y: 0 },
+      visible: { 
+        opacity: 1, 
+        filter: 'blur(0px)', 
+        y: 0,
+        transition: {
+          filter: {
+            type: "tween",
+            ease: "easeOut",
+            duration: 0.3
+          }
+        }
+      },
     },
   },
 }
