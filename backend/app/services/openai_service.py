@@ -1,272 +1,264 @@
-import re
+"""
+OpenAI API Service for AI Studio
+
+Provides a centralized interface for all OpenAI API interactions with
+cost optimization and error handling.
+"""
+
+import os
 import json
 import asyncio
-from typing import AsyncGenerator, Dict, Any
+from typing import Dict, List, Optional, AsyncGenerator, Any
 from openai import AsyncOpenAI
+from pydantic import BaseModel
+import logging
 
-from app.core.config import settings
-from app.models import StreamingMessage
+from ..core.config import settings
 
+logger = logging.getLogger(__name__)
+
+class OpenAIConfig(BaseModel):
+    """OpenAI configuration with cost optimization"""
+    model: str = "gpt-3.5-turbo"  # Cost-effective default
+    max_tokens: int = 2000
+    temperature: float = 0.7
+    stream: bool = True
 
 class OpenAIService:
+    """Centralized OpenAI API service with cost optimization"""
+    
     def __init__(self):
-        if not settings.OPENAI_API_KEY or settings.OPENAI_API_KEY == "changethis":
-            print("Warning: OPENAI_API_KEY is not configured properly. AI features will be disabled.")
-            self.client = None
-        else:
-            self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = AsyncOpenAI(
+            api_key=os.getenv("OPENAI_API_KEY")
+        )
         
-    async def generate_code_stream(
-        self, 
-        prompt: str, 
-        context: str = ""
-    ) -> AsyncGenerator[StreamingMessage, None]:
-        """
-        Generate code based on a prompt with streaming support.
-        Parses fenced code blocks and yields structured messages.
-        """
-        if self.client is None:
-            yield StreamingMessage(
-                type="error",
-                content="OpenAI API key not configured. Please set OPENAI_API_KEY to use AI features.",
-                stream_metadata={}
-            )
-            return
+        # Load configuration from environment with cost-effective defaults
+        self.config = OpenAIConfig(
+            model=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
+            max_tokens=int(os.getenv("OPENAI_MAX_TOKENS", "2000")),
+            temperature=float(os.getenv("OPENAI_TEMPERATURE", "0.7"))
+        )
         
-        system_prompt = """
-You are an expert React/TypeScript developer. Create modern, functional React components with TypeScript.
-
-Requirements:
-- Use TypeScript with proper type definitions
-- Use modern React hooks (useState, useEffect, etc.)
-- Use Tailwind CSS for styling
-- Make components responsive and accessible
-- Include proper error handling
-- Use ESLint/Prettier compatible code style
-
-For each file, use this format:
-```tsx path=src/ComponentName.tsx
-// Your code here
-```
-
-Or for other file types:
-```css path=src/styles.css
-/* Your CSS here */
-```
-
-Always include the path attribute in the code fence.
-"""
+        # Test mode configuration for even lower costs
+        if os.getenv("ENVIRONMENT") == "test":
+            self.config.max_tokens = int(os.getenv("TEST_MAX_TOKENS", "500"))
+            self.config.model = "gpt-3.5-turbo"  # Force cheapest model in test
         
-        user_prompt = f"""
-{context}
+        logger.info(f"OpenAI Service initialized with model: {self.config.model}")
 
-User request: {prompt}
-
-Generate a complete, working React component that fulfills this request.
-"""
+    async def generate_completion(
+        self,
+        messages: List[Dict[str, str]],
+        system_prompt: Optional[str] = None,
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+        stream: bool = False
+    ) -> str:
+        """Generate a single completion response"""
+        
+        # Prepare messages
+        formatted_messages = []
+        if system_prompt:
+            formatted_messages.append({"role": "system", "content": system_prompt})
+        formatted_messages.extend(messages)
+        
+        # Use provided parameters or defaults
+        request_config = {
+            "model": self.config.model,
+            "messages": formatted_messages,
+            "max_tokens": max_tokens or self.config.max_tokens,
+            "temperature": temperature or self.config.temperature,
+            "stream": stream
+        }
         
         try:
-            response = await self.client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                stream=True,
-                temperature=0.7,
-                max_tokens=4000,
-            )
-            
-            current_file = None
-            current_content = ""
-            code_block_pattern = r'```(\w+)?\s*(?:path=([^\s]+))?\s*\n'
-            
-            async for chunk in response:
-                if chunk.choices[0].delta.content:
-                    content = chunk.choices[0].delta.content
-                    
-                    # Check for code block start
-                    match = re.search(code_block_pattern, content)
-                    if match:
-                        # If we were building a file, yield it first
-                        if current_file and current_content.strip():
-                            yield StreamingMessage(
-                                type="file",
-                                filename=current_file,
-                                content=current_content.strip()
-                            )
-                        
-                        # Start new file
-                        current_file = match.group(2) if match.group(2) else "src/Component.tsx"
-                        current_content = ""
-                        
-                        yield StreamingMessage(
-                            type="status",
-                            content=f"Generating {current_file}..."
-                        )
-                        continue
-                    
-                    # Check for code block end
-                    if content.strip() == "```" and current_file:
-                        # End of code block - yield the complete file
-                        if current_content.strip():
-                            yield StreamingMessage(
-                                type="file",
-                                filename=current_file,
-                                content=current_content.strip()
-                            )
-                        current_file = None
-                        current_content = ""
-                        continue
-                    
-                    # If we're inside a code block, accumulate content
-                    if current_file:
-                        current_content += content
-                    else:
-                        # Regular streaming content
-                        yield StreamingMessage(
-                            type="chunk",
-                            content=content
-                        )
-            
-            # Handle any remaining file content
-            if current_file and current_content.strip():
-                yield StreamingMessage(
-                    type="file",
-                    filename=current_file,
-                    content=current_content.strip()
-                )
-            
-            yield StreamingMessage(
-                type="status",
-                content="Generation completed"
-            )
-            
+            if stream:
+                # For streaming responses
+                response_chunks = []
+                async for chunk in await self.client.chat.completions.create(**request_config):
+                    if chunk.choices[0].delta.content:
+                        response_chunks.append(chunk.choices[0].delta.content)
+                return "".join(response_chunks)
+            else:
+                # For single responses
+                response = await self.client.chat.completions.create(**request_config)
+                return response.choices[0].message.content
+                
         except Exception as e:
-            yield StreamingMessage(
-                type="error",
-                content=f"Error generating code: {str(e)}"
-            )
-    
-    async def improve_code(
-        self, 
-        code: str, 
-        improvement_request: str
-    ) -> AsyncGenerator[StreamingMessage, None]:
-        """
-        Improve existing code based on user request.
-        """
+            logger.error(f"OpenAI API error: {str(e)}")
+            raise
+
+    async def stream_completion(
+        self,
+        messages: List[Dict[str, str]],
+        system_prompt: Optional[str] = None,
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None
+    ) -> AsyncGenerator[str, None]:
+        """Stream completion response chunk by chunk"""
         
-        system_prompt = """
-You are an expert React/TypeScript developer. Improve the provided code based on the user's request.
+        # Prepare messages
+        formatted_messages = []
+        if system_prompt:
+            formatted_messages.append({"role": "system", "content": system_prompt})
+        formatted_messages.extend(messages)
+        
+        request_config = {
+            "model": self.config.model,
+            "messages": formatted_messages,
+            "max_tokens": max_tokens or self.config.max_tokens,
+            "temperature": temperature or self.config.temperature,
+            "stream": True
+        }
+        
+        try:
+            stream = await self.client.chat.completions.create(**request_config)
+            async for chunk in stream:
+                if chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+                    
+        except Exception as e:
+            logger.error(f"OpenAI streaming error: {str(e)}")
+            yield f"Error: {str(e)}"
 
-Requirements:
-- Maintain TypeScript with proper type definitions
-- Use modern React patterns and hooks
-- Use Tailwind CSS for styling
-- Keep components responsive and accessible
-- Include proper error handling
-- Use ESLint/Prettier compatible code style
+    async def generate_code(
+        self,
+        prompt: str,
+        language: str = "typescript",
+        framework: str = "react",
+        context: Optional[str] = None
+    ) -> str:
+        """Generate code with optimized prompting for cost efficiency"""
+        
+        system_prompt = f"""You are an expert {language} developer specializing in {framework}.
+Generate clean, production-ready code that follows best practices.
+Be concise but complete. Focus on the essential functionality.
+"""
 
-For each file, use this format:
-```tsx path=src/ComponentName.tsx
-// Your improved code here
-```
+        user_message = f"""Generate {language} code for: {prompt}
 
-Only return the files that need to be changed or added.
+Framework: {framework}
 """
         
-        user_prompt = f"""
-Current code:
+        if context:
+            user_message += f"\nExisting context:\n{context}"
+
+        messages = [{"role": "user", "content": user_message}]
+        
+        return await self.generate_completion(
+            messages=messages,
+            system_prompt=system_prompt,
+            max_tokens=min(self.config.max_tokens, 1500)  # Limit for code generation
+        )
+
+    async def generate_tests(
+        self,
+        code: str,
+        framework: str = "vitest",
+        language: str = "typescript"
+    ) -> str:
+        """Generate test cases for given code"""
+        
+        system_prompt = f"""You are an expert test engineer specializing in {framework}.
+Generate comprehensive but concise test cases that cover the main functionality.
+Focus on edge cases and error conditions.
+"""
+
+        user_message = f"""Generate {framework} tests for this {language} code:
+
 {code}
 
-Improvement request: {improvement_request}
+Generate tests that:
+1. Test main functionality
+2. Cover edge cases
+3. Test error conditions
+4. Are easy to understand and maintain
+"""
 
-Please improve the code based on this request.
+        messages = [{"role": "user", "content": user_message}]
+        
+        return await self.generate_completion(
+            messages=messages,
+            system_prompt=system_prompt,
+            max_tokens=min(self.config.max_tokens, 1000)  # Limit for test generation
+        )
+
+    async def analyze_error(
+        self,
+        error_message: str,
+        code: str,
+        context: Optional[str] = None
+    ) -> str:
+        """Analyze error and suggest fixes"""
+        
+        system_prompt = """You are an expert debugging assistant.
+Analyze the error and provide a concise explanation and fix.
+Focus on the most likely cause and solution.
+"""
+
+        user_message = f"""Error: {error_message}
+
+Code:
+{code}
 """
         
-        try:
-            response = await self.client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt}
-                ],
-                stream=True,
-                temperature=0.7,
-                max_tokens=4000,
-            )
-            
-            current_file = None
-            current_content = ""
-            code_block_pattern = r'```(\w+)?\s*(?:path=([^\s]+))?\s*\n'
-            
-            async for chunk in response:
-                if chunk.choices[0].delta.content:
-                    content = chunk.choices[0].delta.content
-                    
-                    # Check for code block start
-                    match = re.search(code_block_pattern, content)
-                    if match:
-                        # If we were building a file, yield it first
-                        if current_file and current_content.strip():
-                            yield StreamingMessage(
-                                type="file",
-                                filename=current_file,
-                                content=current_content.strip()
-                            )
-                        
-                        # Start new file
-                        current_file = match.group(2) if match.group(2) else "src/Component.tsx"
-                        current_content = ""
-                        
-                        yield StreamingMessage(
-                            type="status",
-                            content=f"Improving {current_file}..."
-                        )
-                        continue
-                    
-                    # Check for code block end
-                    if content.strip() == "```" and current_file:
-                        # End of code block - yield the complete file
-                        if current_content.strip():
-                            yield StreamingMessage(
-                                type="file",
-                                filename=current_file,
-                                content=current_content.strip()
-                            )
-                        current_file = None
-                        current_content = ""
-                        continue
-                    
-                    # If we're inside a code block, accumulate content
-                    if current_file:
-                        current_content += content
-                    else:
-                        # Regular streaming content
-                        yield StreamingMessage(
-                            type="chunk",
-                            content=content
-                        )
-            
-            # Handle any remaining file content
-            if current_file and current_content.strip():
-                yield StreamingMessage(
-                    type="file",
-                    filename=current_file,
-                    content=current_content.strip()
-                )
-            
-            yield StreamingMessage(
-                type="status",
-                content="Improvement completed"
-            )
-            
-        except Exception as e:
-            yield StreamingMessage(
-                type="error",
-                content=f"Error improving code: {str(e)}"
-            )
+        if context:
+            user_message += f"\nContext: {context}"
 
+        messages = [{"role": "user", "content": user_message}]
+        
+        return await self.generate_completion(
+            messages=messages,
+            system_prompt=system_prompt,
+            max_tokens=min(self.config.max_tokens, 800)  # Limit for error analysis
+        )
 
-openai_service = OpenAIService() 
+    async def estimate_cost(
+        self,
+        prompt_tokens: int,
+        completion_tokens: int
+    ) -> float:
+        """Estimate cost for the request (approximate)"""
+        
+        # Approximate pricing for gpt-3.5-turbo (as of 2024)
+        # These are rough estimates - actual pricing may vary
+        pricing = {
+            "gpt-3.5-turbo": {
+                "input": 0.0015 / 1000,   # $0.0015 per 1K tokens
+                "output": 0.002 / 1000    # $0.002 per 1K tokens
+            },
+            "gpt-4o-mini": {
+                "input": 0.00015 / 1000,  # $0.00015 per 1K tokens
+                "output": 0.0006 / 1000   # $0.0006 per 1K tokens
+            }
+        }
+        
+        model_pricing = pricing.get(self.config.model, pricing["gpt-3.5-turbo"])
+        
+        input_cost = prompt_tokens * model_pricing["input"]
+        output_cost = completion_tokens * model_pricing["output"]
+        
+        return input_cost + output_cost
+
+    def get_model_info(self) -> Dict[str, Any]:
+        """Get current model configuration"""
+        return {
+            "model": self.config.model,
+            "max_tokens": self.config.max_tokens,
+            "temperature": self.config.temperature,
+            "cost_optimized": self.config.model in ["gpt-3.5-turbo", "gpt-4o-mini"]
+        }
+
+# Global service instance
+openai_service = OpenAIService()
+
+# Convenience functions for backward compatibility
+async def generate_code(prompt: str, **kwargs) -> str:
+    """Generate code using the global OpenAI service"""
+    return await openai_service.generate_code(prompt, **kwargs)
+
+async def stream_code_generation(prompt: str, **kwargs) -> AsyncGenerator[str, None]:
+    """Stream code generation using the global OpenAI service"""
+    messages = [{"role": "user", "content": prompt}]
+    async for chunk in openai_service.stream_completion(messages, **kwargs):
+        yield chunk 
