@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&display=swap');
+
+@layer base {
+  :root {
+    /* Colors */
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+
+    /* Studio-specific colors */
+    --color-studio: 221.2 83.2% 53.3%;
+    --color-success: 142.1 76.2% 36.3%;
+    --color-warning: 32.9 94.6% 43.7%;
+    --color-error: 0 84.2% 60.2%;
+
+    /* Spacing scale (4px base) */
+    --space-tight: 0.25rem;     /* 4px */
+    --space-standard: 0.5rem;   /* 8px */
+    --space-comfortable: 1rem;  /* 16px */
+    --space-spacious: 1.5rem;   /* 24px */
+    --space-generous: 2rem;     /* 32px */
+
+    /* Animation durations */
+    --duration-instant: 80ms;
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-smooth: 400ms;
+    --duration-complex: 600ms;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Studio-specific component styles */
+  .studio-workspace {
+    @apply h-screen flex flex-col bg-background;
+  }
+  
+  .studio-topbar {
+    @apply h-14 border-b border-border flex items-center justify-between px-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60;
+  }
+  
+  .studio-tabs {
+    @apply h-12 border-b border-border flex items-center justify-between px-4 bg-muted/30;
+  }
+  
+  .workspace-tab {
+    @apply relative px-4 py-2 text-sm font-medium rounded-md transition-colors hover:text-foreground;
+  }
+  
+  .workspace-tab.active {
+    @apply text-foreground;
+  }
+  
+  .workspace-tab:not(.active) {
+    @apply text-muted-foreground;
+  }
+  
+  /* Custom scrollbars */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--background));
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+    border-radius: 10px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 10px;
+    border: 1px solid hsl(var(--background));
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+}
+
+@layer utilities {
+  /* Spacing utilities using our 4px scale */
+  .space-tight { gap: var(--space-tight); }
+  .space-standard { gap: var(--space-standard); }
+  .space-comfortable { gap: var(--space-comfortable); }
+  .space-spacious { gap: var(--space-spacious); }
+  .space-generous { gap: var(--space-generous); }
+  
+  .p-tight { padding: var(--space-tight); }
+  .p-standard { padding: var(--space-standard); }
+  .p-comfortable { padding: var(--space-comfortable); }
+  .p-spacious { padding: var(--space-spacious); }
+  .p-generous { padding: var(--space-generous); }
+  
+  /* Animation utilities */
+  .animate-duration-instant { animation-duration: var(--duration-instant); }
+  .animate-duration-fast { animation-duration: var(--duration-fast); }
+  .animate-duration-normal { animation-duration: var(--duration-normal); }
+  .animate-duration-smooth { animation-duration: var(--duration-smooth); }
+  .animate-duration-complex { animation-duration: var(--duration-complex); }
+  
+  /* Focus styles */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-pulse,
+    .animate-spin,
+    .animate-bounce,
+    .animate-pulse-glow,
+    .animate-wave {
+      animation: none;
+    }
+    
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+} 
